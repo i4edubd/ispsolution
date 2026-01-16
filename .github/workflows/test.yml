@@ -55,7 +55,7 @@ jobs:
         php artisan key:generate
 
     - name: Install Composer Dependencies
-      run: composer install --prefer-dist --no-interaction --no-progress --no-suggest
+      run: composer install --prefer-dist --no-interaction --no-progress
 
     - name: Install NPM Dependencies
       run: npm ci
