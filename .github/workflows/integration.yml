@@ -25,12 +25,32 @@ jobs:
     - name: Start Docker Services
       run: |
         docker compose up -d
-        sleep 30
+        
+    - name: Wait for Services to be Ready
+      run: |
+        echo "Waiting for services to be ready..."
+        timeout=60
+        elapsed=0
+        while [ $elapsed -lt $timeout ]; do
+          if docker compose exec -T app php --version > /dev/null 2>&1; then
+            echo "App container is ready!"
+            break
+          fi
+          echo "Waiting for app container... ($elapsed/$timeout seconds)"
+          sleep 2
+          elapsed=$((elapsed + 2))
+        done
+        if [ $elapsed -ge $timeout ]; then
+          echo "Timeout waiting for app container"
+          docker compose ps
+          docker compose logs app
+          exit 1
+        fi
 
     - name: Check Services Health
       run: |
         docker compose ps
-        docker compose logs app
+        docker compose logs app | tail -50
 
     - name: Install Dependencies
       run: |

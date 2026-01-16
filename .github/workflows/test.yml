@@ -67,10 +67,12 @@ jobs:
       run: |
         php -r "file_put_contents('.env', str_replace('DB_HOST=db', 'DB_HOST=127.0.0.1', file_get_contents('.env')));"
         php -r "file_put_contents('.env', str_replace('DB_DATABASE=ispsolution', 'DB_DATABASE=ispsolution_test', file_get_contents('.env')));"
+        php -r "file_put_contents('.env', str_replace('DB_USERNAME=ispsolution', 'DB_USERNAME=root', file_get_contents('.env')));"
         php -r "file_put_contents('.env', str_replace('DB_PASSWORD=secret', 'DB_PASSWORD=root', file_get_contents('.env')));"
         php -r "file_put_contents('.env', str_replace('RADIUS_DB_HOST=radius-db', 'RADIUS_DB_HOST=127.0.0.1', file_get_contents('.env')));"
-        php -r "file_put_contents('.env', str_replace('RADIUS_DB_PORT=3306', 'RADIUS_DB_PORT=3307', file_get_contents('.env')));"
+        php -r "file_put_contents('.env', str_replace('RADIUS_DB_PORT=3307', 'RADIUS_DB_PORT=3307', file_get_contents('.env')));"
         php -r "file_put_contents('.env', str_replace('RADIUS_DB_DATABASE=radius', 'RADIUS_DB_DATABASE=radius_test', file_get_contents('.env')));"
+        php -r "file_put_contents('.env', str_replace('RADIUS_DB_USERNAME=radius', 'RADIUS_DB_USERNAME=root', file_get_contents('.env')));"
         php -r "file_put_contents('.env', str_replace('RADIUS_DB_PASSWORD=secret', 'RADIUS_DB_PASSWORD=root', file_get_contents('.env')));"
 
     - name: Run Migrations
