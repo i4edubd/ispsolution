@@ -141,7 +141,7 @@ class IpamService implements IpamServiceInterface
      */
     public function getPoolUtilization(int $poolId): array
     {
-        $pool = IpPool::with('subnets')->find($poolId);
+        $pool = IpPool::find($poolId);
 
         if (!$pool) {
             return [
@@ -152,17 +152,20 @@ class IpamService implements IpamServiceInterface
             ];
         }
 
+        // Get all subnets for the pool with their allocation counts in a single query
+        $subnets = IpSubnet::where('pool_id', $poolId)
+            ->withCount(['allocations' => function ($query) {
+                $query->where('status', 'allocated');
+            }])
+            ->get();
+
         $totalIPs = 0;
         $allocatedIPs = 0;
 
-        foreach ($pool->subnets as $subnet) {
+        foreach ($subnets as $subnet) {
             $subnetIPs = $this->calculateSubnetSize($subnet->prefix_length);
             $totalIPs += $subnetIPs;
-
-            $allocated = IpAllocation::where('subnet_id', $subnet->id)
-                ->where('status', 'allocated')
-                ->count();
-            $allocatedIPs += $allocated;
+            $allocatedIPs += $subnet->allocations_count;
         }
 
         $availableIPs = $totalIPs - $allocatedIPs;
@@ -183,13 +186,16 @@ class IpamService implements IpamServiceInterface
     {
         $allIPs = $this->generateIPRange($subnet->network, $subnet->prefix_length);
 
-        foreach ($allIPs as $ip) {
-            $exists = IpAllocation::where('subnet_id', $subnet->id)
-                ->where('ip_address', $ip)
-                ->where('status', 'allocated')
-                ->exists();
+        // Fetch all allocated IPs for this subnet in one query
+        $allocatedIPs = IpAllocation::where('subnet_id', $subnet->id)
+            ->where('status', 'allocated')
+            ->pluck('ip_address')
+            ->flip()
+            ->toArray();
 
-            if (!$exists) {
+        // Find first IP not in allocated set
+        foreach ($allIPs as $ip) {
+            if (!isset($allocatedIPs[$ip])) {
                 return $ip;
             }
         }
@@ -199,6 +205,9 @@ class IpamService implements IpamServiceInterface
 
     /**
      * Generate IP range from network and prefix length
+     * 
+     * Note: This method currently only supports IPv4 addresses.
+     * IPv6 support is not yet implemented.
      *
      * @return array<string>
      */

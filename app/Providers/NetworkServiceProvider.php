@@ -25,8 +25,8 @@ class NetworkServiceProvider extends ServiceProvider
         // Bind RADIUS Service
         $this->app->singleton(RadiusServiceInterface::class, RadiusService::class);
 
-        // Bind MikroTik Service
-        $this->app->singleton(MikrotikServiceInterface::class, MikrotikService::class);
+        // Bind MikroTik Service (scoped per request to avoid sharing stateful instances)
+        $this->app->scoped(MikrotikServiceInterface::class, MikrotikService::class);
     }
 
     /**

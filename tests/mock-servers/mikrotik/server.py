@@ -2,15 +2,20 @@
 """
 Mock MikroTik API Server for Integration Testing
 This is a simple HTTP server that mimics MikroTik RouterOS API responses
+
+WARNING: This mock server uses global mutable state (pppoe_users, active_sessions)
+which may cause issues in concurrent testing scenarios. For parallel test execution,
+consider implementing proper request-scoped state management or using locks.
 """
 
 from flask import Flask, request, jsonify
-import time
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 
 # In-memory storage for testing
+# NOTE: Global state - not safe for concurrent access
 pppoe_users = {}
 active_sessions = {}
 session_counter = 0
@@ -173,4 +178,8 @@ if __name__ == '__main__':
     print("  - POST /api/test/create_session - Create test session")
     print("  - POST /api/test/reset - Reset all data")
     
-    app.run(host='0.0.0.0', port=8728, debug=True)
+    # Get debug mode from environment variable (default to False for security)
+    debug_mode = os.getenv('FLASK_DEBUG', 'false').lower() in ('true', '1', 'yes')
+    print(f"Debug mode: {'enabled' if debug_mode else 'disabled'}")
+    
+    app.run(host='0.0.0.0', port=8728, debug=debug_mode)

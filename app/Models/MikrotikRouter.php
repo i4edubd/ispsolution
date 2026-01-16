@@ -23,6 +23,7 @@ class MikrotikRouter extends Model
     ];
 
     protected $casts = [
+        'password' => 'encrypted',
         'api_port' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

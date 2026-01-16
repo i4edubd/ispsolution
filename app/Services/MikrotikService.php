@@ -10,6 +10,19 @@ use App\Models\MikrotikPppoeUser;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * MikroTik Service
+ * 
+ * SECURITY NOTES:
+ * 1. Authentication: This implementation uses HTTP for the mock server. Real MikroTik routers
+ *    require proper authentication. Router credentials from the database should be included
+ *    in API requests for production use.
+ * 2. Encryption: Passwords are transmitted over HTTP. For production, configure HTTPS with
+ *    proper certificate validation to protect credentials in transit. Consider adding a
+ *    configuration option to enforce HTTPS for production environments.
+ * 3. Password Storage: Router and user passwords are encrypted at rest using Laravel's
+ *    encrypted casting, but are decrypted when transmitted to the router.
+ */
 class MikrotikService implements MikrotikServiceInterface
 {
     private ?MikrotikRouter $currentRouter = null;

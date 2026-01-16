@@ -36,5 +36,7 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 # Expose port 8000
 EXPOSE 8000
 
-# Start PHP built-in server for development
+# DEVELOPMENT: Start PHP built-in server
+# PRODUCTION: Use php-fpm with nginx/Apache instead of artisan serve
+# For production, change CMD to: CMD ["php-fpm"] and configure with nginx/Apache
 CMD php artisan serve --host=0.0.0.0 --port=8000

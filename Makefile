@@ -54,5 +54,8 @@ build: ## Build frontend assets
 	npm run build
 
 dev: ## Start development servers
-	php artisan serve &
+	@echo "Starting development servers..."
+	@echo "Press Ctrl+C to stop all servers"
+	@trap 'echo "Stopping servers..."; kill 0' EXIT INT TERM; \
+	php artisan serve & \
 	npm run dev

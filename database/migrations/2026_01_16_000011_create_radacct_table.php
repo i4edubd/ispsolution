@@ -35,7 +35,7 @@ return new class extends Migration
             $table->string('acctterminatecause', 32)->nullable();
             $table->string('servicetype', 32)->nullable();
             $table->string('framedprotocol', 32)->nullable();
-            $table->string('framedipaddress', 15)->index();
+            $table->string('framedipaddress', 15);
             $table->string('framedipv6address', 45)->nullable();
             $table->string('framedipv6prefix', 45)->nullable();
             $table->string('framedinterfaceid', 44)->nullable();

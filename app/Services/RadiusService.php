@@ -10,12 +10,19 @@ use App\Models\RadCheck;
 use App\Models\RadReply;
 use App\Models\RadAcct;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 class RadiusService implements RadiusServiceInterface
 {
     /**
+     * Create a new RADIUS user
+     * 
+     * SECURITY NOTE: This implementation stores passwords in cleartext using
+     * the Cleartext-Password attribute, which is standard for RADIUS but has
+     * security implications. Ensure the RADIUS database has appropriate access
+     * controls. For enhanced security, consider using PAP with hashed passwords
+     * or CHAP authentication methods.
+     * 
      * @inheritDoc
      */
     public function createUser(string $username, string $password, array $attributes = []): bool

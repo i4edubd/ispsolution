@@ -226,7 +226,7 @@ class IpamServiceTest extends TestCase
         $this->assertEquals(50.0, $utilization['utilization_percent']);
     }
 
-    public function test_concurrent_allocations_do_not_conflict(): void
+    public function test_sequential_allocations_from_same_subnet(): void
     {
         $pool = IpPool::create([
             'name' => 'Test Pool',
@@ -242,7 +242,7 @@ class IpamServiceTest extends TestCase
             'status' => 'active',
         ]);
 
-        // Simulate concurrent allocations
+        // Simulate sequential allocations (actual concurrent testing would require ParaTest)
         $allocation1 = $this->ipamService->allocateIP($subnet->id, '00:11:22:33:44:55', 'user1');
         $allocation2 = $this->ipamService->allocateIP($subnet->id, '00:11:22:33:44:56', 'user2');
 

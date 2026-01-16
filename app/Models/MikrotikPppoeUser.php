@@ -25,6 +25,7 @@ class MikrotikPppoeUser extends Model
     ];
 
     protected $casts = [
+        'password' => 'encrypted',
         'router_id' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
