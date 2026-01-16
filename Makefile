@@ -53,10 +53,10 @@ clean: ## Clean up containers and volumes
 	docker-compose down -v
 
 db-shell: ## Enter database shell
-	docker-compose exec db mysql -u$(DB_USERNAME) -p$(DB_PASSWORD) $(DB_DATABASE)
+	docker-compose exec db sh -c 'mysql -u"$$DB_USERNAME" -p"$$DB_PASSWORD" "$$DB_DATABASE"'
 
 radius-shell: ## Enter RADIUS database shell
-	docker-compose exec radius-db mysql -u$(RADIUS_DB_USERNAME) -p$(RADIUS_DB_PASSWORD) $(RADIUS_DB_DATABASE)
+	docker-compose exec radius-db sh -c 'mysql -u"$$RADIUS_DB_USERNAME" -p"$$RADIUS_DB_PASSWORD" "$$RADIUS_DB_DATABASE"'
 
 # Artisan commands shortcuts
 ipam-cleanup: ## Run IPAM cleanup command

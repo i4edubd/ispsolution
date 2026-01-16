@@ -15,26 +15,29 @@ class NetworkServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Register IPAM service
-        $this->app->singleton(IpamServiceInterface::class, function ($app) {
-            return new \App\Services\IpamService();
-        });
+        // TODO: Uncomment when IpamService is implemented
+        // $this->app->singleton(IpamServiceInterface::class, function ($app) {
+        //     return new \App\Services\IpamService();
+        // });
 
         // Register RADIUS service (singleton for connection reuse)
-        $this->app->singleton(RadiusServiceInterface::class, function ($app) {
-            return new \App\Services\RadiusService();
-        });
+        // TODO: Uncomment when RadiusService is implemented
+        // $this->app->singleton(RadiusServiceInterface::class, function ($app) {
+        //     return new \App\Services\RadiusService();
+        // });
 
         // Register MikroTik service (singleton for connection reuse)
-        $this->app->singleton(MikroTikServiceInterface::class, function ($app) {
-            return new \App\Services\MikroTikService(
-                config('mikrotik.host'),
-                config('mikrotik.port'),
-                config('mikrotik.username'),
-                config('mikrotik.password'),
-                config('mikrotik.timeout'),
-                config('mikrotik.retry_attempts')
-            );
-        });
+        // TODO: Uncomment when MikroTikService is implemented
+        // $this->app->singleton(MikroTikServiceInterface::class, function ($app) {
+        //     return new \App\Services\MikroTikService(
+        //         config('mikrotik.host'),
+        //         config('mikrotik.port'),
+        //         config('mikrotik.username'),
+        //         config('mikrotik.password'),
+        //         config('mikrotik.timeout'),
+        //         config('mikrotik.retry_attempts')
+        //     );
+        // });
     }
 
     /**

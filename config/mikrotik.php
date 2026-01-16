@@ -12,6 +12,8 @@ return [
     'host' => env('MIKROTIK_HOST', '192.168.88.1'),
     'port' => env('MIKROTIK_PORT', 8728),
     'username' => env('MIKROTIK_USERNAME', 'admin'),
+    // WARNING: The default MikroTik password is intentionally left as an empty string for development.
+    // In production, you MUST set MIKROTIK_PASSWORD in your environment to a strong, non-empty value.
     'password' => env('MIKROTIK_PASSWORD', ''),
 
     /*

@@ -34,16 +34,16 @@ RUN addgroup -g 1000 www && adduser -u 1000 -G www -s /bin/sh -D www
 # Copy application files
 COPY --chown=www:www . /var/www/html
 
+# PHP production configuration (must be copied before switching user)
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
+
 # Set proper permissions
 RUN chown -R www:www /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Install dependencies
+# Switch to non-root user for running the application
 USER www
-
-# PHP production configuration
-COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000

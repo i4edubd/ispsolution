@@ -75,6 +75,11 @@ class User extends Authenticatable
 
     public function currentPackage(): ?ServicePackage
     {
+        // Eager load the relationship if not already loaded
+        if (! $this->relationLoaded('servicePackage')) {
+            $this->load('servicePackage');
+        }
+        
         return $this->servicePackage;
     }
 }

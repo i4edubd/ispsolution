@@ -20,7 +20,10 @@ return [
     |
     */
     'authenticate' => [
-        'hash' => env('RADIUS_PASSWORD_HASH', 'cleartext'), // cleartext, md5, sha1
+        // WARNING: The default password hash is 'md5' for better security than cleartext.
+        // Options: 'md5', 'sha1', 'cleartext' (not recommended for production)
+        // For production environments, use 'md5' or 'sha1' for better security.
+        'hash' => env('RADIUS_PASSWORD_HASH', 'md5'), // md5 (default), sha1, cleartext
     ],
 
     /*
