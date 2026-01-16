@@ -17,7 +17,7 @@ class MikrotikHealthCheck extends Command
      */
     protected $signature = 'mikrotik:health-check 
                             {--router= : Specific router ID to check}
-                            {--verbose : Show detailed information}';
+                            {--details : Show detailed information}';
 
     /**
      * The console command description.
@@ -32,7 +32,7 @@ class MikrotikHealthCheck extends Command
     public function handle(MikrotikServiceInterface $mikrotikService): int
     {
         $routerId = $this->option('router');
-        $verbose = $this->option('verbose');
+        $details = $this->option('details');
 
         $this->info('Checking MikroTik router health...');
 
@@ -41,7 +41,7 @@ class MikrotikHealthCheck extends Command
                 // Check specific router
                 $router = MikrotikRouter::findOrFail($routerId);
 
-                return $this->checkRouter($router, $mikrotikService, $verbose);
+                return $this->checkRouter($router, $mikrotikService, $details);
             } else {
                 // Check all active routers
                 $routers = MikrotikRouter::where('status', 'active')->get();
@@ -69,7 +69,7 @@ class MikrotikHealthCheck extends Command
                         $unhealthy++;
                     }
 
-                    if ($verbose) {
+                    if ($details) {
                         $this->line("  IP: {$router->ip_address}");
                         $this->line("  Port: {$router->api_port}");
                         $this->line("  Status: {$router->status}");
@@ -97,14 +97,14 @@ class MikrotikHealthCheck extends Command
         }
     }
 
-    private function checkRouter(MikrotikRouter $router, MikrotikServiceInterface $mikrotikService, bool $verbose): int
+    private function checkRouter(MikrotikRouter $router, MikrotikServiceInterface $mikrotikService, bool $details): int
     {
         $success = $mikrotikService->connectRouter($router->id);
 
         if ($success) {
             $this->info("✓ Router '{$router->name}' is healthy");
 
-            if ($verbose) {
+            if ($details) {
                 $this->info('Details:');
                 $this->line("  IP: {$router->ip_address}");
                 $this->line("  Port: {$router->api_port}");

@@ -28,35 +28,29 @@ jobs:
         
     - name: Wait for Services to be Ready
       run: |
-        echo "Waiting for services to be ready..."
-        timeout=60
-        elapsed=0
-        while [ $elapsed -lt $timeout ]; do
-          if docker compose exec -T app php --version > /dev/null 2>&1; then
-            echo "App container is ready!"
-            break
-          fi
-          echo "Waiting for app container... ($elapsed/$timeout seconds)"
-          sleep 2
-          elapsed=$((elapsed + 2))
-        done
-        if [ $elapsed -ge $timeout ]; then
-          echo "Timeout waiting for app container"
+        echo "Waiting for database services to be ready..."
+        sleep 10
+        docker compose ps
+        
+    - name: Install Dependencies in Container
+      run: |
+        echo "Installing dependencies..."
+        docker compose exec -T app composer install --no-interaction --prefer-dist || {
+          echo "First attempt failed, checking container status..."
           docker compose ps
-          docker compose logs app
-          exit 1
-        fi
+          docker compose logs app | tail -100
+          echo "Retrying composer install..."
+          sleep 5
+          docker compose exec -T app composer install --no-interaction --prefer-dist
+        }
+        docker compose exec -T app npm ci
+        docker compose exec -T app npm run build
 
     - name: Check Services Health
       run: |
         docker compose ps
-        docker compose logs app | tail -50
-
-    - name: Install Dependencies
-      run: |
-        docker compose exec -T app composer install --no-interaction --prefer-dist
-        docker compose exec -T app npm ci
-        docker compose exec -T app npm run build
+        echo "Verifying vendor directory..."
+        docker compose exec -T app ls -la vendor/ | head -10
 
     - name: Generate Application Key
       run: docker compose exec -T app php artisan key:generate
