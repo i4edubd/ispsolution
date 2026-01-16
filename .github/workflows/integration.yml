@@ -24,36 +24,55 @@ jobs:
 
     - name: Start Docker Services
       run: |
-        docker compose up -d
+        docker compose up -d --build
         
     - name: Wait for Services to be Ready
       run: |
-        echo "Waiting for database services to be ready..."
-        sleep 10
-        docker compose ps
-        
-    - name: Install Dependencies in Container
-      run: |
-        echo "Installing dependencies..."
-        docker compose exec -T app composer install --no-interaction --prefer-dist || {
-          echo "First attempt failed, checking container status..."
-          docker compose ps
-          docker compose logs app | tail -100
-          echo "Retrying composer install..."
+        echo "Waiting for services to be healthy..."
+        timeout=120
+        elapsed=0
+        while [ $elapsed -lt $timeout ]; do
+          app_health=$(docker inspect --format='{{.State.Health.Status}}' ispsolution-app 2>/dev/null || echo "starting")
+          db_health=$(docker inspect --format='{{.State.Health.Status}}' ispsolution-db 2>/dev/null || echo "starting")
+          radius_health=$(docker inspect --format='{{.State.Health.Status}}' ispsolution-radius-db 2>/dev/null || echo "starting")
+          
+          echo "App: $app_health, DB: $db_health, Radius: $radius_health ($elapsed/$timeout seconds)"
+          
+          if [ "$app_health" = "healthy" ] && [ "$db_health" = "healthy" ] && [ "$radius_health" = "healthy" ]; then
+            echo "All services are healthy!"
+            break
+          fi
+          
+          if [ "$app_health" = "unhealthy" ]; then
+            echo "App container is unhealthy, checking logs..."
+            docker compose logs app | tail -50
+            exit 1
+          fi
+          
           sleep 5
-          docker compose exec -T app composer install --no-interaction --prefer-dist
-        }
-        docker compose exec -T app npm ci
-        docker compose exec -T app npm run build
-
-    - name: Check Services Health
+          elapsed=$((elapsed + 5))
+        done
+        
+        if [ $elapsed -ge $timeout ]; then
+          echo "Timeout waiting for services"
+          docker compose ps
+          docker compose logs app
+          docker compose logs db
+          docker compose logs radius-db
+          exit 1
+        fi
+        
+    - name: Verify Installation
       run: |
-        docker compose ps
-        echo "Verifying vendor directory..."
+        echo "Verifying dependencies..."
         docker compose exec -T app ls -la vendor/ | head -10
+        docker compose exec -T app ls -la node_modules/ | head -10
 
     - name: Generate Application Key
       run: docker compose exec -T app php artisan key:generate
+
+    - name: Build Assets
+      run: docker compose exec -T app npm run build
 
     - name: Run Migrations
       run: |
