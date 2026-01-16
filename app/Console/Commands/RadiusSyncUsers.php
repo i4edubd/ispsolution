@@ -15,9 +15,7 @@ class RadiusSyncUsers extends Command
      *
      * @var string
      */
-    protected $signature = 'radius:sync-users 
-                            {--status=active : Only sync users with specific status}
-                            {--force : Force sync without confirmation}';
+    protected $signature = 'radius:sync-users {--status=active : Only sync users with specific status} {--force : Force sync without confirmation}';
 
     /**
      * The console command description.

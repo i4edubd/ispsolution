@@ -64,15 +64,27 @@ class MikrotikSyncSessions extends Command
 
                         // Update local session cache
                         foreach ($sessions as $session) {
+                            // Normalize session data structure
+                            $sessionId = $session['id'] ?? $session['name'] ?? null;
+                            $username = $session['name'] ?? $session['username'] ?? null;
+                            $ipAddress = $session['address'] ?? $session['framed-ip-address'] ?? null;
+                            $uptime = $session['uptime'] ?? 0;
+                            $bytesIn = $session['bytes-in'] ?? $session['input-octets'] ?? 0;
+                            $bytesOut = $session['bytes-out'] ?? $session['output-octets'] ?? 0;
+                            
+                            if (!$sessionId || !$username) {
+                                continue; // Skip invalid session data
+                            }
+                            
                             RadiusSession::updateOrCreate(
-                                ['session_id' => $session['id'] ?? $session['name']],
+                                ['session_id' => $sessionId],
                                 [
-                                    'username' => $session['name'] ?? $session['username'],
+                                    'username' => $username,
                                     'nas_ip_address' => $router->ip_address,
-                                    'framed_ip_address' => $session['address'] ?? null,
-                                    'start_time' => $session['uptime'] ? now()->subSeconds((int)$session['uptime']) : null,
-                                    'input_octets' => $session['bytes-in'] ?? 0,
-                                    'output_octets' => $session['bytes-out'] ?? 0,
+                                    'framed_ip_address' => $ipAddress,
+                                    'start_time' => $uptime ? now()->subSeconds((int)$uptime) : null,
+                                    'input_octets' => (int)$bytesIn,
+                                    'output_octets' => (int)$bytesOut,
                                     'status' => 'active',
                                 ]
                             );
@@ -115,15 +127,27 @@ class MikrotikSyncSessions extends Command
         }
 
         foreach ($sessions as $session) {
+            // Normalize session data structure
+            $sessionId = $session['id'] ?? $session['name'] ?? null;
+            $username = $session['name'] ?? $session['username'] ?? null;
+            $ipAddress = $session['address'] ?? $session['framed-ip-address'] ?? null;
+            $uptime = $session['uptime'] ?? 0;
+            $bytesIn = $session['bytes-in'] ?? $session['input-octets'] ?? 0;
+            $bytesOut = $session['bytes-out'] ?? $session['output-octets'] ?? 0;
+            
+            if (!$sessionId || !$username) {
+                continue; // Skip invalid session data
+            }
+            
             RadiusSession::updateOrCreate(
-                ['session_id' => $session['id'] ?? $session['name']],
+                ['session_id' => $sessionId],
                 [
-                    'username' => $session['name'] ?? $session['username'],
+                    'username' => $username,
                     'nas_ip_address' => $router->ip_address,
-                    'framed_ip_address' => $session['address'] ?? null,
-                    'start_time' => $session['uptime'] ? now()->subSeconds((int)$session['uptime']) : null,
-                    'input_octets' => $session['bytes-in'] ?? 0,
-                    'output_octets' => $session['bytes-out'] ?? 0,
+                    'framed_ip_address' => $ipAddress,
+                    'start_time' => $uptime ? now()->subSeconds((int)$uptime) : null,
+                    'input_octets' => (int)$bytesIn,
+                    'output_octets' => (int)$bytesOut,
                     'status' => 'active',
                 ]
             );

@@ -278,9 +278,12 @@ class IpamController extends Controller
      */
     public function allocateIP(Request $request): JsonResponse
     {
+        // MAC address validation pattern
+        $macAddressPattern = '/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/';
+        
         $validator = Validator::make($request->all(), [
             'subnet_id' => 'required|exists:ip_subnets,id',
-            'mac_address' => 'required|string|regex:/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/',
+            'mac_address' => ['required', 'string', 'regex:' . $macAddressPattern],
             'username' => 'required|string|max:255',
         ]);
 

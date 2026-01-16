@@ -20,7 +20,6 @@ use App\Http\Controllers\Api\V1\NetworkUserController;
 */
 
 Route::prefix('v1')->group(function () {
-    
     // IPAM Routes
     Route::prefix('ipam')->group(function () {
         // IP Pools

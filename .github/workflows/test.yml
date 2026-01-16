@@ -79,9 +79,14 @@ jobs:
         php artisan migrate --database=radius --path=database/migrations/radius --force
 
     - name: Run Tests
+      run: php artisan test
+
+    - name: Generate Coverage Report
+      if: matrix.php-version == '8.2' && github.ref == 'refs/heads/main'
       run: php artisan test --coverage --min=80
 
     - name: Upload Coverage
+      if: matrix.php-version == '8.2' && github.ref == 'refs/heads/main'
       uses: codecov/codecov-action@v3
       with:
         files: ./coverage.xml
