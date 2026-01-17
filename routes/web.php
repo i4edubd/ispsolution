@@ -127,6 +127,12 @@ Route::prefix('panel/staff')->name('panel.staff.')->middleware(['auth', 'role:st
     Route::get('/dashboard', [StaffController::class, 'dashboard'])->name('dashboard');
     Route::get('/network-users', [StaffController::class, 'networkUsers'])->name('network-users');
     Route::get('/tickets', [StaffController::class, 'tickets'])->name('tickets');
+    
+    // Network Device Management (permission-based)
+    Route::get('/mikrotik', [StaffController::class, 'mikrotikRouters'])->name('mikrotik');
+    Route::get('/nas', [StaffController::class, 'nasDevices'])->name('nas');
+    Route::get('/cisco', [StaffController::class, 'ciscoDevices'])->name('cisco');
+    Route::get('/olt', [StaffController::class, 'oltDevices'])->name('olt');
 });
 
 // Reseller Panel
