@@ -1,0 +1,16 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - tests
+
+    # Level 5 of 9 (adjust as needed)
+    level: 5
+    
+    # Treat PHPDoc types as certain (suppresses test assertion warnings)
+    treatPhpDocTypesAsCertain: false
+        
+    excludePaths:
+        - ./*/*/FileToBeExcluded.php

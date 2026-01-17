@@ -1,4 +1,5 @@
-FROM php:8.2-fpm-alpine
+# Build stage
+FROM php:8.2-fpm-alpine AS builder
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -8,7 +9,6 @@ RUN apk add --no-cache \
     libzip-dev \
     zip \
     unzip \
-    mysql-client \
     nodejs \
     npm
 
@@ -21,22 +21,57 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy application files
+# Copy dependency files
+COPY composer.json composer.lock package.json package-lock.json ./
+
+# Install dependencies
+RUN composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader --no-scripts \
+    && npm ci --omit=dev
+
+# Copy application code
 COPY . .
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Run composer scripts
+RUN composer dump-autoload --optimize
 
-# Install Node dependencies
-RUN npm install
+# Production stage
+FROM php:8.2-fpm-alpine
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# Install runtime dependencies only
+RUN apk add --no-cache \
+    libpng \
+    libzip \
+    mysql-client \
+    nodejs \
+    npm \
+    bash
+
+# Copy compiled PHP extensions from builder instead of recompiling
+COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
+
+# Set working directory
+WORKDIR /var/www
+
+# Copy application and dependencies from builder
+COPY --from=builder --chown=www-data:www-data /var/www /var/www
+
+# Create storage directories and set permissions
+RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views \
+    && mkdir -p storage/logs \
+    && mkdir -p bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
 
 # Expose port 8000
 EXPOSE 8000
 
-# DEVELOPMENT: Start PHP built-in server
-# PRODUCTION: Use php-fpm with nginx/Apache instead of artisan serve
-# For production, change CMD to: CMD ["php-fpm"] and configure with nginx/Apache
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Health check
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=3 \
+    CMD php -v || exit 1
+
+# Switch to non-root user
+USER www-data
+
+# Start PHP built-in server
+# For production, use php-fpm with nginx/Apache: CMD ["php-fpm"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]

@@ -312,6 +312,35 @@ php artisan radius:sync-user {userId} # Sync user to RADIUS database
 ### MikroTik Commands
 ```bash
 php artisan mikrotik:health-check     # Check router connectivity
+php artisan mikrotik:sync-sessions    # Sync active sessions from routers
+```
+
+### All Available Commands
+```bash
+# IPAM Management
+php artisan ipam:cleanup --days=30 --force
+
+# RADIUS Management
+php artisan radius:sync-user {userId} --password=newpass
+php artisan radius:sync-users --status=active --force
+
+# MikroTik Management
+php artisan mikrotik:health-check --router=1 --verbose
+php artisan mikrotik:sync-sessions --router=1
+```
+
+## Scheduled Tasks
+
+The following tasks run automatically via Laravel's scheduler:
+
+- **IPAM Cleanup:** Daily at midnight - removes expired IP allocations
+- **RADIUS Sync:** Every 5 minutes - syncs active users to RADIUS database
+- **Session Sync:** Every minute - syncs active sessions from MikroTik routers
+- **Health Check:** Every 15 minutes - checks MikroTik router connectivity
+
+To enable the scheduler, add this to your crontab:
+```bash
+* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 ## Testing
@@ -475,10 +504,30 @@ SESSION_SECURE_COOKIE=true
 
 ### Code Quality Standards
 
-- Run tests before committing: `make test`
-- Follow PSR-12 coding standards: `make lint`
+- Run tests before committing: `make test` or `php artisan test`
+- Follow PSR-12 coding standards: `vendor/bin/pint`
+- Run static analysis: `vendor/bin/phpstan analyse`
 - Write meaningful commit messages
 - Add tests for new features
+- Update documentation as needed
+
+### Continuous Integration
+
+All pull requests are automatically tested using GitHub Actions:
+
+- **Test Workflow** - Runs unit, feature, and integration tests on PHP 8.2 and 8.3
+- **Lint Workflow** - Checks code quality with PHPStan and Laravel Pint
+- **Integration Workflow** - Tests with full Docker environment including databases
+
+See workflow files in `.github/workflows/` for details.
+
+## Documentation
+
+- [API Documentation](docs/API.md) - Complete REST API reference with examples
+- [Testing Guide](docs/TESTING.md) - How to run and write tests
+- [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment instructions
+- [Implementation Checklist](docs/TODO_REIMPLEMENT.md) - Detailed development roadmap
+- [Implementation Status](docs/IMPLEMENTATION_STATUS.md) - Current progress report
 
 ## License
 

@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, BelongsToTenant;
+    use BelongsToTenant, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -102,6 +102,7 @@ class User extends Authenticatable
      */
     public function hasPermission(string $permission): bool
     {
+        /** @var Role $role */
         foreach ($this->roles as $role) {
             if ($role->hasPermission($permission)) {
                 return true;
@@ -122,8 +123,10 @@ class User extends Authenticatable
         if (! $this->relationLoaded('servicePackage')) {
             $this->load('servicePackage');
         }
-        
-        return $this->servicePackage;
+
+        // Cast the relationship result to ServicePackage or null
+        $package = $this->servicePackage;
+
+        return $package instanceof ServicePackage ? $package : null;
     }
 }
-
