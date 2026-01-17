@@ -29,6 +29,7 @@ class User extends Authenticatable
         'service_package_id',
         'is_active',
         'activated_at',
+        'created_by',
     ];
 
     /**
