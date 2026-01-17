@@ -62,17 +62,19 @@ This PR implements the foundational multi-tenancy infrastructure and role-based 
 ### 2. Role-Based Access Control
 
 #### 9 Roles Seeded
-1. **Super Admin** (Level 100)
+1. **Developer** (Level 100)
    - Full system access across all tenants
    - All permissions (*)
-
-2. **Developer** (Level 95)
    - API access, system debugging, logs
+
+2. **Super Admin** (Level 95)
+   - Full access within tenant
    - Settings management
+   - Tenant administrator
 
 3. **Admin** (Level 90)
-   - Tenant administrator
-   - Full access within tenant
+   - ISP
+   - User and network management
    - User, role, network, billing, report, settings management
 
 4. **Manager** (Level 70)
