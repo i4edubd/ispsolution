@@ -164,6 +164,14 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/network/pppoe-profiles', [AdminController::class, 'pppoeProfiles'])->name('network.pppoe-profiles');
     Route::get('/network/package-fup-edit/{id}', [AdminController::class, 'packageFupEdit'])->name('network.package-fup-edit');
     Route::get('/network/ping-test', [AdminController::class, 'pingTest'])->name('network.ping-test');
+    
+    // SMS Management
+    Route::get('/sms/send', [AdminController::class, 'smsSend'])->name('sms.send');
+    Route::get('/sms/broadcast', [AdminController::class, 'smsBroadcast'])->name('sms.broadcast');
+    Route::get('/sms/histories', [AdminController::class, 'smsHistories'])->name('sms.histories');
+    Route::get('/sms/events', [AdminController::class, 'smsEvents'])->name('sms.events');
+    Route::get('/sms/due-date-notification', [AdminController::class, 'dueDateNotification'])->name('sms.due-date-notification');
+    Route::get('/sms/payment-link-broadcast', [AdminController::class, 'paymentLinkBroadcast'])->name('sms.payment-link-broadcast');
 });
 
 // Manager Panel

@@ -645,4 +645,52 @@ class AdminController extends Controller
     {
         return view('panels.admin.network.ping-test');
     }
+
+    /**
+     * Display send SMS form.
+     */
+    public function smsSend(): View
+    {
+        return view('panels.admin.sms.send');
+    }
+
+    /**
+     * Display SMS broadcast form.
+     */
+    public function smsBroadcast(): View
+    {
+        return view('panels.admin.sms.broadcast');
+    }
+
+    /**
+     * Display SMS history.
+     */
+    public function smsHistories(): View
+    {
+        return view('panels.admin.sms.histories');
+    }
+
+    /**
+     * Display SMS events configuration.
+     */
+    public function smsEvents(): View
+    {
+        return view('panels.admin.sms.events');
+    }
+
+    /**
+     * Display due date notification configuration.
+     */
+    public function dueDateNotification(): View
+    {
+        return view('panels.admin.sms.due-date-notification');
+    }
+
+    /**
+     * Display payment link broadcast form.
+     */
+    public function paymentLinkBroadcast(): View
+    {
+        return view('panels.admin.sms.payment-link-broadcast');
+    }
 }
