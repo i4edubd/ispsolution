@@ -29,7 +29,6 @@ class DailyBillingTest extends TestCase
         $this->customer->roles()->attach($customerRole);
 
         $this->dailyPackage = ServicePackage::factory()->create([
-            'tenant_id' => $tenant->id,
             'name' => 'Daily Package',
             'price' => 300.00, // Monthly price
             'billing_type' => 'daily',

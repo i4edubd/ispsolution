@@ -29,7 +29,6 @@ class MonthlyBillingTest extends TestCase
         $this->customer->roles()->attach($customerRole);
 
         $this->monthlyPackage = ServicePackage::factory()->create([
-            'tenant_id' => $tenant->id,
             'name' => 'Monthly Package',
             'price' => 1000.00,
             'billing_type' => 'monthly',

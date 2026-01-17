@@ -19,18 +19,21 @@ class RoleFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->unique()->randomElement([
+            'super-admin',
+            'admin',
+            'manager',
+            'staff',
+            'reseller',
+            'sub-reseller',
+            'customer',
+            'card-distributor',
+            'developer',
+        ]);
+
         return [
-            'name' => fake()->unique()->randomElement([
-                'super-admin',
-                'admin',
-                'manager',
-                'staff',
-                'reseller',
-                'sub-reseller',
-                'customer',
-                'card-distributor',
-                'developer',
-            ]),
+            'name' => $name,
+            'slug' => $name,
             'level' => fake()->numberBetween(10, 100),
         ];
     }
