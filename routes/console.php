@@ -13,3 +13,8 @@ Schedule::command('ipam:cleanup --force')->daily()->at('00:00');
 Schedule::command('radius:sync-users --force')->everyFiveMinutes();
 Schedule::command('mikrotik:sync-sessions')->everyMinute();
 Schedule::command('mikrotik:health-check')->everyFifteenMinutes();
+
+// Schedule OLT service commands
+Schedule::command('olt:health-check')->everyFifteenMinutes();
+Schedule::command('olt:sync-onus')->hourly();
+Schedule::command('olt:backup')->daily()->at('02:00');

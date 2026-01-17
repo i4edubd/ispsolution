@@ -97,6 +97,14 @@ class Olt extends Model
     }
 
     /**
+     * Get the backups for the OLT.
+     */
+    public function backups(): HasMany
+    {
+        return $this->hasMany(OltBackup::class);
+    }
+
+    /**
      * Scope a query to only include active OLTs.
      */
     public function scopeActive($query)
