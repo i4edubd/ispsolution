@@ -252,7 +252,22 @@
             @foreach($menus as $menu)
                 @if(isset($menu['children']))
                     <!-- Menu with submenu -->
-                    <div x-data="{ open: {{ str_starts_with($currentRoute, str_replace('.index', '', $menu['children'][0]['route'] ?? '')) ? 'true' : 'false' }} }" class="mb-1">
+                    @php
+                        $isOpen = false;
+                        foreach ($menu['children'] as $submenu) {
+                            $childRoute = $submenu['route'] ?? '';
+                            if ($childRoute === '') {
+                                continue;
+                            }
+                            // Remove a trailing ".index" only, to get the base route name
+                            $baseRoute = preg_replace('/\.index$/', '', $childRoute);
+                            if ($currentRoute === $childRoute || str_starts_with($currentRoute, $baseRoute . '.')) {
+                                $isOpen = true;
+                                break;
+                            }
+                        }
+                    @endphp
+                    <div x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" class="mb-1">
                         <button @click="open = !open" class="flex items-center justify-between w-full px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                             <div class="flex items-center">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,23 +281,27 @@
                         </button>
                         <div x-show="open" x-transition class="mt-1 ml-4 space-y-1">
                             @foreach($menu['children'] as $submenu)
-                                <a href="{{ route($submenu['route']) }}" 
-                                   class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {{ $currentRoute === $submenu['route'] ? 'bg-indigo-50 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400' : '' }}">
-                                    <span class="w-2 h-2 mr-3 rounded-full bg-gray-400 dark:bg-gray-600"></span>
-                                    {{ $submenu['label'] }}
-                                </a>
+                                @if(Route::has($submenu['route']))
+                                    <a href="{{ route($submenu['route']) }}" 
+                                       class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors {{ $currentRoute === $submenu['route'] ? 'bg-indigo-50 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400' : '' }}">
+                                        <span class="w-2 h-2 mr-3 rounded-full bg-gray-400 dark:bg-gray-600"></span>
+                                        {{ $submenu['label'] }}
+                                    </a>
+                                @endif
                             @endforeach
                         </div>
                     </div>
                 @else
                     <!-- Single menu item -->
-                    <a href="{{ route($menu['route']) }}" 
-                       class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors {{ $currentRoute === $menu['route'] ? 'bg-indigo-600 text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
-                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            {!! getIcon($menu['icon']) !!}
-                        </svg>
-                        <span>{{ $menu['label'] }}</span>
-                    </a>
+                    @if(Route::has($menu['route']))
+                        <a href="{{ route($menu['route']) }}" 
+                           class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors {{ $currentRoute === $menu['route'] ? 'bg-indigo-600 text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {!! getIcon($menu['icon']) !!}
+                            </svg>
+                            <span>{{ $menu['label'] }}</span>
+                        </a>
+                    @endif
                 @endif
             @endforeach
         </nav>
@@ -339,13 +358,13 @@
             sidebarOverlay.classList.remove('hidden');
         }
 
-        function closeSidebarFunc() {
+        function closeSidebar() {
             sidebar.classList.add('-translate-x-full');
             sidebarOverlay.classList.add('hidden');
         }
 
         if (toggleSidebar) toggleSidebar.addEventListener('click', openSidebar);
-        if (closeSidebar) closeSidebar.addEventListener('click', closeSidebarFunc);
-        if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebarFunc);
+        if (closeSidebar) closeSidebar.addEventListener('click', closeSidebar);
+        if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
     });
 </script>

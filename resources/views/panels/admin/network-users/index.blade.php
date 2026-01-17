@@ -120,12 +120,6 @@
                 ]
             ],
             [
-                'name' => 'package',
-                'label' => 'Package',
-                'placeholder' => 'All Packages',
-                'options' => []
-            ],
-            [
                 'name' => 'status',
                 'label' => 'Status',
                 'placeholder' => 'All Status',

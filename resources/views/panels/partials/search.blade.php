@@ -2,13 +2,13 @@
     $action = $action ?? '';
     $placeholder = $placeholder ?? 'Search...';
     $filters = $filters ?? [];
-    $searchValue = request('search', '');
+    $searchValue = old('search', request('search', ''));
 @endphp
 
 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
     <div class="p-6">
         <form method="GET" action="{{ $action }}" class="space-y-4">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-{{ count($filters) > 0 ? (count($filters) + 1) : '1' }}">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-{{ max(count($filters) + 1, 2) }}">
                 <!-- Search Input -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
@@ -38,7 +38,7 @@
                         >
                             <option value="">{{ $filter['placeholder'] ?? 'All' }}</option>
                             @foreach($filter['options'] as $value => $label)
-                                <option value="{{ $value }}" {{ request($filter['name']) == $value ? 'selected' : '' }}>
+                                <option value="{{ $value }}" {{ request($filter['name']) === (string)$value ? 'selected' : '' }}>
                                     {{ $label }}
                                 </option>
                             @endforeach

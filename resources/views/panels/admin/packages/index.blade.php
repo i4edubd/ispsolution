@@ -30,8 +30,8 @@
         'placeholder' => 'Search packages...',
         'filters' => [
             [
-                'name' => 'type',
-                'label' => 'Type',
+                'name' => 'service_type',
+                'label' => 'Service Type',
                 'placeholder' => 'All Types',
                 'options' => [
                     'pppoe' => 'PPPoE',

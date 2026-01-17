@@ -134,6 +134,19 @@
                 'options' => [
                     'manager' => 'Manager',
                     'staff' => 'Staff',
+                    'reseller' => 'Reseller',
+                    'sub-reseller' => 'Sub-Reseller',
+                ]
+            ],
+            [
+                'name' => 'department',
+                'label' => 'Department',
+                'placeholder' => 'All Departments',
+                'options' => [
+                    'operations' => 'Operations',
+                    'support' => 'Support',
+                    'sales' => 'Sales',
+                    'technical' => 'Technical',
                 ]
             ],
             [

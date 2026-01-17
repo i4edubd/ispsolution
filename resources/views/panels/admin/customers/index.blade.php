@@ -163,12 +163,6 @@
                 'placeholder' => 'All Packages',
                 'options' => collect($packages ?? [])->pluck('name', 'id')->toArray()
             ],
-            [
-                'name' => 'area',
-                'label' => 'Area',
-                'placeholder' => 'All Areas',
-                'options' => []
-            ],
         ]
     ])
 
