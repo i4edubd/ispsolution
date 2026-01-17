@@ -557,6 +557,32 @@ class AdminController extends Controller
     }
 
     /**
+     * Display OLT performance metrics view.
+     */
+    public function oltPerformance(int $id): View
+    {
+        $olt = Olt::findOrFail($id);
+        
+        return view('panels.admin.olt.performance', compact('olt'));
+    }
+
+    /**
+     * Display OLT configuration templates.
+     */
+    public function oltTemplates(): View
+    {
+        return view('panels.admin.olt.templates');
+    }
+
+    /**
+     * Display OLT SNMP traps.
+     */
+    public function oltSnmpTraps(): View
+    {
+        return view('panels.admin.olt.snmp-traps');
+    }
+
+    /**
      * Display all network devices.
      */
     public function devices(): View
