@@ -59,41 +59,24 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
+        // Role to route mapping
+        $roleRoutes = [
+            'super-admin' => 'panel.super-admin.dashboard',
+            'admin' => 'panel.admin.dashboard',
+            'developer' => 'panel.developer.dashboard',
+            'manager' => 'panel.manager.dashboard',
+            'reseller' => 'panel.reseller.dashboard',
+            'sub-reseller' => 'panel.sub-reseller.dashboard',
+            'card-distributor' => 'panel.card-distributor.dashboard',
+            'staff' => 'panel.staff.dashboard',
+            'customer' => 'panel.customer.dashboard',
+        ];
+
         // Check user roles and redirect accordingly
-        if ($user->hasRole('super-admin')) {
-            return redirect()->route('panel.super-admin.dashboard');
-        }
-
-        if ($user->hasRole('admin')) {
-            return redirect()->route('panel.admin.dashboard');
-        }
-
-        if ($user->hasRole('developer')) {
-            return redirect()->route('panel.developer.dashboard');
-        }
-
-        if ($user->hasRole('manager')) {
-            return redirect()->route('panel.manager.dashboard');
-        }
-
-        if ($user->hasRole('reseller')) {
-            return redirect()->route('panel.reseller.dashboard');
-        }
-
-        if ($user->hasRole('sub-reseller')) {
-            return redirect()->route('panel.sub-reseller.dashboard');
-        }
-
-        if ($user->hasRole('card-distributor')) {
-            return redirect()->route('panel.card-distributor.dashboard');
-        }
-
-        if ($user->hasRole('staff')) {
-            return redirect()->route('panel.staff.dashboard');
-        }
-
-        if ($user->hasRole('customer')) {
-            return redirect()->route('panel.customer.dashboard');
+        foreach ($roleRoutes as $role => $route) {
+            if ($user->hasRole($role)) {
+                return redirect()->route($route);
+            }
         }
 
         // Default fallback

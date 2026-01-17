@@ -26,7 +26,11 @@
                                 {{ auth()->user()->name }}
                             </span>
                             <span class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ ucwords(str_replace('-', ' ', auth()->user()->roles->first()->slug ?? 'User')) }}
+                                @php
+                                    $role = auth()->user()->roles->first();
+                                    $roleDisplay = $role ? ucwords(str_replace('-', ' ', $role->slug)) : 'User';
+                                @endphp
+                                {{ $roleDisplay }}
                             </span>
                         </div>
                         <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
