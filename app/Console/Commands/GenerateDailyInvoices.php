@@ -2,8 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\NetworkUser;
-use App\Models\ServicePackage;
 use App\Models\User;
 use App\Services\BillingService;
 use Illuminate\Console\Command;
