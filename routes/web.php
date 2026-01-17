@@ -112,6 +112,66 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/nas', [AdminController::class, 'nasDevices'])->name('nas');
     Route::get('/cisco', [AdminController::class, 'ciscoDevices'])->name('cisco');
     Route::get('/olt', [AdminController::class, 'oltDevices'])->name('olt');
+    
+    // Customer Management
+    Route::get('/customers', [AdminController::class, 'customers'])->name('customers');
+    Route::get('/customers/create', [AdminController::class, 'customersCreate'])->name('customers.create');
+    Route::get('/customers/{id}/edit', [AdminController::class, 'customersEdit'])->name('customers.edit');
+    Route::get('/customers/{id}', [AdminController::class, 'customersShow'])->name('customers.show');
+    Route::get('/customers-deleted', [AdminController::class, 'deletedCustomers'])->name('customers.deleted');
+    Route::get('/customers-online', [AdminController::class, 'onlineCustomers'])->name('customers.online');
+    Route::get('/customers-offline', [AdminController::class, 'offlineCustomers'])->name('customers.offline');
+    Route::get('/customers/import-requests', [AdminController::class, 'customerImportRequests'])->name('customers.import-requests');
+    Route::get('/customers/pppoe-import', [AdminController::class, 'pppoeCustomerImport'])->name('customers.pppoe-import');
+    Route::get('/customers/bulk-update', [AdminController::class, 'bulkUpdateUsers'])->name('customers.bulk-update');
+    
+    // Accounting & Finance
+    Route::get('/accounting/transactions', [AdminController::class, 'accountTransactions'])->name('accounting.transactions');
+    Route::get('/accounting/payment-gateway-transactions', [AdminController::class, 'paymentGatewayTransactions'])->name('accounting.payment-gateway-transactions');
+    Route::get('/accounting/statement', [AdminController::class, 'accountStatement'])->name('accounting.statement');
+    Route::get('/accounting/payable', [AdminController::class, 'accountsPayable'])->name('accounting.payable');
+    Route::get('/accounting/receivable', [AdminController::class, 'accountsReceivable'])->name('accounting.receivable');
+    Route::get('/accounting/income-expense-report', [AdminController::class, 'incomeExpenseReport'])->name('accounting.income-expense-report');
+    Route::get('/accounting/expense-report', [AdminController::class, 'expenseReport'])->name('accounting.expense-report');
+    Route::get('/accounting/expenses', [AdminController::class, 'expenses'])->name('accounting.expenses');
+    Route::get('/accounting/vat-collections', [AdminController::class, 'vatCollections'])->name('accounting.vat-collections');
+    Route::get('/accounting/customer-payments', [AdminController::class, 'customerPayments'])->name('accounting.customer-payments');
+    Route::get('/accounting/gateway-customer-payments', [AdminController::class, 'gatewayCustomerPayments'])->name('accounting.gateway-customer-payments');
+    
+    // Operators Management
+    Route::get('/operators', [AdminController::class, 'operators'])->name('operators');
+    Route::get('/operators/create', [AdminController::class, 'operatorsCreate'])->name('operators.create');
+    Route::get('/operators/{id}/edit', [AdminController::class, 'operatorsEdit'])->name('operators.edit');
+    Route::get('/operators/sub-operators', [AdminController::class, 'subOperators'])->name('operators.sub-operators');
+    Route::get('/operators/staff', [AdminController::class, 'staff'])->name('operators.staff');
+    Route::get('/operators/{id}/profile', [AdminController::class, 'operatorProfile'])->name('operators.profile');
+    Route::get('/operators/{id}/special-permissions', [AdminController::class, 'operatorSpecialPermissions'])->name('operators.special-permissions');
+    
+    // Payment Gateway Management
+    Route::get('/payment-gateways', [AdminController::class, 'paymentGateways'])->name('payment-gateways');
+    Route::get('/payment-gateways/create', [AdminController::class, 'paymentGatewaysCreate'])->name('payment-gateways.create');
+    
+    // Network Devices Management
+    Route::get('/network/routers', [AdminController::class, 'routers'])->name('network.routers');
+    Route::get('/network/routers/create', [AdminController::class, 'routersCreate'])->name('network.routers.create');
+    Route::get('/network/olt', [AdminController::class, 'oltList'])->name('network.olt');
+    Route::get('/network/olt/create', [AdminController::class, 'oltCreate'])->name('network.olt.create');
+    Route::get('/network/devices', [AdminController::class, 'devices'])->name('network.devices');
+    Route::get('/network/device-monitors', [AdminController::class, 'deviceMonitors'])->name('network.device-monitors');
+    Route::get('/network/devices-map', [AdminController::class, 'devicesMap'])->name('network.devices.map');
+    Route::get('/network/ipv4-pools', [AdminController::class, 'ipv4Pools'])->name('network.ipv4-pools');
+    Route::get('/network/ipv6-pools', [AdminController::class, 'ipv6Pools'])->name('network.ipv6-pools');
+    Route::get('/network/pppoe-profiles', [AdminController::class, 'pppoeProfiles'])->name('network.pppoe-profiles');
+    Route::get('/network/package-fup-edit/{id}', [AdminController::class, 'packageFupEdit'])->name('network.package-fup-edit');
+    Route::get('/network/ping-test', [AdminController::class, 'pingTest'])->name('network.ping-test');
+    
+    // SMS Management
+    Route::get('/sms/send', [AdminController::class, 'smsSend'])->name('sms.send');
+    Route::get('/sms/broadcast', [AdminController::class, 'smsBroadcast'])->name('sms.broadcast');
+    Route::get('/sms/histories', [AdminController::class, 'smsHistories'])->name('sms.histories');
+    Route::get('/sms/events', [AdminController::class, 'smsEvents'])->name('sms.events');
+    Route::get('/sms/due-date-notification', [AdminController::class, 'dueDateNotification'])->name('sms.due-date-notification');
+    Route::get('/sms/payment-link-broadcast', [AdminController::class, 'paymentLinkBroadcast'])->name('sms.payment-link-broadcast');
 });
 
 // Manager Panel

@@ -123,4 +123,574 @@ class AdminController extends Controller
 
         return view('panels.admin.olt.index', compact('devices'));
     }
+
+    /**
+     * Display customers listing.
+     */
+    public function customers(): View
+    {
+        $customers = NetworkUser::with('package')->latest()->paginate(20);
+        $packages = ServicePackage::all();
+        
+        $stats = [
+            'total' => NetworkUser::count(),
+            'active' => NetworkUser::where('status', 'active')->count(),
+            'online' => 0,
+            'offline' => NetworkUser::count(),
+        ];
+
+        return view('panels.admin.customers.index', compact('customers', 'packages', 'stats'));
+    }
+
+    /**
+     * Show customer create form.
+     */
+    public function customersCreate(): View
+    {
+        $packages = ServicePackage::all();
+
+        return view('panels.admin.customers.create', compact('packages'));
+    }
+
+    /**
+     * Show customer edit form.
+     */
+    public function customersEdit($id): View
+    {
+        $customer = NetworkUser::with('package')->findOrFail($id);
+        $packages = ServicePackage::all();
+
+        return view('panels.admin.customers.edit', compact('customer', 'packages'));
+    }
+
+    /**
+     * Show customer detail.
+     */
+    public function customersShow($id): View
+    {
+        $customer = NetworkUser::with('package', 'sessions')->findOrFail($id);
+
+        return view('panels.admin.customers.show', compact('customer'));
+    }
+
+    /**
+     * Display deleted customers.
+     */
+    public function deletedCustomers(): View
+    {
+        $customers = collect();
+
+        return view('panels.admin.customers.deleted', compact('customers'));
+    }
+
+    /**
+     * Display online customers.
+     */
+    public function onlineCustomers(): View
+    {
+        $customers = NetworkUser::with('package')->where('status', 'active')->latest()->paginate(20);
+        
+        $stats = [
+            'online' => $customers->total(),
+            'sessions' => 0,
+        ];
+
+        return view('panels.admin.customers.online', compact('customers', 'stats'));
+    }
+
+    /**
+     * Display offline customers.
+     */
+    public function offlineCustomers(): View
+    {
+        $customers = NetworkUser::with('package')->latest()->paginate(20);
+
+        return view('panels.admin.customers.offline', compact('customers'));
+    }
+
+    /**
+     * Display customer import requests.
+     */
+    public function customerImportRequests(): View
+    {
+        $importRequests = collect();
+
+        return view('panels.admin.customers.import-requests', compact('importRequests'));
+    }
+
+    /**
+     * Show PPPoE customer import form.
+     */
+    public function pppoeCustomerImport(): View
+    {
+        $routers = MikrotikRouter::all();
+        $packages = ServicePackage::all();
+
+        return view('panels.admin.customers.pppoe-import', compact('routers', 'packages'));
+    }
+
+    /**
+     * Show bulk update form.
+     */
+    public function bulkUpdateUsers(): View
+    {
+        $packages = ServicePackage::all();
+
+        return view('panels.admin.customers.bulk-update', compact('packages'));
+    }
+
+    /**
+     * Display account transactions.
+     */
+    public function accountTransactions(): View
+    {
+        return view('panels.admin.accounting.transactions');
+    }
+
+    /**
+     * Display payment gateway transactions.
+     */
+    public function paymentGatewayTransactions(): View
+    {
+        return view('panels.admin.accounting.payment-gateway-transactions');
+    }
+
+    /**
+     * Display account statement.
+     */
+    public function accountStatement(): View
+    {
+        return view('panels.admin.accounting.statement');
+    }
+
+    /**
+     * Display accounts payable.
+     */
+    public function accountsPayable(): View
+    {
+        return view('panels.admin.accounting.payable');
+    }
+
+    /**
+     * Display accounts receivable.
+     */
+    public function accountsReceivable(): View
+    {
+        return view('panels.admin.accounting.receivable');
+    }
+
+    /**
+     * Display income vs expense report.
+     */
+    public function incomeExpenseReport(): View
+    {
+        return view('panels.admin.accounting.income-expense-report');
+    }
+
+    /**
+     * Display expense report.
+     */
+    public function expenseReport(): View
+    {
+        return view('panels.admin.accounting.expense-report');
+    }
+
+    /**
+     * Display expenses management.
+     */
+    public function expenses(): View
+    {
+        return view('panels.admin.accounting.expenses');
+    }
+
+    /**
+     * Display VAT collections.
+     */
+    public function vatCollections(): View
+    {
+        return view('panels.admin.accounting.vat-collections');
+    }
+
+    /**
+     * Display customer payments.
+     */
+    public function customerPayments(): View
+    {
+        return view('panels.admin.accounting.customer-payments');
+    }
+
+    /**
+     * Display gateway customer payments.
+     */
+    public function gatewayCustomerPayments(): View
+    {
+        return view('panels.admin.accounting.gateway-customer-payments');
+    }
+
+    /**
+     * Display operators listing.
+     */
+    public function operators(): View
+    {
+        $operators = User::with('roles')
+            ->whereHas('roles', function ($query) {
+                $query->whereIn('slug', ['manager', 'staff', 'reseller', 'sub-reseller']);
+            })
+            ->latest()
+            ->paginate(20);
+
+        $stats = [
+            'total' => User::whereHas('roles', function ($query) {
+                $query->whereIn('slug', ['manager', 'staff', 'reseller', 'sub-reseller']);
+            })->count(),
+            'active' => User::whereHas('roles', function ($query) {
+                $query->whereIn('slug', ['manager', 'staff', 'reseller', 'sub-reseller']);
+            })->where('is_active', true)->count(),
+            'managers' => User::whereHas('roles', function ($query) {
+                $query->where('slug', 'manager');
+            })->count(),
+            'staff' => User::whereHas('roles', function ($query) {
+                $query->where('slug', 'staff');
+            })->count(),
+        ];
+
+        return view('panels.admin.operators.index', compact('operators', 'stats'));
+    }
+
+    /**
+     * Show create operator form.
+     */
+    public function operatorsCreate(): View
+    {
+        return view('panels.admin.operators.create');
+    }
+
+    /**
+     * Show edit operator form.
+     */
+    public function operatorsEdit($id): View
+    {
+        $operator = User::with('roles')->findOrFail($id);
+
+        return view('panels.admin.operators.edit', compact('operator'));
+    }
+
+    /**
+     * Display sub-operators hierarchy.
+     */
+    public function subOperators(): View
+    {
+        $hierarchy = User::with(['roles', 'subordinates.roles'])
+            ->whereHas('roles', function ($query) {
+                $query->where('slug', 'manager');
+            })
+            ->get();
+
+        $stats = [
+            'supervisors' => User::whereHas('roles', function ($query) {
+                $query->where('slug', 'manager');
+            })->count(),
+            'subordinates' => User::whereHas('roles', function ($query) {
+                $query->where('slug', 'staff');
+            })->count(),
+            'avg_team_size' => 0,
+        ];
+
+        return view('panels.admin.operators.sub-operators', compact('hierarchy', 'stats'));
+    }
+
+    /**
+     * Display staff members.
+     */
+    public function staff(): View
+    {
+        $staff = User::with(['roles', 'supervisor'])
+            ->whereHas('roles', function ($query) {
+                $query->where('slug', 'staff');
+            })
+            ->latest()
+            ->paginate(20);
+
+        $stats = [
+            'total' => User::whereHas('roles', function ($query) {
+                $query->where('slug', 'staff');
+            })->count(),
+            'active' => User::whereHas('roles', function ($query) {
+                $query->where('slug', 'staff');
+            })->where('is_active', true)->count(),
+            'on_duty' => 0,
+            'departments' => 4,
+        ];
+
+        return view('panels.admin.operators.staff', compact('staff', 'stats'));
+    }
+
+    /**
+     * Display operator profile.
+     */
+    public function operatorProfile($id): View
+    {
+        $operator = User::with(['roles', 'supervisor'])->findOrFail($id);
+
+        $stats = [
+            'customers_created' => 0,
+            'tickets_resolved' => 0,
+            'total_logins' => 0,
+            'days_active' => $operator->created_at->diffInDays(now()),
+        ];
+
+        return view('panels.admin.operators.profile', compact('operator', 'stats'));
+    }
+
+    /**
+     * Manage operator special permissions.
+     */
+    public function operatorSpecialPermissions($id): View
+    {
+        $operator = User::with('roles')->findOrFail($id);
+
+        return view('panels.admin.operators.special-permissions', compact('operator'));
+    }
+
+    /**
+     * Display payment gateways listing.
+     */
+    public function paymentGateways(): View
+    {
+        $gateways = collect();
+        
+        $stats = [
+            'active' => 0,
+            'total_transactions' => 0,
+            'success_rate' => 0,
+            'total_amount' => 0,
+        ];
+
+        return view('panels.admin.payment-gateways.index', compact('gateways', 'stats'));
+    }
+
+    /**
+     * Show payment gateway create form.
+     */
+    public function paymentGatewaysCreate(): View
+    {
+        return view('panels.admin.payment-gateways.create');
+    }
+
+    /**
+     * Display network routers listing.
+     */
+    public function routers(): View
+    {
+        $routers = collect(); // Replace with actual query: NetworkDevice::where('type', 'router')->paginate(20);
+        
+        $stats = [
+            'total' => 0,
+            'online' => 0,
+            'offline' => 0,
+            'warning' => 0,
+        ];
+
+        return view('panels.admin.network.routers', compact('routers', 'stats'));
+    }
+
+    /**
+     * Show create router form.
+     */
+    public function routersCreate(): View
+    {
+        return view('panels.admin.network.routers-create');
+    }
+
+    /**
+     * Display OLT devices listing.
+     */
+    public function oltList(): View
+    {
+        $devices = Olt::latest()->paginate(20);
+        
+        $stats = [
+            'total' => Olt::count(),
+            'active' => Olt::where('status', 'active')->count(),
+            'total_onus' => 0,
+            'online_onus' => 0,
+        ];
+
+        return view('panels.admin.network.olt', compact('devices', 'stats'));
+    }
+
+    /**
+     * Show create OLT form.
+     */
+    public function oltCreate(): View
+    {
+        return view('panels.admin.network.olt-create');
+    }
+
+    /**
+     * Display all network devices.
+     */
+    public function devices(): View
+    {
+        $devices = collect(); // Replace with actual query combining multiple device types
+        
+        $stats = [
+            'total' => 0,
+            'routers' => MikrotikRouter::count(),
+            'olts' => Olt::count(),
+            'switches' => 0,
+            'online' => 0,
+        ];
+
+        return view('panels.admin.network.devices', compact('devices', 'stats'));
+    }
+
+    /**
+     * Display device monitoring dashboard.
+     */
+    public function deviceMonitors(): View
+    {
+        $monitors = [
+            'healthy' => 0,
+            'warning' => 0,
+            'critical' => 0,
+            'offline' => 0,
+            'devices' => collect(),
+            'alerts' => collect(),
+        ];
+
+        return view('panels.admin.network.device-monitors', compact('monitors'));
+    }
+
+    /**
+     * Display devices map view.
+     */
+    public function devicesMap(): View
+    {
+        $devices = collect(); // Replace with actual query for devices with location data
+        
+        $stats = [
+            'online' => 0,
+            'offline' => 0,
+            'warning' => 0,
+            'critical' => 0,
+        ];
+
+        return view('panels.admin.network.devices-map', compact('devices', 'stats'));
+    }
+
+    /**
+     * Display IPv4 pools management.
+     */
+    public function ipv4Pools(): View
+    {
+        $pools = collect(); // Replace with: IpPool::where('ip_version', 4)->paginate(20);
+        
+        $stats = [
+            'total' => 0,
+            'available' => 0,
+            'allocated' => 0,
+            'pools' => 0,
+        ];
+
+        return view('panels.admin.network.ipv4-pools', compact('pools', 'stats'));
+    }
+
+    /**
+     * Display IPv6 pools management.
+     */
+    public function ipv6Pools(): View
+    {
+        $pools = collect(); // Replace with: IpPool::where('ip_version', 6)->paginate(20);
+        
+        $stats = [
+            'pools' => 0,
+            'allocated' => 0,
+            'available' => 0,
+        ];
+
+        return view('panels.admin.network.ipv6-pools', compact('pools', 'stats'));
+    }
+
+    /**
+     * Display PPPoE profiles management.
+     */
+    public function pppoeProfiles(): View
+    {
+        $profiles = collect(); // Replace with: MikrotikProfile::paginate(20);
+        
+        $stats = [
+            'total' => 0,
+            'active' => 0,
+            'users' => 0,
+        ];
+
+        return view('panels.admin.network.pppoe-profiles', compact('profiles', 'stats'));
+    }
+
+    /**
+     * Show FUP editor for package.
+     */
+    public function packageFupEdit($id): View
+    {
+        $package = ServicePackage::findOrFail($id);
+
+        return view('panels.admin.network.package-fup-edit', compact('package'));
+    }
+
+    /**
+     * Display ping test tool.
+     */
+    public function pingTest(): View
+    {
+        return view('panels.admin.network.ping-test');
+    }
+
+    /**
+     * Display send SMS form.
+     */
+    public function smsSend(): View
+    {
+        return view('panels.admin.sms.send');
+    }
+
+    /**
+     * Display SMS broadcast form.
+     */
+    public function smsBroadcast(): View
+    {
+        return view('panels.admin.sms.broadcast');
+    }
+
+    /**
+     * Display SMS history.
+     */
+    public function smsHistories(): View
+    {
+        return view('panels.admin.sms.histories');
+    }
+
+    /**
+     * Display SMS events configuration.
+     */
+    public function smsEvents(): View
+    {
+        return view('panels.admin.sms.events');
+    }
+
+    /**
+     * Display due date notification configuration.
+     */
+    public function dueDateNotification(): View
+    {
+        return view('panels.admin.sms.due-date-notification');
+    }
+
+    /**
+     * Display payment link broadcast form.
+     */
+    public function paymentLinkBroadcast(): View
+    {
+        return view('panels.admin.sms.payment-link-broadcast');
+    }
 }
