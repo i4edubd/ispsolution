@@ -57,7 +57,7 @@ class RadiusSyncUsers extends Command
 
         foreach ($users as $user) {
             try {
-                $success = $radiusService->syncUser($user, null);
+                $success = $radiusService->syncUser($user, []);
                 if ($success) {
                     $synced++;
                 } else {

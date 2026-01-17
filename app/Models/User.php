@@ -102,6 +102,7 @@ class User extends Authenticatable
      */
     public function hasPermission(string $permission): bool
     {
+        /** @var Role $role */
         foreach ($this->roles as $role) {
             if ($role->hasPermission($permission)) {
                 return true;

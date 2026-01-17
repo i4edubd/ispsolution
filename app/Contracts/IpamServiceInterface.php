@@ -38,4 +38,11 @@ interface IpamServiceInterface
      * @return array<int, array<string, mixed>>
      */
     public function detectOverlap(string $cidr, ?int $excludeSubnetId = null): array;
+
+    /**
+     * Cleanup expired allocations
+     *
+     * @return array{expired_count: int, history_count: int}
+     */
+    public function cleanupExpiredAllocations(int $days): array;
 }

@@ -34,12 +34,12 @@ class RadiusController extends Controller
             ], 422);
         }
 
-        $result = $this->radiusService->authenticate(
-            $request->username,
-            $request->password
-        );
+        $result = $this->radiusService->authenticate([
+            'username' => $request->username,
+            'password' => $request->password,
+        ]);
 
-        if ($result === false) {
+        if (! $result['success']) {
             return response()->json([
                 'message' => 'Authentication failed',
                 'authenticated' => false,

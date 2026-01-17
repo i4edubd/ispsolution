@@ -330,6 +330,46 @@ class MikrotikService implements MikrotikServiceInterface
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function getProfiles(int $routerId): array
+    {
+        try {
+            $router = MikrotikRouter::find($routerId);
+
+            if (! $router) {
+                Log::error('Router not found', ['router_id' => $routerId]);
+
+                return [];
+            }
+
+            // Get PPPoE profiles from MikroTik via API
+            $response = Http::timeout(config('services.mikrotik.timeout', 30))
+                ->get("http://{$router->ip_address}:{$router->api_port}/api/ppp/profile/print");
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                return $data['profiles'] ?? [];
+            }
+
+            Log::error('Failed to get profiles from MikroTik', [
+                'router_id' => $routerId,
+                'response' => $response->body(),
+            ]);
+
+            return [];
+        } catch (\Exception $e) {
+            Log::error('Error getting profiles', [
+                'router_id' => $routerId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
+    }
+
+    /**
      * Get router instance
      */
     private function getRouter(?int $routerId): ?MikrotikRouter

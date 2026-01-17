@@ -42,7 +42,8 @@ class RadiusSyncUser extends Command
                 ? NetworkUser::findOrFail($userIdentifier)
                 : NetworkUser::where('username', $userIdentifier)->firstOrFail();
 
-            $success = $radiusService->syncUser($user, $password);
+            $attributes = $password ? ['password' => $password] : [];
+            $success = $radiusService->syncUser($user, $attributes);
 
             if (! $success) {
                 $this->error('Failed to sync user to RADIUS');
@@ -54,7 +55,9 @@ class RadiusSyncUser extends Command
             $this->info("  - Service Type: {$user->service_type}");
             $this->info("  - Status: {$user->status}");
             if ($user->package) {
-                $this->info("  - Package: {$user->package->name}");
+                /** @var \App\Models\Package $package */
+                $package = $user->package;
+                $this->info("  - Package: {$package->name}");
             }
 
             return Command::SUCCESS;

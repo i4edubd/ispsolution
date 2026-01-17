@@ -265,7 +265,7 @@ class MikrotikController extends Controller
 
         $profiles = $this->mikrotikService->getProfiles($request->router_id);
 
-        if ($profiles === null) {
+        if (empty($profiles)) {
             return response()->json([
                 'message' => 'Failed to retrieve profiles from router',
             ], 400);

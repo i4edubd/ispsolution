@@ -234,6 +234,49 @@ class IpamService implements IpamServiceInterface
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function detectOverlap(string $cidr, ?int $excludeSubnetId = null): array
+    {
+        // Parse CIDR notation
+        [$network, $prefixLength] = explode('/', $cidr);
+
+        // Query for potential overlapping subnets
+        $query = IpSubnet::where('network_address', $network)
+                         ->where('prefix_length', (int) $prefixLength);
+
+        // Exclude a specific subnet (useful for updates)
+        if ($excludeSubnetId !== null) {
+            $query->where('id', '!=', $excludeSubnetId);
+        }
+
+        return $query->get()->toArray();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanupExpiredAllocations(int $days): array
+    {
+        $expiredDate = now()->subDays($days);
+
+        // Delete expired allocations
+        $expiredCount = IpAllocation::where('expires_at', '<', $expiredDate)
+            ->where('status', 'expired')
+            ->delete();
+
+        // Delete old history records
+        $historyCount = DB::table('ip_allocation_history')
+            ->where('released_at', '<', $expiredDate)
+            ->delete();
+
+        return [
+            'expired_count' => $expiredCount,
+            'history_count' => $historyCount,
+        ];
+    }
+
+    /**
      * Calculate the number of usable IPs in a subnet
      */
     private function calculateSubnetSize(int $prefixLength): int

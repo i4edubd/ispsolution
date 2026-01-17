@@ -117,7 +117,7 @@ class NetworkUserController extends Controller
 
         // If status changed, sync to RADIUS
         if ($request->has('status') || $request->has('package_id')) {
-            $this->radiusService->syncUser($user, null);
+            $this->radiusService->syncUser($user, []);
         }
 
         return response()->json([

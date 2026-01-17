@@ -58,7 +58,7 @@ class MikrotikSyncSessions extends Command
                     try {
                         $sessions = $mikrotikService->getActiveSessions($router->id);
 
-                        if ($sessions === null) {
+                        if (empty($sessions)) {
                             $this->error("✗ Failed to fetch sessions from {$router->name}");
                             $failed++;
 
@@ -126,7 +126,7 @@ class MikrotikSyncSessions extends Command
     {
         $sessions = $mikrotikService->getActiveSessions($router->id);
 
-        if ($sessions === null) {
+        if (empty($sessions)) {
             $this->error('Failed to fetch sessions from router');
 
             return Command::FAILURE;
