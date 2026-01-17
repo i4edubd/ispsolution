@@ -28,8 +28,7 @@ class DeveloperController extends Controller
             'total_endpoints' => 0, // To be implemented
             'system_health' => 'Healthy',
             
-            // ISP Statistics
-            'total_isp' => Tenant::where('status', 'active')->count(),
+            // ISP Statistics (reusing active_tenancies for total_isp)
             'ppp_users' => \App\Models\MikrotikPppoeUser::count(),
             'hotspot_users' => \App\Models\HotspotUser::count(),
             'total_routers' => \App\Models\MikrotikRouter::count(),
