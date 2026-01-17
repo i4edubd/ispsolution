@@ -583,6 +583,22 @@ class AdminController extends Controller
     }
 
     /**
+     * Display OLT firmware updates.
+     */
+    public function oltFirmware(): View
+    {
+        return view('panels.admin.olt.firmware');
+    }
+
+    /**
+     * Display OLT backup management.
+     */
+    public function oltBackups(): View
+    {
+        return view('panels.admin.olt.backups');
+    }
+
+    /**
      * Display all network devices.
      */
     public function devices(): View

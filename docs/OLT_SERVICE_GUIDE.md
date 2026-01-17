@@ -412,6 +412,8 @@ All OLT management features are accessible via REST API:
 - `/panel/admin/olt/{id}/performance` - Performance metrics visualization
 - `/panel/admin/olt/templates` - Configuration template management
 - `/panel/admin/olt/snmp-traps` - SNMP trap viewer
+- `/panel/admin/olt/firmware` - Firmware update management
+- `/panel/admin/olt/backups` - Backup scheduling and management
 
 ### Features Description
 
@@ -471,6 +473,24 @@ Efficient bulk operations:
 - Authorize/unauthorize/reboot/refresh in bulk
 - Operation status reporting
 - Result tracking per ONU
+
+#### 9. Firmware Update Management
+Complete firmware management system:
+- Upload firmware files for OLTs
+- Version tracking (current and previous)
+- Progress monitoring with percentage updates
+- Status tracking (pending, uploading, installing, completed, failed)
+- Error logging and retry functionality
+- Manual and scheduled updates
+
+#### 10. Backup Scheduling & Management
+Comprehensive backup solution:
+- Schedule automated backups (daily, weekly, monthly)
+- Manual backup creation on-demand
+- Backup history with size tracking
+- Download and restore capabilities
+- Backup comparison (configuration diff)
+- Storage management and organization
 
 ### Database Schema
 

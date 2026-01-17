@@ -184,6 +184,8 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/olt/{id}/performance', [AdminController::class, 'oltPerformance'])->name('olt.performance');
     Route::get('/olt/templates', [AdminController::class, 'oltTemplates'])->name('olt.templates');
     Route::get('/olt/snmp-traps', [AdminController::class, 'oltSnmpTraps'])->name('olt.snmp-traps');
+    Route::get('/olt/firmware', [AdminController::class, 'oltFirmware'])->name('olt.firmware');
+    Route::get('/olt/backups', [AdminController::class, 'oltBackups'])->name('olt.backups');
     Route::get('/network/devices', [AdminController::class, 'devices'])->name('network.devices');
     Route::get('/network/device-monitors', [AdminController::class, 'deviceMonitors'])->name('network.device-monitors');
     Route::get('/network/devices-map', [AdminController::class, 'devicesMap'])->name('network.devices.map');
