@@ -41,4 +41,11 @@ interface MikrotikServiceInterface
      * Disconnect a session on MikroTik
      */
     public function disconnectSession(string $sessionId): bool;
+
+    /**
+     * Get PPPoE profiles from MikroTik
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getProfiles(int $routerId): array;
 }

@@ -8,9 +8,6 @@ parameters:
 
     # Level 5 of 9 (adjust as needed)
     level: 5
-
-    ignoreErrors:
-        - '#Unsafe usage of new static#'
         
     excludePaths:
         - ./*/*/FileToBeExcluded.php

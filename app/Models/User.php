@@ -123,6 +123,9 @@ class User extends Authenticatable
             $this->load('servicePackage');
         }
 
-        return $this->servicePackage;
+        // Cast the relationship result to ServicePackage or null
+        $package = $this->servicePackage;
+        
+        return $package instanceof ServicePackage ? $package : null;
     }
 }

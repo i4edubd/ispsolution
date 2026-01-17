@@ -29,8 +29,10 @@ interface RadiusServiceInterface
 
     /**
      * Sync a network user to RADIUS
+     *
+     * @param array<string, mixed> $attributes
      */
-    public function syncUser(NetworkUser $user): bool;
+    public function syncUser(NetworkUser $user, array $attributes = []): bool;
 
     /**
      * Get accounting data for a user
@@ -38,4 +40,40 @@ interface RadiusServiceInterface
      * @return array<string, mixed>
      */
     public function getAccountingData(string $username): array;
+
+    /**
+     * Authenticate a user
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    public function authenticate(array $data): array;
+
+    /**
+     * Start accounting session
+     *
+     * @param array<string, mixed> $data
+     */
+    public function accountingStart(array $data): bool;
+
+    /**
+     * Update accounting session
+     *
+     * @param array<string, mixed> $data
+     */
+    public function accountingUpdate(array $data): bool;
+
+    /**
+     * Stop accounting session
+     *
+     * @param array<string, mixed> $data
+     */
+    public function accountingStop(array $data): bool;
+
+    /**
+     * Get user statistics
+     *
+     * @return array<string, mixed>
+     */
+    public function getUserStats(string $username): array;
 }

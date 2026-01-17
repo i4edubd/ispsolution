@@ -216,10 +216,10 @@ class MikrotikController extends Controller
 
         $sessions = $this->mikrotikService->getActiveSessions($request->router_id);
 
-        if ($sessions === null) {
+        if (empty($sessions)) {
             return response()->json([
-                'message' => 'Failed to retrieve sessions from router',
-            ], 400);
+                'message' => 'No active sessions found on router',
+            ], 404);
         }
 
         return response()->json([

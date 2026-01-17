@@ -31,4 +31,11 @@ interface IpamServiceInterface
      * @return array{total: int, allocated: int, available: int, utilization_percent: float}
      */
     public function getPoolUtilization(int $poolId): array;
+
+    /**
+     * Detect IP subnet overlap
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function detectOverlap(string $cidr, ?int $excludeSubnetId = null): array;
 }

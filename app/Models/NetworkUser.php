@@ -33,6 +33,11 @@ class NetworkUser extends Model
         return $this->belongsTo(Package::class, 'package_id');
     }
 
+    public function ipAllocations(): HasMany
+    {
+        return $this->hasMany(IpAllocation::class, 'username', 'username');
+    }
+
     public function sessions(): HasMany
     {
         return $this->hasMany(NetworkUserSession::class, 'user_id');

@@ -143,6 +143,7 @@ class MikrotikService implements MikrotikServiceInterface
                 return false;
             }
 
+            /** @var MikrotikRouter $router */
             $router = $localUser->router;
 
             // Update user on MikroTik via API
@@ -206,6 +207,7 @@ class MikrotikService implements MikrotikServiceInterface
                 return false;
             }
 
+            /** @var MikrotikRouter $router */
             $router = $localUser->router;
 
             // Delete user from MikroTik via API
