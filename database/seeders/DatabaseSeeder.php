@@ -13,6 +13,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Seed tenants first
+        $this->call([
+            TenantSeeder::class,
+            RoleSeeder::class,
+            OperatorSeeder::class,
+        ]);
+
         // Seed service packages first
         $this->call([
             ServicePackageSeeder::class,
@@ -33,5 +40,7 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
             'activated_at' => now(),
         ]);
+
+        $this->command->info('Database seeding completed successfully!');
     }
 }
