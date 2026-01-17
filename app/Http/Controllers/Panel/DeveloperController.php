@@ -163,8 +163,19 @@ class DeveloperController extends Controller
      */
     public function logs(): View
     {
-        // To be implemented with log viewer
-        return view('panels.developer.logs');
+        // For now, return empty collection for logs
+        // This can be implemented with a proper log model later
+        $logs = collect([]);
+        
+        $stats = [
+            'info' => 0,
+            'warning' => 0,
+            'error' => 0,
+            'debug' => 0,
+            'total' => 0,
+        ];
+        
+        return view('panels.developer.logs', compact('logs', 'stats'));
     }
 
     /**
