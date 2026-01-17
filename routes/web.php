@@ -146,6 +146,10 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/operators/staff', [AdminController::class, 'staff'])->name('operators.staff');
     Route::get('/operators/{id}/profile', [AdminController::class, 'operatorProfile'])->name('operators.profile');
     Route::get('/operators/{id}/special-permissions', [AdminController::class, 'operatorSpecialPermissions'])->name('operators.special-permissions');
+    
+    // Payment Gateway Management
+    Route::get('/payment-gateways', [AdminController::class, 'paymentGateways'])->name('payment-gateways');
+    Route::get('/payment-gateways/create', [AdminController::class, 'paymentGatewaysCreate'])->name('payment-gateways.create');
 });
 
 // Manager Panel

@@ -451,4 +451,29 @@ class AdminController extends Controller
 
         return view('panels.admin.operators.special-permissions', compact('operator'));
     }
+
+    /**
+     * Display payment gateways listing.
+     */
+    public function paymentGateways(): View
+    {
+        $gateways = collect();
+        
+        $stats = [
+            'active' => 0,
+            'total_transactions' => 0,
+            'success_rate' => 0,
+            'total_amount' => 0,
+        ];
+
+        return view('panels.admin.payment-gateways.index', compact('gateways', 'stats'));
+    }
+
+    /**
+     * Show payment gateway create form.
+     */
+    public function paymentGatewaysCreate(): View
+    {
+        return view('panels.admin.payment-gateways.create');
+    }
 }
