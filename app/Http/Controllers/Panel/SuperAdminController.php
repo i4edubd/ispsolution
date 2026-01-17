@@ -225,7 +225,7 @@ class SuperAdminController extends Controller
      *
      * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
-    public function logs(): View
+    public function logs()
     {
         // Not yet implemented: no logs view exists.
         abort(501, 'Logs view not implemented yet.');
