@@ -54,12 +54,12 @@
     </div>
 
     <!-- Network Devices Stats (if permitted) -->
-    @if(isset($stats['total_mikrotik']) || isset($stats['total_nas']) || isset($stats['total_cisco']) || isset($stats['total_olt']))
+    @if($canViewMikrotik || $canViewNas || $canViewCisco || $canViewOlt)
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Network Devices (View Access)</h2>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                @if(isset($stats['total_mikrotik']))
+                @if($canViewMikrotik)
                 <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
                     <div class="flex items-center justify-between">
                         <div>
@@ -72,7 +72,7 @@
                     </div>
                 </div>
                 @endif
-                @if(isset($stats['total_nas']))
+                @if($canViewNas)
                 <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
                     <div class="flex items-center justify-between">
                         <div>
@@ -85,7 +85,7 @@
                     </div>
                 </div>
                 @endif
-                @if(isset($stats['total_cisco']))
+                @if($canViewCisco)
                 <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
                     <div class="flex items-center justify-between">
                         <div>
@@ -98,7 +98,7 @@
                     </div>
                 </div>
                 @endif
-                @if(isset($stats['total_olt']))
+                @if($canViewOlt)
                 <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
                     <div class="flex items-center justify-between">
                         <div>
