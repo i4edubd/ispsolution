@@ -45,8 +45,6 @@ class DemoSmokeTest extends TestCase
             $this->assertStringNotContainsString('FatalError', $content);
             $this->assertStringNotContainsString('ParseError', $content);
             $this->assertStringNotContainsString('Whoops!', $content);
-
-            $this->assertTrue(true, "✓ {$demo} page loaded successfully");
         }
     }
 
