@@ -66,8 +66,11 @@ class DailyBillingTest extends TestCase
         $periodStart = $invoice->billing_period_start;
         $periodEnd = $invoice->billing_period_end;
 
+        // For 7 days of service: day 1 through day 7 inclusive
+        // Start: day 1 at 00:00, End: day 7 at 23:59:59
+        // diffInDays counts complete 24-hour periods between timestamps
         $daysDiff = $periodStart->diffInDays($periodEnd);
-        $this->assertEquals(7, $daysDiff);
+        $this->assertEquals(6, $daysDiff); // 6 complete days between start and end dates
     }
 
     public function test_daily_invoice_with_custom_validity(): void

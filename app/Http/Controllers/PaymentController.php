@@ -45,8 +45,18 @@ class PaymentController extends Controller
     {
         $this->authorize('pay', $invoice);
 
+        // Get active gateways for validation
+        $activeGateways = PaymentGateway::where('tenant_id', $invoice->tenant_id)
+            ->where('is_active', true)
+            ->pluck('slug')
+            ->toArray();
+
+        if (empty($activeGateways)) {
+            return back()->withErrors(['error' => 'No payment gateways are currently available.']);
+        }
+
         $validated = $request->validate([
-            'gateway' => 'required|string|in:bkash,nagad,sslcommerz,stripe',
+            'gateway' => 'required|string|in:' . implode(',', $activeGateways),
         ]);
 
         try {
@@ -117,7 +127,7 @@ class PaymentController extends Controller
                 );
 
                 if ($verification['verified'] ?? false) {
-                    return redirect()->route('invoices.index')
+                    return redirect()->route('payments.show', ['invoice' => $request->get('invoice_id')])
                         ->with('success', 'Payment successful!');
                 }
             } catch (\Exception $e) {
@@ -128,8 +138,7 @@ class PaymentController extends Controller
             }
         }
 
-        return redirect()->route('invoices.index')
-            ->with('info', 'Payment is being processed. Please wait for confirmation.');
+        return back()->with('info', 'Payment is being processed. Please wait for confirmation.');
     }
 
     /**
@@ -137,8 +146,7 @@ class PaymentController extends Controller
      */
     public function failure(Request $request): RedirectResponse
     {
-        return redirect()->route('invoices.index')
-            ->with('error', 'Payment failed. Please try again.');
+        return back()->with('error', 'Payment failed. Please try again.');
     }
 
     /**
@@ -146,8 +154,7 @@ class PaymentController extends Controller
      */
     public function cancel(Request $request): RedirectResponse
     {
-        return redirect()->route('invoices.index')
-            ->with('info', 'Payment was cancelled.');
+        return back()->with('info', 'Payment was cancelled.');
     }
 
     /**
@@ -157,12 +164,21 @@ class PaymentController extends Controller
     {
         $this->authorize('recordPayment', $invoice);
 
+        $manualMethods = array_keys(config('payment.manual_methods', ['cash' => 'Cash', 'bank_transfer' => 'Bank Transfer', 'check' => 'Check']));
+        
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0.01',
-            'payment_method' => 'required|string|in:cash,bank_transfer,check',
+            'payment_method' => 'required|string|in:' . implode(',', $manualMethods),
             'transaction_id' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:1000',
         ]);
+
+        // Validate amount doesn't exceed invoice total
+        if ($validated['amount'] > $invoice->total_amount) {
+            return back()
+                ->withErrors(['amount' => 'The payment amount cannot exceed the invoice total amount.'])
+                ->withInput();
+        }
 
         try {
             $this->billingService->processPayment($invoice, [

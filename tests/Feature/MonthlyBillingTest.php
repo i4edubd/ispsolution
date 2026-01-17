@@ -77,9 +77,9 @@ class MonthlyBillingTest extends TestCase
         $periodEnd = $invoice->billing_period_end;
         $dueDate = $invoice->due_date;
 
-        // Grace period should be 7 days
-        $graceDays = $periodEnd->diffInDays($dueDate);
-        $this->assertEquals(7, $graceDays);
+        // Grace period should be exactly 7 calendar days after the period end
+        $expectedDueDate = $periodEnd->copy()->addDays(7);
+        $this->assertEquals($expectedDueDate->toDateString(), $dueDate->toDateString());
     }
 
     public function test_mark_overdue_invoices(): void

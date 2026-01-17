@@ -47,10 +47,10 @@ class PaymentGatewayTest extends TestCase
             'name' => 'bKash',
             'slug' => 'bkash',
             'is_active' => true,
-            'configuration' => json_encode([
+            'configuration' => [
                 'app_key' => 'test_key',
                 'app_secret' => 'test_secret',
-            ]),
+            ],
         ]);
 
         $this->paymentGatewayService = app(PaymentGatewayService::class);

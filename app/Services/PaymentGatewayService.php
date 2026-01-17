@@ -27,7 +27,7 @@ class PaymentGatewayService
             ->where('is_active', true)
             ->firstOrFail();
 
-        $config = json_decode($gateway->configuration, true);
+        $config = $gateway->configuration;
 
         return match ($gatewaySlug) {
             'bkash' => $this->initiateBkashPayment($invoice, $config, $gateway->test_mode),
@@ -64,7 +64,7 @@ class PaymentGatewayService
             ->where('is_active', true)
             ->firstOrFail();
 
-        $config = json_decode($gateway->configuration, true);
+        $config = $gateway->configuration;
 
         return match ($gatewaySlug) {
             'bkash' => $this->verifyBkashPayment($transactionId, $config),
@@ -83,7 +83,7 @@ class PaymentGatewayService
         // Implementation would make API call to bKash
         return [
             'payment_url' => $testMode ? 'https://sandbox.bkash.com/checkout' : 'https://bkash.com/checkout',
-            'transaction_id' => 'BK' . time() . rand(1000, 9999),
+            'transaction_id' => 'BK' . time() . random_int(1000, 9999),
             'amount' => $invoice->total_amount,
         ];
     }
@@ -96,7 +96,7 @@ class PaymentGatewayService
         // Implementation would make API call to Nagad
         return [
             'payment_url' => $testMode ? 'https://sandbox.nagad.com/checkout' : 'https://nagad.com/checkout',
-            'transaction_id' => 'NG' . time() . rand(1000, 9999),
+            'transaction_id' => 'NG' . time() . random_int(1000, 9999),
             'amount' => $invoice->total_amount,
         ];
     }
@@ -109,7 +109,7 @@ class PaymentGatewayService
         // Implementation would make API call to SSLCommerz
         return [
             'payment_url' => $testMode ? 'https://sandbox.sslcommerz.com/checkout' : 'https://securepay.sslcommerz.com/checkout',
-            'transaction_id' => 'SSL' . time() . rand(1000, 9999),
+            'transaction_id' => 'SSL' . time() . random_int(1000, 9999),
             'amount' => $invoice->total_amount,
         ];
     }
@@ -122,7 +122,7 @@ class PaymentGatewayService
         // Implementation would use Stripe SDK
         return [
             'payment_url' => 'https://checkout.stripe.com',
-            'transaction_id' => 'STRIPE' . time() . rand(1000, 9999),
+            'transaction_id' => 'STRIPE' . time() . random_int(1000, 9999),
             'amount' => $invoice->total_amount,
         ];
     }

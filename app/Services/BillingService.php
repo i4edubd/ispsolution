@@ -91,8 +91,8 @@ class BillingService
         
         return DB::transaction(function () use ($user, $package, $validityDays, $billingDate) {
             // Calculate pro-rated amount based on validity days
-            $dailyBasedays = config('billing.daily_billing_base_days', 30);
-            $dailyRate = $package->price / $dailyBasedays;
+            $dailyBaseDays = config('billing.daily_billing_base_days', 30);
+            $dailyRate = $package->price / $dailyBaseDays;
             $amount = $dailyRate * $validityDays;
             
             $taxRate = config('billing.tax_rate', 0);
@@ -100,7 +100,7 @@ class BillingService
             $totalAmount = $amount + $taxAmount;
 
             $periodStart = $billingDate->copy()->startOfDay();
-            $periodEnd = $periodStart->copy()->addDays($validityDays)->endOfDay();
+            $periodEnd = $periodStart->copy()->addDays($validityDays - 1)->endOfDay();
             $dueDate = $periodEnd->copy(); // Due immediately at end of period
 
             return Invoice::create([

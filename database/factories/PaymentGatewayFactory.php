@@ -28,11 +28,11 @@ class PaymentGatewayFactory extends Factory
             'name' => ucfirst($slug),
             'slug' => $slug,
             'is_active' => true,
-            'configuration' => json_encode([
+            'configuration' => [
                 'app_key' => fake()->uuid(),
                 'app_secret' => fake()->uuid(),
                 'merchant_id' => fake()->numerify('########'),
-            ]),
+            ],
             'test_mode' => true,
         ];
     }
