@@ -176,7 +176,8 @@ class IpamController extends Controller
         $data = $validator->validated();
 
         // Check for subnet overlap
-        if ($this->ipamService->detectOverlap($data['network'], $data['prefix_length'])) {
+        $cidr = $data['network'] . '/' . $data['prefix_length'];
+        if ($this->ipamService->detectOverlap($cidr)) {
             return response()->json([
                 'message' => 'Subnet overlaps with existing subnet',
             ], 400);

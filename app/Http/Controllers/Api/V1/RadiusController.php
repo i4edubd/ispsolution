@@ -270,8 +270,9 @@ class RadiusController extends Controller
         $user = NetworkUser::where('username', $username)->firstOrFail();
 
         $password = $request->password ?? null;
+        $attributes = $password ? ['password' => $password] : [];
 
-        $success = $this->radiusService->syncUser($user, $password);
+        $success = $this->radiusService->syncUser($user, $attributes);
 
         if (! $success) {
             return response()->json([

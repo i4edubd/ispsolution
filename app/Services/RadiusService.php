@@ -138,14 +138,15 @@ class RadiusService implements RadiusServiceInterface
             $exists = RadCheck::where('username', $user->username)->exists();
 
             if ($user->status === 'active') {
-                // Merge attributes with password
-                $mergedAttributes = array_merge(['password' => $user->password], $attributes);
+                // Prepare attributes
+                $password = $attributes['password'] ?? $user->password;
+                $mergedAttributes = array_merge(['password' => $password], $attributes);
 
                 // Create or update user in RADIUS
                 if ($exists) {
                     return $this->updateUser($user->username, $mergedAttributes);
                 } else {
-                    return $this->createUser($user->username, $mergedAttributes['password']);
+                    return $this->createUser($user->username, $password, $mergedAttributes);
                 }
             } else {
                 // Delete user from RADIUS if inactive
