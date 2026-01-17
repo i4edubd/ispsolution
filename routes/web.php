@@ -150,6 +150,20 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     // Payment Gateway Management
     Route::get('/payment-gateways', [AdminController::class, 'paymentGateways'])->name('payment-gateways');
     Route::get('/payment-gateways/create', [AdminController::class, 'paymentGatewaysCreate'])->name('payment-gateways.create');
+    
+    // Network Devices Management
+    Route::get('/network/routers', [AdminController::class, 'routers'])->name('network.routers');
+    Route::get('/network/routers/create', [AdminController::class, 'routersCreate'])->name('network.routers.create');
+    Route::get('/network/olt', [AdminController::class, 'oltList'])->name('network.olt');
+    Route::get('/network/olt/create', [AdminController::class, 'oltCreate'])->name('network.olt.create');
+    Route::get('/network/devices', [AdminController::class, 'devices'])->name('network.devices');
+    Route::get('/network/device-monitors', [AdminController::class, 'deviceMonitors'])->name('network.device-monitors');
+    Route::get('/network/devices-map', [AdminController::class, 'devicesMap'])->name('network.devices.map');
+    Route::get('/network/ipv4-pools', [AdminController::class, 'ipv4Pools'])->name('network.ipv4-pools');
+    Route::get('/network/ipv6-pools', [AdminController::class, 'ipv6Pools'])->name('network.ipv6-pools');
+    Route::get('/network/pppoe-profiles', [AdminController::class, 'pppoeProfiles'])->name('network.pppoe-profiles');
+    Route::get('/network/package-fup-edit/{id}', [AdminController::class, 'packageFupEdit'])->name('network.package-fup-edit');
+    Route::get('/network/ping-test', [AdminController::class, 'pingTest'])->name('network.ping-test');
 });
 
 // Manager Panel

@@ -476,4 +476,173 @@ class AdminController extends Controller
     {
         return view('panels.admin.payment-gateways.create');
     }
+
+    /**
+     * Display network routers listing.
+     */
+    public function routers(): View
+    {
+        $routers = collect(); // Replace with actual query: NetworkDevice::where('type', 'router')->paginate(20);
+        
+        $stats = [
+            'total' => 0,
+            'online' => 0,
+            'offline' => 0,
+            'warning' => 0,
+        ];
+
+        return view('panels.admin.network.routers', compact('routers', 'stats'));
+    }
+
+    /**
+     * Show create router form.
+     */
+    public function routersCreate(): View
+    {
+        return view('panels.admin.network.routers-create');
+    }
+
+    /**
+     * Display OLT devices listing.
+     */
+    public function oltList(): View
+    {
+        $devices = Olt::latest()->paginate(20);
+        
+        $stats = [
+            'total' => Olt::count(),
+            'active' => Olt::where('status', 'active')->count(),
+            'total_onus' => 0,
+            'online_onus' => 0,
+        ];
+
+        return view('panels.admin.network.olt', compact('devices', 'stats'));
+    }
+
+    /**
+     * Show create OLT form.
+     */
+    public function oltCreate(): View
+    {
+        return view('panels.admin.network.olt-create');
+    }
+
+    /**
+     * Display all network devices.
+     */
+    public function devices(): View
+    {
+        $devices = collect(); // Replace with actual query combining multiple device types
+        
+        $stats = [
+            'total' => 0,
+            'routers' => MikrotikRouter::count(),
+            'olts' => Olt::count(),
+            'switches' => 0,
+            'online' => 0,
+        ];
+
+        return view('panels.admin.network.devices', compact('devices', 'stats'));
+    }
+
+    /**
+     * Display device monitoring dashboard.
+     */
+    public function deviceMonitors(): View
+    {
+        $monitors = [
+            'healthy' => 0,
+            'warning' => 0,
+            'critical' => 0,
+            'offline' => 0,
+            'devices' => collect(),
+            'alerts' => collect(),
+        ];
+
+        return view('panels.admin.network.device-monitors', compact('monitors'));
+    }
+
+    /**
+     * Display devices map view.
+     */
+    public function devicesMap(): View
+    {
+        $devices = collect(); // Replace with actual query for devices with location data
+        
+        $stats = [
+            'online' => 0,
+            'offline' => 0,
+            'warning' => 0,
+            'critical' => 0,
+        ];
+
+        return view('panels.admin.network.devices-map', compact('devices', 'stats'));
+    }
+
+    /**
+     * Display IPv4 pools management.
+     */
+    public function ipv4Pools(): View
+    {
+        $pools = collect(); // Replace with: IpPool::where('ip_version', 4)->paginate(20);
+        
+        $stats = [
+            'total' => 0,
+            'available' => 0,
+            'allocated' => 0,
+            'pools' => 0,
+        ];
+
+        return view('panels.admin.network.ipv4-pools', compact('pools', 'stats'));
+    }
+
+    /**
+     * Display IPv6 pools management.
+     */
+    public function ipv6Pools(): View
+    {
+        $pools = collect(); // Replace with: IpPool::where('ip_version', 6)->paginate(20);
+        
+        $stats = [
+            'pools' => 0,
+            'allocated' => 0,
+            'available' => 0,
+        ];
+
+        return view('panels.admin.network.ipv6-pools', compact('pools', 'stats'));
+    }
+
+    /**
+     * Display PPPoE profiles management.
+     */
+    public function pppoeProfiles(): View
+    {
+        $profiles = collect(); // Replace with: MikrotikProfile::paginate(20);
+        
+        $stats = [
+            'total' => 0,
+            'active' => 0,
+            'users' => 0,
+        ];
+
+        return view('panels.admin.network.pppoe-profiles', compact('profiles', 'stats'));
+    }
+
+    /**
+     * Show FUP editor for package.
+     */
+    public function packageFupEdit($id): View
+    {
+        $package = ServicePackage::findOrFail($id);
+
+        return view('panels.admin.network.package-fup-edit', compact('package'));
+    }
+
+    /**
+     * Display ping test tool.
+     */
+    public function pingTest(): View
+    {
+        return view('panels.admin.network.ping-test');
+    }
 }
