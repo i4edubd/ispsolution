@@ -37,7 +37,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // Demo routes
@@ -106,6 +106,12 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/network-users', [AdminController::class, 'networkUsers'])->name('network-users');
     Route::get('/packages', [AdminController::class, 'packages'])->name('packages');
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+    
+    // Network Device Management
+    Route::get('/mikrotik', [AdminController::class, 'mikrotikRouters'])->name('mikrotik');
+    Route::get('/nas', [AdminController::class, 'nasDevices'])->name('nas');
+    Route::get('/cisco', [AdminController::class, 'ciscoDevices'])->name('cisco');
+    Route::get('/olt', [AdminController::class, 'oltDevices'])->name('olt');
 });
 
 // Manager Panel
