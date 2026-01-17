@@ -238,4 +238,92 @@ class AdminController extends Controller
 
         return view('panels.admin.customers.bulk-update', compact('packages'));
     }
+
+    /**
+     * Display account transactions.
+     */
+    public function accountTransactions(): View
+    {
+        return view('panels.admin.accounting.transactions');
+    }
+
+    /**
+     * Display payment gateway transactions.
+     */
+    public function paymentGatewayTransactions(): View
+    {
+        return view('panels.admin.accounting.payment-gateway-transactions');
+    }
+
+    /**
+     * Display account statement.
+     */
+    public function accountStatement(): View
+    {
+        return view('panels.admin.accounting.statement');
+    }
+
+    /**
+     * Display accounts payable.
+     */
+    public function accountsPayable(): View
+    {
+        return view('panels.admin.accounting.payable');
+    }
+
+    /**
+     * Display accounts receivable.
+     */
+    public function accountsReceivable(): View
+    {
+        return view('panels.admin.accounting.receivable');
+    }
+
+    /**
+     * Display income vs expense report.
+     */
+    public function incomeExpenseReport(): View
+    {
+        return view('panels.admin.accounting.income-expense-report');
+    }
+
+    /**
+     * Display expense report.
+     */
+    public function expenseReport(): View
+    {
+        return view('panels.admin.accounting.expense-report');
+    }
+
+    /**
+     * Display expenses management.
+     */
+    public function expenses(): View
+    {
+        return view('panels.admin.accounting.expenses');
+    }
+
+    /**
+     * Display VAT collections.
+     */
+    public function vatCollections(): View
+    {
+        return view('panels.admin.accounting.vat-collections');
+    }
+
+    /**
+     * Display customer payments.
+     */
+    public function customerPayments(): View
+    {
+        return view('panels.admin.accounting.customer-payments');
+    }
+
+    /**
+     * Display gateway customer payments.
+     */
+    public function gatewayCustomerPayments(): View
+    {
+        return view('panels.admin.accounting.gateway-customer-payments');
+    }
 }

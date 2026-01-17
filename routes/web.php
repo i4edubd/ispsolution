@@ -124,6 +124,19 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/customers/import-requests', [AdminController::class, 'customerImportRequests'])->name('customers.import-requests');
     Route::get('/customers/pppoe-import', [AdminController::class, 'pppoeCustomerImport'])->name('customers.pppoe-import');
     Route::get('/customers/bulk-update', [AdminController::class, 'bulkUpdateUsers'])->name('customers.bulk-update');
+    
+    // Accounting & Finance
+    Route::get('/accounting/transactions', [AdminController::class, 'accountTransactions'])->name('accounting.transactions');
+    Route::get('/accounting/payment-gateway-transactions', [AdminController::class, 'paymentGatewayTransactions'])->name('accounting.payment-gateway-transactions');
+    Route::get('/accounting/statement', [AdminController::class, 'accountStatement'])->name('accounting.statement');
+    Route::get('/accounting/payable', [AdminController::class, 'accountsPayable'])->name('accounting.payable');
+    Route::get('/accounting/receivable', [AdminController::class, 'accountsReceivable'])->name('accounting.receivable');
+    Route::get('/accounting/income-expense-report', [AdminController::class, 'incomeExpenseReport'])->name('accounting.income-expense-report');
+    Route::get('/accounting/expense-report', [AdminController::class, 'expenseReport'])->name('accounting.expense-report');
+    Route::get('/accounting/expenses', [AdminController::class, 'expenses'])->name('accounting.expenses');
+    Route::get('/accounting/vat-collections', [AdminController::class, 'vatCollections'])->name('accounting.vat-collections');
+    Route::get('/accounting/customer-payments', [AdminController::class, 'customerPayments'])->name('accounting.customer-payments');
+    Route::get('/accounting/gateway-customer-payments', [AdminController::class, 'gatewayCustomerPayments'])->name('accounting.gateway-customer-payments');
 });
 
 // Manager Panel
