@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\IpamController;
 use App\Http\Controllers\Api\V1\MikrotikController;
 use App\Http\Controllers\Api\V1\MonitoringController;
 use App\Http\Controllers\Api\V1\NetworkUserController;
+use App\Http\Controllers\Api\V1\OltController;
 use App\Http\Controllers\Api\V1\RadiusController;
 use Illuminate\Support\Facades\Route;
 
@@ -141,5 +142,30 @@ Route::prefix('v1')->group(function () {
         Route::post('/devices/{type}/{id}/bandwidth', [MonitoringController::class, 'recordBandwidth'])->name('api.monitoring.bandwidth.record');
         Route::get('/devices/{type}/{id}/bandwidth', [MonitoringController::class, 'getBandwidthUsage'])->name('api.monitoring.bandwidth.usage');
         Route::get('/devices/{type}/{id}/bandwidth/graph', [MonitoringController::class, 'getBandwidthGraph'])->name('api.monitoring.bandwidth.graph');
+    });
+
+    // OLT Routes
+    Route::prefix('olt')->group(function () {
+        // OLT Management
+        Route::get('/', [OltController::class, 'index'])->name('api.olt.index');
+        Route::get('/{id}', [OltController::class, 'show'])->name('api.olt.show');
+        Route::post('/{id}/test-connection', [OltController::class, 'testConnection'])->name('api.olt.test-connection');
+        Route::post('/{id}/sync-onus', [OltController::class, 'syncOnus'])->name('api.olt.sync-onus');
+        Route::get('/{id}/statistics', [OltController::class, 'statistics'])->name('api.olt.statistics');
+        Route::post('/{id}/backup', [OltController::class, 'createBackup'])->name('api.olt.backup');
+        Route::get('/{id}/backups', [OltController::class, 'backups'])->name('api.olt.backups');
+        Route::get('/{id}/port-utilization', [OltController::class, 'portUtilization'])->name('api.olt.port-utilization');
+        Route::get('/{id}/bandwidth-usage', [OltController::class, 'bandwidthUsage'])->name('api.olt.bandwidth-usage');
+        Route::get('/{id}/monitor-onus', [OltController::class, 'monitorOnus'])->name('api.olt.monitor-onus');
+
+        // ONU Operations
+        Route::get('/onu/{onuId}', [OltController::class, 'onuDetails'])->name('api.olt.onu.details');
+        Route::post('/onu/{onuId}/refresh', [OltController::class, 'refreshOnuStatus'])->name('api.olt.onu.refresh');
+        Route::post('/onu/{onuId}/authorize', [OltController::class, 'authorizeOnu'])->name('api.olt.onu.authorize');
+        Route::post('/onu/{onuId}/unauthorize', [OltController::class, 'unauthorizeOnu'])->name('api.olt.onu.unauthorize');
+        Route::post('/onu/{onuId}/reboot', [OltController::class, 'rebootOnu'])->name('api.olt.onu.reboot');
+        
+        // Bulk Operations
+        Route::post('/onu/bulk-operations', [OltController::class, 'bulkOnuOperations'])->name('api.olt.onu.bulk-operations');
     });
 });
