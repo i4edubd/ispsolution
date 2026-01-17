@@ -62,11 +62,31 @@ jobs:
           exit 1
         fi
         
-    - name: Verify Installation
+    - name: Verify and Install Dependencies
       run: |
         echo "Verifying dependencies..."
-        docker compose exec -T app ls -la vendor/ | head -10
-        docker compose exec -T app ls -la node_modules/ | head -10
+        
+        # Check if vendor exists
+        if ! docker compose exec -T app test -d vendor; then
+          echo "Installing PHP dependencies..."
+          docker compose exec -T app composer install --no-interaction --prefer-dist
+        fi
+        
+        # Check if node_modules exists
+        if ! docker compose exec -T app test -d node_modules; then
+          echo "Installing NPM dependencies..."
+          docker compose exec -T app npm ci
+        else
+          echo "NPM dependencies already installed, verifying vite..."
+          if ! docker compose exec -T app test -f node_modules/.bin/vite; then
+            echo "Vite not found, reinstalling NPM dependencies..."
+            docker compose exec -T app npm ci
+          fi
+        fi
+        
+        echo "Dependencies verified:"
+        docker compose exec -T app ls -la vendor/ | head -5
+        docker compose exec -T app ls -la node_modules/ | head -5
 
     - name: Generate Application Key
       run: docker compose exec -T app php artisan key:generate
