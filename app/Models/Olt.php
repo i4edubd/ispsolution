@@ -33,6 +33,7 @@ class Olt extends Model
 
     protected $casts = [
         'telnet_password' => 'encrypted',
+        'snmp_community' => 'encrypted',
         'telnet_port' => 'integer',
         'snmp_port' => 'integer',
         'max_onts' => 'integer',

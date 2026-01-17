@@ -18,29 +18,35 @@ class StaffController extends Controller
      */
     public function dashboard(): View
     {
-        $tenantId = auth()->user()->tenant_id;
-        
         $stats = [
-            'assigned_users' => NetworkUser::where('tenant_id', $tenantId)->count(),
+            'assigned_users' => NetworkUser::count(),
             'pending_tickets' => 0, // To be implemented
         ];
 
-        // Add device stats if user has permissions
-        $user = auth()->user();
-        if ($user->hasPermission('devices.mikrotik.view')) {
-            $stats['total_mikrotik'] = MikrotikRouter::where('tenant_id', $tenantId)->count();
+        // Eager load roles to avoid N+1 queries
+        $user = auth()->user()->load('roles');
+        
+        // Check permissions and add device stats
+        $canViewMikrotik = $user->hasPermission('devices.mikrotik.view');
+        $canViewNas = $user->hasPermission('devices.nas.view');
+        $canViewCisco = $user->hasPermission('devices.cisco.view');
+        $canViewOlt = $user->hasPermission('devices.olt.view');
+        
+        if ($canViewMikrotik) {
+            $stats['total_mikrotik'] = MikrotikRouter::count();
         }
-        if ($user->hasPermission('devices.nas.view')) {
-            $stats['total_nas'] = Nas::where('tenant_id', $tenantId)->count();
+        if ($canViewNas) {
+            $stats['total_nas'] = Nas::count();
         }
-        if ($user->hasPermission('devices.cisco.view')) {
-            $stats['total_cisco'] = CiscoDevice::where('tenant_id', $tenantId)->count();
+        if ($canViewCisco) {
+            $stats['total_cisco'] = CiscoDevice::count();
         }
-        if ($user->hasPermission('devices.olt.view')) {
-            $stats['total_olt'] = Olt::where('tenant_id', $tenantId)->count();
+        if ($canViewOlt) {
+            $stats['total_olt'] = Olt::count();
         }
 
-        return view('panels.staff.dashboard', compact('stats'));
+        // Pass permission flags to view to avoid N+1 queries
+        return view('panels.staff.dashboard', compact('stats', 'canViewMikrotik', 'canViewNas', 'canViewCisco', 'canViewOlt'));
     }
 
     /**
@@ -48,8 +54,7 @@ class StaffController extends Controller
      */
     public function networkUsers(): View
     {
-        $tenantId = auth()->user()->tenant_id;
-        $networkUsers = NetworkUser::where('tenant_id', $tenantId)->latest()->paginate(20);
+        $networkUsers = NetworkUser::latest()->paginate(20);
 
         return view('panels.staff.network-users.index', compact('networkUsers'));
     }
@@ -72,8 +77,7 @@ class StaffController extends Controller
             abort(403, 'Unauthorized access to MikroTik routers.');
         }
 
-        $tenantId = auth()->user()->tenant_id;
-        $routers = MikrotikRouter::where('tenant_id', $tenantId)->latest()->paginate(20);
+        $routers = MikrotikRouter::latest()->paginate(20);
 
         return view('panels.staff.mikrotik.index', compact('routers'));
     }
@@ -87,8 +91,7 @@ class StaffController extends Controller
             abort(403, 'Unauthorized access to NAS devices.');
         }
 
-        $tenantId = auth()->user()->tenant_id;
-        $devices = Nas::where('tenant_id', $tenantId)->latest()->paginate(20);
+        $devices = Nas::latest()->paginate(20);
 
         return view('panels.staff.nas.index', compact('devices'));
     }
@@ -102,8 +105,7 @@ class StaffController extends Controller
             abort(403, 'Unauthorized access to Cisco devices.');
         }
 
-        $tenantId = auth()->user()->tenant_id;
-        $devices = CiscoDevice::where('tenant_id', $tenantId)->latest()->paginate(20);
+        $devices = CiscoDevice::latest()->paginate(20);
 
         return view('panels.staff.cisco.index', compact('devices'));
     }
@@ -117,8 +119,7 @@ class StaffController extends Controller
             abort(403, 'Unauthorized access to OLT devices.');
         }
 
-        $tenantId = auth()->user()->tenant_id;
-        $devices = Olt::where('tenant_id', $tenantId)->latest()->paginate(20);
+        $devices = Olt::latest()->paginate(20);
 
         return view('panels.staff.olt.index', compact('devices'));
     }

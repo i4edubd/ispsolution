@@ -28,10 +28,13 @@ class Nas extends Model
 
     protected $hidden = [
         'secret',
+        'community',
     ];
 
     protected $casts = [
         'ports' => 'integer',
+        'secret' => 'encrypted',
+        'community' => 'encrypted',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
