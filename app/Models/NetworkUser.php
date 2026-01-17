@@ -16,6 +16,8 @@ class NetworkUser extends Model
         'service_type',
         'package_id',
         'status',
+        'user_id',
+        'tenant_id',
     ];
 
     protected $hidden = [
