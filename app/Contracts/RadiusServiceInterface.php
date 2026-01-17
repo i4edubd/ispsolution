@@ -45,6 +45,7 @@ interface RadiusServiceInterface
      * Authenticate a user
      *
      * @param array<string, mixed> $data
+     *
      * @return array<string, mixed>
      */
     public function authenticate(array $data): array;

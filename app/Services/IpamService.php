@@ -243,7 +243,7 @@ class IpamService implements IpamServiceInterface
 
         // Query for potential overlapping subnets
         $query = IpSubnet::where('network_address', $network)
-                         ->where('prefix_length', (int) $prefixLength);
+            ->where('prefix_length', (int) $prefixLength);
 
         // Exclude a specific subnet (useful for updates)
         if ($excludeSubnetId !== null) {

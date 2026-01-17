@@ -126,7 +126,7 @@ class User extends Authenticatable
 
         // Cast the relationship result to ServicePackage or null
         $package = $this->servicePackage;
-        
+
         return $package instanceof ServicePackage ? $package : null;
     }
 }
