@@ -123,4 +123,119 @@ class AdminController extends Controller
 
         return view('panels.admin.olt.index', compact('devices'));
     }
+
+    /**
+     * Display customers listing.
+     */
+    public function customers(): View
+    {
+        $customers = NetworkUser::with('package')->latest()->paginate(20);
+        $packages = ServicePackage::all();
+        
+        $stats = [
+            'total' => NetworkUser::count(),
+            'active' => NetworkUser::where('status', 'active')->count(),
+            'online' => 0,
+            'offline' => NetworkUser::count(),
+        ];
+
+        return view('panels.admin.customers.index', compact('customers', 'packages', 'stats'));
+    }
+
+    /**
+     * Show customer create form.
+     */
+    public function customersCreate(): View
+    {
+        $packages = ServicePackage::all();
+
+        return view('panels.admin.customers.create', compact('packages'));
+    }
+
+    /**
+     * Show customer edit form.
+     */
+    public function customersEdit($id): View
+    {
+        $customer = NetworkUser::with('package')->findOrFail($id);
+        $packages = ServicePackage::all();
+
+        return view('panels.admin.customers.edit', compact('customer', 'packages'));
+    }
+
+    /**
+     * Show customer detail.
+     */
+    public function customersShow($id): View
+    {
+        $customer = NetworkUser::with('package', 'sessions')->findOrFail($id);
+
+        return view('panels.admin.customers.show', compact('customer'));
+    }
+
+    /**
+     * Display deleted customers.
+     */
+    public function deletedCustomers(): View
+    {
+        $customers = collect();
+
+        return view('panels.admin.customers.deleted', compact('customers'));
+    }
+
+    /**
+     * Display online customers.
+     */
+    public function onlineCustomers(): View
+    {
+        $customers = NetworkUser::with('package')->where('status', 'active')->latest()->paginate(20);
+        
+        $stats = [
+            'online' => $customers->total(),
+            'sessions' => 0,
+        ];
+
+        return view('panels.admin.customers.online', compact('customers', 'stats'));
+    }
+
+    /**
+     * Display offline customers.
+     */
+    public function offlineCustomers(): View
+    {
+        $customers = NetworkUser::with('package')->latest()->paginate(20);
+
+        return view('panels.admin.customers.offline', compact('customers'));
+    }
+
+    /**
+     * Display customer import requests.
+     */
+    public function customerImportRequests(): View
+    {
+        $importRequests = collect();
+
+        return view('panels.admin.customers.import-requests', compact('importRequests'));
+    }
+
+    /**
+     * Show PPPoE customer import form.
+     */
+    public function pppoeCustomerImport(): View
+    {
+        $routers = MikrotikRouter::all();
+        $packages = ServicePackage::all();
+
+        return view('panels.admin.customers.pppoe-import', compact('routers', 'packages'));
+    }
+
+    /**
+     * Show bulk update form.
+     */
+    public function bulkUpdateUsers(): View
+    {
+        $packages = ServicePackage::all();
+
+        return view('panels.admin.customers.bulk-update', compact('packages'));
+    }
 }
