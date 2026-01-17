@@ -13,6 +13,7 @@ use App\Models\MikrotikRouter;
 use App\Models\Olt;
 use App\Models\Onu;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -436,13 +437,13 @@ class MonitoringService implements MonitoringServiceInterface
     private function monitorOlt(Olt $olt): array
     {
         try {
-            $health = $this->oltService->checkHealth($olt->id);
+            $stats = $this->oltService->getOltStatistics($olt->id);
             
             return [
-                'status' => $health['status'] === 'healthy' ? 'online' : 'degraded',
-                'cpu_usage' => $health['cpu_usage'] ?? null,
-                'memory_usage' => $health['memory_usage'] ?? null,
-                'uptime' => $health['uptime'] ?? null,
+                'status' => $stats['online_onus'] > 0 ? 'online' : 'degraded',
+                'cpu_usage' => $stats['cpu_usage'] ?? null,
+                'memory_usage' => $stats['memory_usage'] ?? null,
+                'uptime' => $stats['uptime'] ?? null,
             ];
         } catch (\Exception $e) {
             Log::warning("Failed to monitor OLT {$olt->id}: {$e->getMessage()}");
@@ -456,13 +457,13 @@ class MonitoringService implements MonitoringServiceInterface
     private function monitorOnu(Onu $onu): array
     {
         try {
-            $status = $this->oltService->getOnuStatus($onu->olt_id, $onu->id);
+            $status = $this->oltService->getOnuStatus($onu->id);
             
             return [
-                'status' => $status['online'] ? 'online' : 'offline',
+                'status' => $status['status'] === 'online' ? 'online' : 'offline',
                 'cpu_usage' => null, // ONUs typically don't report CPU
                 'memory_usage' => null,
-                'uptime' => null,
+                'uptime' => $status['uptime'] ?? null,
             ];
         } catch (\Exception $e) {
             Log::warning("Failed to monitor ONU {$onu->id}: {$e->getMessage()}");
