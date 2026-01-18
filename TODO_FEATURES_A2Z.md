@@ -876,30 +876,21 @@ This document provides a comprehensive list of all features available in the ISP
 
 ### Overview
 
-## NOTE Governance & Roles (UPDTE)
-- **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
-- **Tenancy (formerly Super Admin)**: Represents the overarching tenant context.  
-- **Admin (ISP, formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
-
----
-
 The ISP Billing System implements a comprehensive **9-tier role-based access control (RBAC)** system with hierarchical relationships, granular permissions, and flexible menu/panel access controls. This system ensures proper security, delegation, and workflow management across the organization.
+
+**Governance & Roles:**
+- **Developer**: Supreme authority and source code owner, with unrestricted permissions
+- **Tenancy (formerly Super Admin)**: Represents the overarching tenant context
+- **Admin (ISP)**: Manages ISP-specific operations within a tenancy
 
 ---
 
 ### System Roles
 
 The system defines **9 distinct roles** with hierarchical authority levels and specific functional responsibilities:
-
-## NOTE Governance & Roles (UPDTE)
-- **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
-- **Tenancy (formerly Super Admin)**: Represents the overarching tenant context.  
-- **Admin (ISP, formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
-
----
 #### 1. **Developer** (Level 1 - Highest Authority)
 - **Description**: Top-level system administrator with unrestricted access
-- **Hierarchy**: Root of the entire system 
+- **Hierarchy**: Root of the entire system
 - **Key Responsibilities**:
   - Configure SMS gateways
   - Configure payment gateways
@@ -910,13 +901,11 @@ The system defines **9 distinct roles** with hierarchical authority levels and s
 - **Permissions**: Technical configuration access, API management
 - **Technical Reference**: `operators.role = 'developer'`
 
-
-
-#### 2. **Super Admin** (Level 2 - tenant Authority)
+#### 2. **Tenancy** (Level 2 - Tenant Authority)
 - **Description**: Top-level tenant administrator with unrestricted access to own tenant
-- **Hierarchy**: Special access role identified by `sid` field (typically reports to Developer)
+- **Hierarchy**: Special access role identified by `sid` field (reports to Developer)
 - **Key Responsibilities**:
-  - Oversee all Admin (ISP, formerly Group Admin)s and their operations
+  - Oversee all ISP Admins and their operations
   - Manage tenant-wide configurations
   - Suspend/activate Admin/operator subscriptions
   - Access all features and data across the tenant
@@ -924,9 +913,9 @@ The system defines **9 distinct roles** with hierarchical authority levels and s
 - **Restrictions**: None - full system access to own tenant
 - **Technical Reference**: `operators.role = 'super_admin'`
 
-#### 3. **Admin** (Level 3 - ISP/Master Account)
+#### 3. **Admin (ISP)** (Level 3 - ISP/Master Account)
 - **Description**: Main ISP distributor managing operators and their customers
-- **Hierarchy**: Reports to Super Admin (identified by `mgid` field)
+- **Hierarchy**: Reports to Tenancy (identified by `mgid` field)
 - **Key Responsibilities**:
   - Create and manage Operators and Sub-operators
   - Create and assign Managers
@@ -973,8 +962,8 @@ The system defines **9 distinct roles** with hierarchical authority levels and s
 - **Note**: Sub-operator is determined by the relationship between `gid` and `mgid`, not a separate role enum
 
 #### 6. **Manager** (Level 6 - Staff Role)
-- **Description**: Support staff under Admin with specific operational duties
-- **Hierarchy**: Works under Admin (identified by `gid` field)
+- **Description**: Support staff under ISP Admin with specific operational duties
+- **Hierarchy**: Works under ISP Admin (identified by `gid` field)
 - **Key Responsibilities**:
   - View and manage customers based on assigned permissions
   - Process payments and generate bills
@@ -982,7 +971,7 @@ The system defines **9 distinct roles** with hierarchical authority levels and s
   - Access features based on assigned permissions
   - Limited package and profile access
 - **Panel Access**: Manager panel with feature-specific access
-- **Permissions**: Base permissions + optional special permissions assigned by Admin
+- **Permissions**: Base permissions + optional special permissions assigned by ISP Admin
 - **Department Assignment**: Can be assigned to specific departments for complaint routing
 - **Technical Reference**: `operators.role = 'manager'`
 
@@ -1001,7 +990,7 @@ The system defines **9 distinct roles** with hierarchical authority levels and s
 
 #### 8. **Sales Manager** (Level 8 - Sales Team)
 - **Description**: Sales-focused role for customer acquisition and relationship management
-- **Hierarchy**: Reports to Admin
+- **Hierarchy**: Reports to ISP Admin
 - **Key Responsibilities**:
   - Track customer acquisition
   - Manage sales leads and contacts
@@ -1012,11 +1001,9 @@ The system defines **9 distinct roles** with hierarchical authority levels and s
 - **Permissions**: Customer viewing, sales tracking, basic reporting
 - **Technical Reference**: `operators.role = 'sales_manager'`
 
-
-
 #### 9. **Accountant** (Level 9 - Financial Operations)
 - **Description**: Financial role for accounting and bookkeeping
-- **Hierarchy**: Reports to Admin
+- **Hierarchy**: Reports to ISP Admin
 - **Key Responsibilities**:
   - View financial reports and statements
   - Track income and expenses
@@ -1032,19 +1019,13 @@ The system defines **9 distinct roles** with hierarchical authority levels and s
 
 ### Hierarchical Relationships
 
-## NOTE Governance & Roles (UPDTE)
-- **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
-- **Tenancy (formerly Super Admin)**: Represents the overarching tenant context.  
-- **Admin (ISP, formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
-
----
 The system uses a **4-field hierarchy structure** for relationships:
 
 ```
 Field Name | Description                    | Purpose
 -----------|--------------------------------|------------------------------------------
-sid        | Super Admin ID                 | Links to the root Super Admin
-mgid       | Master Group ID / Admin        | Links to the managing Admin (ISP, formerly Group Admin)
+sid        | Tenancy ID                     | Links to the root Tenancy
+mgid       | Master Group ID / ISP Admin    | Links to the managing ISP Admin
 gid        | Group ID / Parent Operator ID  | Links to the parent Operator
 new_id     | Legacy Migration ID            | Used for data migration (default: 0)
 ```
@@ -1052,35 +1033,35 @@ new_id     | Legacy Migration ID            | Used for data migration (default: 
 **Hierarchy Flow Diagram**:
 ```
 ┌─────────────────┐
-│  Super Admin    │ (sid = self.id)
-│  (Level 1)      │
+│    Tenancy      │ (sid = self.id)
+│   (Level 1)     │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│  Admin (ISP, formerly Group Admin)    │ (mgid = self.id, sid = super_admin.id)
-│  (Level 2)      │
+│  Admin (ISP)    │ (mgid = self.id, sid = tenancy.id)
+│   (Level 2)     │
 └────────┬────────┘
          │
          ├──────────────────┬──────────────────┐
          ▼                  ▼                  ▼
 ┌─────────────────┐  ┌──────────────┐  ┌─────────────┐
-│  Operator       │  │   Manager    │  │   Others    │
-│  (Level 3)      │  │  (Level 5)   │  │ (Levels 6-9)│
+│   Operator      │  │   Manager    │  │   Others    │
+│   (Level 3)     │  │  (Level 5)   │  │ (Levels 6-9)│
 └────────┬────────┘  └──────────────┘  └─────────────┘
          │
          ▼
 ┌─────────────────┐
-│  Sub-Operator   │ (gid = parent_operator.id, mgid = group_admin.id)
-│  (Level 4)      │
+│  Sub-Operator   │ (gid = parent_operator.id, mgid = isp_admin.id)
+│   (Level 4)     │
 └─────────────────┘
 ```
 
 **Relationship Rules**:
 1. **Operator**: `gid == mgid` (same parent and master) = Primary reseller
 2. **Sub-Operator**: `gid != mgid` (different parent and master) = Secondary reseller
-3. **Manager**: `gid = group_admin.id` (directly under Admin (ISP, formerly Group Admin))
-4. **Account Types**: 
+3. **Manager**: `gid = isp_admin.id` (directly under ISP Admin)
+4. **Account Types**:
    - `credit` (postpaid): Credit limit-based operations
    - `debit` (prepaid): Prepaid balance-based operations
 
@@ -1116,7 +1097,7 @@ Default permissions available to all operational roles (Managers, Operators, Sub
 ```
 
 #### B. Special Permissions (Enhanced Level)
-Advanced permissions that must be explicitly granted by Admin.
+Advanced permissions that must be explicitly granted by ISP Admin.
 
 **Configuration File**: `/config/special_permissions.php`
 
@@ -1136,7 +1117,7 @@ Advanced permissions that must be explicitly granted by Admin.
 
 #### Permission Assignment Rules
 
-1. **Only Admin** can assign special permissions
+1. **Only ISP Admin** can assign special permissions
 2. **Only Operators** (role='operator') can receive special permissions
 3. **Managers and Sub-operators** can also have special permissions if assigned
 4. Permissions are stored individually in `operator_permissions` table
@@ -1145,26 +1126,20 @@ Advanced permissions that must be explicitly granted by Admin.
 ---
 
 ### Panel Access by Role
-## NOTE Governance & Roles (UPDTE)
-- **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
-- **Tenancy (formerly Super Admin)**: Represents the overarching tenant context.  
-- **Admin (ISP, formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
-
----
 
 Each role has access to a specific administrative panel with role-appropriate menus and features:
 
-#### Super Admin Panel
+#### Tenancy Panel
 - **Access**: All tenant features without restrictions
 - **Main Sections**:
-  - tenant-wide dashboard with all metrics
-  - Admin management
+  - Tenant-wide dashboard with all metrics
+  - ISP Admin management
   - Subscription management
-  - tenant Global configuration
+  - Tenant global configuration
   - System logs and monitoring
   - All features from lower-level panels
 
-#### Admin Panel
+#### ISP Admin Panel
 - **Access**: Full administrative panel for managing their ISP
 - **Main Menu Sections**:
   1. **Dashboard** - Overview with widgets and charts
@@ -1250,9 +1225,9 @@ Each role has access to a specific administrative panel with role-appropriate me
   - No administrative features
 
 #### Developer Panel
-- **Access**: Source code owner and Technical configuration panel
+- **Access**: Technical configuration panel for system management
 - **Main Sections**:
-  - Tenant Managment
+  - Tenant management
   - Subscription management
   - Global configuration
   - System logs and monitoring
@@ -1264,7 +1239,7 @@ Each role has access to a specific administrative panel with role-appropriate me
   - API management
 - **Restrictions**:
   - Cannot manage customers or billing
-  - Focus on technical infrastructure 
+  - Focus on technical infrastructure
 
 #### Accountant Panel
 - **Access**: Financial reporting panel
@@ -1285,10 +1260,10 @@ Each role has access to a specific administrative panel with role-appropriate me
 
 The following table shows which roles can access specific features:
 
-| Feature Category | Super Admin | Admin (ISP, formerly Group Admin) | Operator | Sub-Operator | Manager | Card Distributor | Sales Manager | Developer | Accountant |
-|------------------|:-----------:|:-----------:|:--------:|:------------:|:-------:|:----------------:|:-------------:|:---------:|:----------:|
+| Feature Category | Tenancy | ISP Admin | Operator | Sub-Operator | Manager | Card Distributor | Sales Manager | Developer | Accountant |
+|------------------|:-------:|:---------:|:--------:|:------------:|:-------:|:----------------:|:-------------:|:---------:|:----------:|
 | **Operator Management** |
-| Create Admin (ISP, formerly Group Admin) | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Create ISP Admin | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Create Operator | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Create Sub-Operator | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Create Manager | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
@@ -1357,7 +1332,7 @@ The following table shows which roles can access specific features:
 - ¹ = Requires specific standard permission
 - ² = Limited to lead management
 - ³ = Requires special permission
-- ⁴ = If menu not disabled by Admin (ISP, formerly Group Admin)
+- ⁴ = If menu not disabled by ISP Admin
 - ⁵ = Limited to assigned department
 - ⁶ = Only for own account
 - ⁷ = For own subscription only
@@ -1366,11 +1341,11 @@ The following table shows which roles can access specific features:
 
 ### Menu and Page Access Control
 
-The system provides **dynamic menu visibility control** allowing Admin (ISP, formerly Group Admin)s to customize the operator experience.
+The system provides **dynamic menu visibility control** allowing ISP Admins to customize the operator experience.
 
 #### Disabled Menu System
 
-**Purpose**: Allow Admin (ISP, formerly Group Admin) to hide specific menu sections from Operators and Sub-operators
+**Purpose**: Allow ISP Admin to hide specific menu sections from Operators and Sub-operators
 
 **Database Table**: `disabled_menus`
 ```sql
@@ -1439,30 +1414,25 @@ $this->authorize('assignSpecialPermission', $operator);
 ---
 
 ### Relations and Restrictions
-## NOTE Governance & Roles (UPDTE)
-- **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
-- **Tenancy (formerly Super Admin)**: Represents the overarching tenant context.  
-- **Admin (ISP, formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
 
----
 #### Hierarchical Relationships
 
-**1. Super Admin → Admin (ISP, formerly Group Admin)**
-- **Relation**: One Super Admin can manage multiple Admin (ISP, formerly Group Admin)s
-- **Field**: `operators.sid` links to Super Admin
+**1. Tenancy → ISP Admin**
+- **Relation**: One Tenancy can manage multiple ISP Admins
+- **Field**: `operators.sid` links to Tenancy
 - **Restrictions**:
-  - Super Admin can suspend Admin (ISP, formerly Group Admin) subscriptions
-  - Admin (ISP, formerly Group Admin) cannot modify Super Admin settings
-  - Billing flows from Admin (ISP, formerly Group Admin) to Super Admin
+  - Tenancy can suspend ISP Admin subscriptions
+  - ISP Admin cannot modify Tenancy settings
+  - Billing flows from ISP Admin to Tenancy
 
-**2. Admin (ISP, formerly Group Admin) → Operators**
-- **Relation**: One Admin (ISP, formerly Group Admin) can manage multiple Operators
-- **Field**: `operators.mgid` links to Admin (ISP, formerly Group Admin)
+**2. ISP Admin → Operators**
+- **Relation**: One ISP Admin can manage multiple Operators
+- **Field**: `operators.mgid` links to ISP Admin
 - **Restrictions**:
-  - Admin (ISP, formerly Group Admin) assigns packages and billing profiles
+  - ISP Admin assigns packages and billing profiles
   - Operators cannot access other operators' data
-  - Admin (ISP, formerly Group Admin) can view all operator customer data
-  - Admin (ISP, formerly Group Admin) controls operator menu visibility
+  - ISP Admin can view all operator customer data
+  - ISP Admin controls operator menu visibility
 
 **3. Operator → Sub-Operators**
 - **Relation**: One Operator can manage multiple Sub-operators
@@ -1473,16 +1443,16 @@ $this->authorize('assignSpecialPermission', $operator);
   - Operator can view all sub-operator customer data
   - Sub-operators have more restricted panel access
 
-**4. Admin (ISP, formerly Group Admin) → Managers**
-- **Relation**: One Admin (ISP, formerly Group Admin) can create multiple Managers
-- **Field**: `operators.gid` links to Admin (ISP, formerly Group Admin)
+**4. ISP Admin → Managers**
+- **Relation**: One ISP Admin can create multiple Managers
+- **Field**: `operators.gid` links to ISP Admin
 - **Restrictions**:
-  - Managers work within Admin (ISP, formerly Group Admin) scope
+  - Managers work within ISP Admin scope
   - Managers have permission-based feature access
   - Cannot manage operators or configurations
   - Department-based complaint assignment
 
-**5. Operator/Admin (ISP, formerly Group Admin) → Card Distributors**
+**5. Operator/ISP Admin → Card Distributors**
 - **Relation**: Many-to-one relationship via `card_distributors` table
 - **Field**: `card_distributors.operator_id`
 - **Restrictions**:
@@ -1495,26 +1465,26 @@ $this->authorize('assignSpecialPermission', $operator);
 
 **1. Customer Data**
 - Each operator can only access their own customers
-- Admin (ISP, formerly Group Admin) can access all customers in their group
-- Super Admin has global access
+- ISP Admin can access all customers in their group
+- Tenancy has global access
 - Enforced at query level using operator_id filters
 
 **2. Financial Data**
 - Operators see only their own financial data
-- Admin (ISP, formerly Group Admin) sees aggregated group financial data
+- ISP Admin sees aggregated group financial data
 - Account balances tracked per operator (prepaid/postpaid)
 - Credit limits enforced for postpaid accounts
 
 **3. Package Assignment**
-- Admin (ISP, formerly Group Admin) controls which packages operators can use
+- ISP Admin controls which packages operators can use
 - Operators can only assign their assigned packages to customers
 - Package pricing can be operator-specific (with special permission)
-- Master packages managed only by Admin (ISP, formerly Group Admin)
+- Master packages managed only by ISP Admin
 
 **4. Billing Profile Assignment**
 - Controlled via `billing_profile_operator` pivot table
 - Operators can only use assigned billing profiles
-- Admin (ISP, formerly Group Admin) can change assignments
+- ISP Admin can change assignments
 - Affects billing calculation and invoice generation
 
 #### Account Type Restrictions
@@ -1524,14 +1494,14 @@ $this->authorize('assignSpecialPermission', $operator);
 - **Restriction**: Cannot exceed credit limit
 - **Applies To**: Operators, Sub-operators
 - **Balance**: Tracked as accounts payable
-- **Policy Check**: `editLimit()` policy requires Admin (ISP, formerly Group Admin)
+- **Policy Check**: `editLimit()` policy requires ISP Admin
 
 **Debit/Prepaid Accounts** (`account_type = 'debit'`):
 - **Feature**: Prepaid balance management
 - **Restriction**: Must maintain positive balance
 - **Applies To**: Operators, Sub-operators
 - **Balance**: Tracked as account balance
-- **Policy Check**: `addBalance()` policy requires Admin (ISP, formerly Group Admin)
+- **Policy Check**: `addBalance()` policy requires ISP Admin
 
 #### Subscription Restrictions
 
@@ -1545,17 +1515,17 @@ $this->authorize('assignSpecialPermission', $operator);
 
 **Enforcement**:
 - Checked in all policies before granting access
-- Super Admin can suspend subscriptions
-- Admin (ISP, formerly Group Admin) manages own subscription status
+- Tenancy can suspend subscriptions
+- ISP Admin manages own subscription status
 - Suspended accounts cannot perform any operations
 
 #### Special Permission Restrictions
 
 **Assignment Rules**:
-1. **Only Admin (ISP, formerly Group Admin)** can assign special permissions
+1. **Only ISP Admin** can assign special permissions
 2. **Only to role='operator'** (Operators with gid=mgid)
 3. Cannot assign to:
-   - Other Admin (ISP, formerly Group Admin)s
+   - Other ISP Admins
    - Managers (but can grant if they have operator role)
    - Card Distributors
    - Sales Managers
@@ -1564,16 +1534,16 @@ $this->authorize('assignSpecialPermission', $operator);
 **Permission Scope**:
 - Special permissions apply only to assigned operator
 - Do not cascade to sub-operators automatically
-- Admin (ISP, formerly Group Admin) can grant same permission to multiple operators
+- ISP Admin can grant same permission to multiple operators
 - Revocation removes permission immediately
 
 #### Menu Visibility Restrictions
 
 **Control Rules**:
-1. Only Admin (ISP, formerly Group Admin) can configure disabled menus
+1. Only ISP Admin can configure disabled menus
 2. Cannot disable menus for:
-   - Super Admin
-   - Other Admin (ISP, formerly Group Admin)s
+   - Tenancy
+   - Other ISP Admins
    - Self (demo mode protection)
 3. Menu changes cached per operator
 4. Applies to Operators and Sub-operators only
