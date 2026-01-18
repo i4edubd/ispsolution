@@ -15,7 +15,8 @@ return new class extends Migration
             $table->integer('operator_level')->default(100)->after('is_active');
             $table->json('disabled_menus')->nullable()->after('operator_level');
             $table->foreignId('manager_id')->nullable()->after('disabled_menus')->constrained('users')->nullOnDelete();
-            $table->string('operator_type')->nullable()->after('manager_id'); // super_admin, group_admin, operator, sub_operator, manager, card_distributor, developer, accountant
+            // Possible values: super_admin, group_admin, operator, sub_operator, manager, card_distributor, developer, accountant
+            $table->string('operator_type')->nullable()->after('manager_id');
         });
     }
 

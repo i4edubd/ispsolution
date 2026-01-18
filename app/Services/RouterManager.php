@@ -47,6 +47,8 @@ class RouterManager
 
     /**
      * Test router connectivity.
+     * 
+     * @throws \BadMethodCallException
      */
     public function testConnection(string $host, int $port = 8728, string $username = '', string $password = ''): bool
     {
@@ -56,7 +58,7 @@ class RouterManager
         // For MikroTik: Test RouterOS API port
         // For others: Test SSH/Telnet connection
         
-        return false;
+        throw new \BadMethodCallException('RouterManager::testConnection is not implemented yet.');
     }
 
     /**
@@ -80,6 +82,8 @@ class RouterManager
      * Reboot router.
      * 
      * TODO: Implement router reboot command
+     * 
+     * @throws \BadMethodCallException
      */
     public function reboot(int $routerId): bool
     {
@@ -87,7 +91,7 @@ class RouterManager
         
         // TODO: Send reboot command to router
         
-        return false;
+        throw new \BadMethodCallException('RouterManager::reboot is not implemented yet.');
     }
 
     /**
@@ -97,6 +101,8 @@ class RouterManager
      */
     public function getActiveSessions(int $routerId): array
     {
+        Log::info("RouterManager: Getting active sessions for router {$routerId}");
+        
         // TODO: Query router for active PPPoE/Hotspot sessions
         
         return [];
@@ -106,6 +112,8 @@ class RouterManager
      * Disconnect a user session.
      * 
      * TODO: Implement session disconnect
+     * 
+     * @throws \BadMethodCallException
      */
     public function disconnectSession(int $routerId, string $sessionId): bool
     {
@@ -113,13 +121,15 @@ class RouterManager
         
         // TODO: Send disconnect command to router
         
-        return false;
+        throw new \BadMethodCallException('RouterManager::disconnectSession is not implemented yet.');
     }
 
     /**
      * Sync user accounts to router.
      * 
      * TODO: Implement user synchronization
+     * 
+     * @throws \BadMethodCallException
      */
     public function syncUsers(int $routerId, array $users): bool
     {
@@ -127,13 +137,15 @@ class RouterManager
         
         // TODO: Create/update PPPoE secrets or hotspot users on router
         
-        return false;
+        throw new \BadMethodCallException('RouterManager::syncUsers is not implemented yet.');
     }
 
     /**
      * Create PPPoE user on router.
      * 
      * TODO: Implement PPPoE user creation
+     * 
+     * @throws \BadMethodCallException
      */
     public function createPPPoEUser(int $routerId, array $userData): bool
     {
@@ -141,13 +153,15 @@ class RouterManager
         
         // TODO: Add PPPoE secret to router
         
-        return false;
+        throw new \BadMethodCallException('RouterManager::createPPPoEUser is not implemented yet.');
     }
 
     /**
      * Update PPPoE user on router.
      * 
      * TODO: Implement PPPoE user update
+     * 
+     * @throws \BadMethodCallException
      */
     public function updatePPPoEUser(int $routerId, string $username, array $userData): bool
     {
@@ -155,13 +169,15 @@ class RouterManager
         
         // TODO: Update PPPoE secret on router
         
-        return false;
+        throw new \BadMethodCallException('RouterManager::updatePPPoEUser is not implemented yet.');
     }
 
     /**
      * Delete PPPoE user from router.
      * 
      * TODO: Implement PPPoE user deletion
+     * 
+     * @throws \BadMethodCallException
      */
     public function deletePPPoEUser(int $routerId, string $username): bool
     {
@@ -169,6 +185,6 @@ class RouterManager
         
         // TODO: Remove PPPoE secret from router
         
-        return false;
+        throw new \BadMethodCallException('RouterManager::deletePPPoEUser is not implemented yet.');
     }
 }

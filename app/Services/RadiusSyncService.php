@@ -19,6 +19,8 @@ class RadiusSyncService
      * Sync user to RADIUS database.
      * 
      * TODO: Implement actual RADIUS database operations
+     * 
+     * @throws \BadMethodCallException
      */
     public function syncUser(User $user): bool
     {
@@ -28,13 +30,15 @@ class RadiusSyncService
         // radcheck: username, attribute (Cleartext-Password), value
         // radreply: username, attribute (various), value
         
-        return false;
+        throw new \BadMethodCallException('RadiusSyncService::syncUser is not implemented yet.');
     }
 
     /**
      * Sync network user to RADIUS database.
      * 
      * TODO: Implement network user RADIUS sync
+     * 
+     * @throws \BadMethodCallException
      */
     public function syncNetworkUser(NetworkUser $networkUser): bool
     {
@@ -42,13 +46,15 @@ class RadiusSyncService
         
         // TODO: Create RADIUS entries for network user
         
-        return false;
+        throw new \BadMethodCallException('RadiusSyncService::syncNetworkUser is not implemented yet.');
     }
 
     /**
      * Remove user from RADIUS database.
      * 
      * TODO: Implement RADIUS user removal
+     * 
+     * @throws \BadMethodCallException
      */
     public function removeUser(string $username): bool
     {
@@ -56,13 +62,15 @@ class RadiusSyncService
         
         // TODO: Delete from radcheck, radreply, radgroupcheck, radgroupreply
         
-        return false;
+        throw new \BadMethodCallException('RadiusSyncService::removeUser is not implemented yet.');
     }
 
     /**
      * Update user password in RADIUS.
      * 
      * TODO: Implement password update
+     * 
+     * @throws \BadMethodCallException
      */
     public function updatePassword(string $username, string $password): bool
     {
@@ -70,13 +78,15 @@ class RadiusSyncService
         
         // TODO: Update Cleartext-Password in radcheck
         
-        return false;
+        throw new \BadMethodCallException('RadiusSyncService::updatePassword is not implemented yet.');
     }
 
     /**
      * Assign user to RADIUS group.
      * 
      * TODO: Implement group assignment
+     * 
+     * @throws \BadMethodCallException
      */
     public function assignToGroup(string $username, string $groupName): bool
     {
@@ -84,13 +94,15 @@ class RadiusSyncService
         
         // TODO: Insert into radusergroup table
         
-        return false;
+        throw new \BadMethodCallException('RadiusSyncService::assignToGroup is not implemented yet.');
     }
 
     /**
      * Set user attributes in RADIUS.
      * 
      * TODO: Implement attribute setting
+     * 
+     * @throws \BadMethodCallException
      */
     public function setAttributes(string $username, array $attributes): bool
     {
@@ -103,7 +115,7 @@ class RadiusSyncService
         // - Session-Timeout
         // - Idle-Timeout
         
-        return false;
+        throw new \BadMethodCallException('RadiusSyncService::setAttributes is not implemented yet.');
     }
 
     /**
@@ -135,6 +147,8 @@ class RadiusSyncService
      * Disconnect active session.
      * 
      * TODO: Implement session disconnect via RADIUS CoA/DM
+     * 
+     * @throws \BadMethodCallException
      */
     public function disconnectSession(string $username): bool
     {
@@ -142,7 +156,7 @@ class RadiusSyncService
         
         // TODO: Send RADIUS Disconnect-Message (DM) or Change-of-Authorization (CoA)
         
-        return false;
+        throw new \BadMethodCallException('RadiusSyncService::disconnectSession is not implemented yet.');
     }
 
     /**
@@ -196,6 +210,15 @@ class RadiusSyncService
     public function testConnection(): bool
     {
         try {
+            // Check if RADIUS connection is configured
+            $connections = config('database.connections', []);
+            
+            if (! is_array($connections) || ! array_key_exists('radius', $connections)) {
+                Log::warning('RadiusSyncService: RADIUS database connection "radius" is not configured.');
+                
+                return false;
+            }
+            
             // TODO: Test connection to RADIUS database
             DB::connection('radius')->getPdo();
             
