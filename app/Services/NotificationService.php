@@ -13,11 +13,21 @@ use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
+    protected SmsService $smsService;
+
+    public function __construct(SmsService $smsService)
+    {
+        $this->smsService = $smsService;
+    }
+
     /**
      * Send invoice generated notification
      */
     public function sendInvoiceGenerated(Invoice $invoice): bool
     {
+        $emailSent = false;
+        $smsSent = false;
+
         try {
             if ($invoice->user && $invoice->user->email) {
                 Mail::to($invoice->user->email)
@@ -28,7 +38,7 @@ class NotificationService
                     'user_id' => $invoice->user_id,
                 ]);
                 
-                return true;
+                $emailSent = true;
             }
         } catch (\Exception $e) {
             Log::error('Failed to send invoice generated email', [
@@ -36,8 +46,13 @@ class NotificationService
                 'error' => $e->getMessage(),
             ]);
         }
+
+        // Send SMS if enabled
+        if (config('sms.enabled', false)) {
+            $smsSent = $this->smsService->sendInvoiceGeneratedSms($invoice);
+        }
         
-        return false;
+        return $emailSent || $smsSent;
     }
 
     /**
@@ -45,6 +60,9 @@ class NotificationService
      */
     public function sendPaymentReceived(Payment $payment): bool
     {
+        $emailSent = false;
+        $smsSent = false;
+
         try {
             if ($payment->user && $payment->user->email) {
                 Mail::to($payment->user->email)
@@ -55,7 +73,7 @@ class NotificationService
                     'user_id' => $payment->user_id,
                 ]);
                 
-                return true;
+                $emailSent = true;
             }
         } catch (\Exception $e) {
             Log::error('Failed to send payment received email', [
@@ -63,8 +81,13 @@ class NotificationService
                 'error' => $e->getMessage(),
             ]);
         }
+
+        // Send SMS if enabled
+        if (config('sms.enabled', false)) {
+            $smsSent = $this->smsService->sendPaymentReceivedSms($payment);
+        }
         
-        return false;
+        return $emailSent || $smsSent;
     }
 
     /**
@@ -72,6 +95,9 @@ class NotificationService
      */
     public function sendInvoiceOverdue(Invoice $invoice): bool
     {
+        $emailSent = false;
+        $smsSent = false;
+
         try {
             if ($invoice->user && $invoice->user->email) {
                 Mail::to($invoice->user->email)
@@ -82,7 +108,7 @@ class NotificationService
                     'user_id' => $invoice->user_id,
                 ]);
                 
-                return true;
+                $emailSent = true;
             }
         } catch (\Exception $e) {
             Log::error('Failed to send invoice overdue email', [
@@ -90,8 +116,13 @@ class NotificationService
                 'error' => $e->getMessage(),
             ]);
         }
+
+        // Send SMS if enabled
+        if (config('sms.enabled', false)) {
+            $smsSent = $this->smsService->sendInvoiceOverdueSms($invoice);
+        }
         
-        return false;
+        return $emailSent || $smsSent;
     }
 
     /**
@@ -99,6 +130,9 @@ class NotificationService
      */
     public function sendInvoiceExpiringSoon(Invoice $invoice, int $daysUntilExpiry): bool
     {
+        $emailSent = false;
+        $smsSent = false;
+
         try {
             if ($invoice->user && $invoice->user->email) {
                 Mail::to($invoice->user->email)
@@ -110,7 +144,7 @@ class NotificationService
                     'days_until_expiry' => $daysUntilExpiry,
                 ]);
                 
-                return true;
+                $emailSent = true;
             }
         } catch (\Exception $e) {
             Log::error('Failed to send invoice expiring soon email', [
@@ -118,8 +152,13 @@ class NotificationService
                 'error' => $e->getMessage(),
             ]);
         }
+
+        // Send SMS if enabled
+        if (config('sms.enabled', false)) {
+            $smsSent = $this->smsService->sendInvoiceExpiringSoonSms($invoice, $daysUntilExpiry);
+        }
         
-        return false;
+        return $emailSent || $smsSent;
     }
 
     /**

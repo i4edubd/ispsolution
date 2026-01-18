@@ -39,8 +39,11 @@ class HotspotService
             'otp_expires_at' => $expiresAt,
         ]);
 
-        // In production, send SMS here
-        // $this->sendOTP($phoneNumber, $otpCode);
+        // Send OTP via SMS in production
+        if (config('sms.enabled', false)) {
+            $smsService = app(SmsService::class);
+            $smsService->sendOtpSms($phoneNumber, $otpCode);
+        }
 
         // Return user with plain OTP for testing
         $hotspotUser->plain_otp = $otpCode;
