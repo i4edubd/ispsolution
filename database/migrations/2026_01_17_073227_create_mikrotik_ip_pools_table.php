@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name')->index();
             $table->json('ranges');
             $table->timestamps();
-            
+
             $table->unique(['router_id', 'name']);
         });
     }

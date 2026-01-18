@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\RechargeCard;
 use App\Services\CardDistributionService;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CardDistributorController extends Controller
@@ -23,7 +22,7 @@ class CardDistributorController extends Controller
     public function dashboard(): View
     {
         $distributorId = auth()->id();
-        
+
         $stats = $this->cardService->getDistributorSummary(auth()->user());
 
         return view('panels.card-distributor.dashboard', compact('stats'));
@@ -62,7 +61,7 @@ class CardDistributorController extends Controller
     public function balance(): View
     {
         $summary = $this->cardService->getDistributorSummary(auth()->user());
-        
+
         return view('panels.card-distributor.balance', compact('summary'));
     }
 
@@ -73,7 +72,7 @@ class CardDistributorController extends Controller
     {
         // TODO: Implement commission tracking for card distributors
         $commissions = collect([]);
-        
+
         return view('panels.card-distributor.commissions.index', compact('commissions'));
     }
 }

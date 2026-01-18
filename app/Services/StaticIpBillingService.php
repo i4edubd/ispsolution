@@ -66,8 +66,8 @@ class StaticIpBillingService
         foreach ($activeAllocations as $allocation) {
             // Find user by username (adjust based on your user model)
             $user = User::where('username', $allocation->username)->first();
-            
-            if (!$user) {
+
+            if (! $user) {
                 continue;
             }
 
@@ -84,7 +84,7 @@ class StaticIpBillingService
 
             // Get static IP package (you may need to adjust this logic)
             $package = $this->getStaticIpPackage($user);
-            
+
             if ($package) {
                 $this->generateMonthlyInvoice($user, $allocation, $package);
                 $count++;

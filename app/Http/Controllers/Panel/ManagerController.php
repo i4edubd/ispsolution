@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\NetworkUser;
 use App\Models\NetworkUserSession;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ManagerController extends Controller
@@ -16,7 +15,7 @@ class ManagerController extends Controller
     public function dashboard(): View
     {
         $tenantId = auth()->user()->tenant_id;
-        
+
         $stats = [
             'total_network_users' => NetworkUser::where('tenant_id', $tenantId)->count(),
             'active_sessions' => NetworkUserSession::where('tenant_id', $tenantId)
@@ -70,7 +69,7 @@ class ManagerController extends Controller
     public function customers(): View
     {
         $tenantId = auth()->user()->tenant_id;
-        
+
         // Managers can view operators' or sub-operators' customers based on permissions
         $customers = \App\Models\User::where('tenant_id', $tenantId)
             ->where('operator_level', 100)
@@ -86,7 +85,7 @@ class ManagerController extends Controller
     public function payments(): View
     {
         $tenantId = auth()->user()->tenant_id;
-        
+
         $payments = \App\Models\Payment::where('tenant_id', $tenantId)
             ->latest()
             ->paginate(20);

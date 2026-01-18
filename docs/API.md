@@ -1,28 +1,295 @@
 # API Documentation
 
-**Version:** 1.0  
-**Base URL:** `/api/v1`  
-**Format:** JSON
+**Version:** 2.0  
+**Base URL:** `/api`  
+**Format:** JSON  
+**Authentication:** Laravel Sanctum (Token-based)
 
 ## Table of Contents
 
 1. [Authentication](#authentication)
-2. [IPAM Endpoints](#ipam-endpoints)
-3. [RADIUS Endpoints](#radius-endpoints)
-4. [MikroTik Endpoints](#mikrotik-endpoints)
-5. [Network Users Endpoints](#network-users-endpoints)
-6. [Error Handling](#error-handling)
+2. [Data API](#data-api)
+3. [Chart API](#chart-api)
+4. [IPAM Endpoints](#ipam-endpoints)
+5. [RADIUS Endpoints](#radius-endpoints)
+6. [MikroTik Endpoints](#mikrotik-endpoints)
+7. [Network Users Endpoints](#network-users-endpoints)
+8. [OLT API](#olt-api)
+9. [Monitoring API](#monitoring-api)
+10. [Error Handling](#error-handling)
+11. [Rate Limiting](#rate-limiting)
+12. [Pagination](#pagination)
 
 ---
 
 ## Authentication
 
-Currently, the API does not require authentication. In production, implement Laravel Sanctum or Passport for API token authentication.
+All API endpoints require authentication via Laravel Sanctum tokens.
 
-```bash
-# Future authentication header
-Authorization: Bearer YOUR_API_TOKEN
+### Headers Required
 ```
+Authorization: Bearer {your-token}
+Content-Type: application/json
+Accept: application/json
+```
+
+### Token Generation
+```php
+// Generate API token for user
+$token = $user->createToken('api-token')->plainTextToken;
+```
+
+---
+
+## Data API
+
+### Get Users
+**Endpoint:** `GET /api/data/users`
+
+**Description:** Retrieve paginated list of users with optional filtering.
+
+**Query Parameters:**
+- `search` (string, optional): Search by name, email, or username
+- `role` (string, optional): Filter by role name
+- `status` (string, optional): Filter by status ('active' or 'inactive')
+- `per_page` (integer, optional): Results per page (default: 20, max: 100)
+- `page` (integer, optional): Page number
+
+**Response:**
+```json
+{
+  "current_page": 1,
+  "data": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "username": "johndoe",
+      "is_active": true,
+      "role": {
+        "id": 2,
+        "name": "admin"
+      },
+      "created_at": "2026-01-15T10:00:00.000000Z"
+    }
+  ],
+  "total": 100,
+  "per_page": 20
+}
+```
+
+---
+
+### Get Network Users
+**Endpoint:** `GET /api/data/network-users`
+
+**Description:** Retrieve network users (PPPoE, Hotspot, etc.)
+
+**Query Parameters:**
+- `search` (string, optional): Search by username or IP address
+- `status` (string, optional): Filter by status
+- `per_page` (integer, optional): Results per page
+
+**Response:** Paginated network users with package details
+
+---
+
+### Get Invoices
+**Endpoint:** `GET /api/data/invoices`
+
+**Description:** Retrieve invoices with filtering options
+
+**Query Parameters:**
+- `search` (string, optional): Search by invoice number or user name
+- `status` (string, optional): Filter by status (pending, paid, overdue)
+- `from_date` (date, optional): Filter from date (Y-m-d format)
+- `to_date` (date, optional): Filter to date (Y-m-d format)
+- `per_page` (integer, optional): Results per page
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "invoice_number": "INV-20260115-00001",
+      "user": {
+        "id": 5,
+        "name": "Jane Smith"
+      },
+      "amount": 1500.00,
+      "tax_amount": 150.00,
+      "total_amount": 1650.00,
+      "status": "pending",
+      "due_date": "2026-02-15",
+      "created_at": "2026-01-15T10:00:00.000000Z"
+    }
+  ]
+}
+```
+
+---
+
+### Get Payments
+**Endpoint:** `GET /api/data/payments`
+
+**Description:** Retrieve payment records
+
+**Query Parameters:**
+- `search` (string, optional): Search by payment number, transaction ID, or user
+- `method` (string, optional): Filter by payment method
+- `status` (string, optional): Filter by status
+- `from_date` (date, optional): Filter from date
+- `to_date` (date, optional): Filter to date
+- `per_page` (integer, optional): Results per page
+
+---
+
+### Get Dashboard Stats
+**Endpoint:** `GET /api/data/dashboard-stats`
+
+**Description:** Get comprehensive dashboard statistics
+
+**Response:**
+```json
+{
+  "users": {
+    "total": 1250,
+    "active": 1180
+  },
+  "invoices": {
+    "total": 5432,
+    "pending": 234,
+    "overdue": 45,
+    "paid": 5153
+  },
+  "revenue": {
+    "today": 15000.00,
+    "this_month": 450000.00,
+    "this_year": 5400000.00
+  },
+  "network_users": {
+    "total": 980,
+    "active": 856,
+    "suspended": 124
+  }
+}
+```
+
+---
+
+### Get Recent Activities
+**Endpoint:** `GET /api/data/recent-activities`
+
+**Description:** Get recent system activities
+
+**Query Parameters:**
+- `limit` (integer, optional): Number of activities to return (default: 10)
+
+**Response:**
+```json
+[
+  {
+    "type": "payment",
+    "message": "Payment received from John Doe",
+    "amount": 1500.00,
+    "timestamp": "2026-01-15T10:30:00.000000Z"
+  },
+  {
+    "type": "invoice",
+    "message": "Invoice generated for Jane Smith",
+    "amount": 2000.00,
+    "timestamp": "2026-01-15T10:25:00.000000Z"
+  }
+]
+```
+
+---
+
+## Chart API
+
+### Get Revenue Chart
+**Endpoint:** `GET /api/charts/revenue`
+
+**Description:** Get monthly revenue data for the year
+
+**Query Parameters:**
+- `year` (integer, optional): Year to retrieve data for (default: current year)
+
+**Response:**
+```json
+{
+  "categories": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  "series": [
+    {
+      "name": "Revenue",
+      "data": [45000, 52000, 48000, 55000, 60000, 58000, 62000, 65000, 63000, 70000, 75000, 80000]
+    }
+  ]
+}
+```
+
+---
+
+### Get Invoice Status Chart
+**Endpoint:** `GET /api/charts/invoice-status`
+
+**Description:** Get invoice distribution by status
+
+**Response:**
+```json
+{
+  "labels": ["Pending", "Overdue", "Paid"],
+  "series": [234, 45, 5153]
+}
+```
+
+---
+
+### Get User Growth Chart
+**Endpoint:** `GET /api/charts/user-growth`
+
+**Description:** Get user growth over time
+
+**Query Parameters:**
+- `months` (integer, optional): Number of months to show (default: 12)
+
+**Response:**
+```json
+{
+  "categories": ["Jan 2025", "Feb 2025", "Mar 2025", ...],
+  "series": [
+    {
+      "name": "Total Users",
+      "data": [850, 920, 985, 1050, 1120, 1180, 1250]
+    }
+  ]
+}
+```
+
+---
+
+### Get Payment Method Chart
+**Endpoint:** `GET /api/charts/payment-methods`
+
+**Description:** Get payment distribution by method
+
+**Response:**
+```json
+{
+  "labels": ["Cash", "Bkash", "Nagad", "Bank Transfer", "Stripe"],
+  "series": [125000, 85000, 72000, 45000, 28000]
+}
+```
+
+---
+
+### Get Dashboard Charts
+**Endpoint:** `GET /api/charts/dashboard`
+
+**Description:** Get all dashboard charts in one request
+
+**Response:** Combined response of revenue, invoice status, user growth, and payment methods charts
 
 ---
 
@@ -690,6 +957,125 @@ POST /api/v1/network-users/{id}/sync-radius
 ```json
 {
   "password": "newpassword"
+}
+```
+
+---
+
+## OLT API
+
+### List OLTs
+**Endpoint:** `GET /api/v1/olt/devices`
+
+**Description:** List all OLT devices with status
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "OLT-Main",
+      "ip_address": "192.168.1.100",
+      "vendor": "Huawei",
+      "model": "MA5608T",
+      "status": "active",
+      "total_onus": 24,
+      "online_onus": 22
+    }
+  ]
+}
+```
+
+---
+
+### Get ONU Status
+**Endpoint:** `GET /api/v1/olt/devices/{id}/onus`
+
+**Description:** Get status of all ONUs on an OLT
+
+**Response:**
+```json
+{
+  "olt_id": 1,
+  "onus": [
+    {
+      "id": 1,
+      "serial_number": "HWTC12345678",
+      "status": "online",
+      "rx_power": -18.5,
+      "distance": 450,
+      "description": "Customer ABC"
+    }
+  ]
+}
+```
+
+---
+
+### Provision ONU
+**Endpoint:** `POST /api/v1/olt/devices/{id}/onus`
+
+**Description:** Provision a new ONU on an OLT
+
+**Request Body:**
+```json
+{
+  "serial_number": "HWTC12345678",
+  "description": "Customer ABC",
+  "profile": "profile_100M",
+  "vlan": 100
+}
+```
+
+---
+
+## Monitoring API
+
+### Get Device Status
+**Endpoint:** `GET /api/v1/monitoring/devices/{id}/status`
+
+**Description:** Get real-time status of a network device
+
+**Response:**
+```json
+{
+  "device_id": 1,
+  "status": "online",
+  "uptime": 864000,
+  "cpu_usage": 35.5,
+  "memory_usage": 62.3,
+  "temperature": 45.0,
+  "last_checked": "2026-01-18T10:00:00.000000Z"
+}
+```
+
+---
+
+### Get Bandwidth Usage
+**Endpoint:** `GET /api/v1/monitoring/devices/{id}/bandwidth`
+
+**Description:** Get bandwidth usage statistics
+
+**Query Parameters:**
+- `from` (datetime): Start time
+- `to` (datetime): End time
+- `interval` (string): Aggregation interval (5min, hour, day)
+
+**Response:**
+```json
+{
+  "device_id": 1,
+  "interval": "hour",
+  "data": [
+    {
+      "timestamp": "2026-01-18T10:00:00Z",
+      "rx_bytes": 1048576000,
+      "tx_bytes": 524288000,
+      "rx_rate": 10485760,
+      "tx_rate": 5242880
+    }
+  ]
 }
 ```
 

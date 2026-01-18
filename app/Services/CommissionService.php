@@ -18,7 +18,7 @@ class CommissionService
         $customer = $payment->user;
         $reseller = $customer->createdBy; // User who created this customer
 
-        if (!$reseller || !$reseller->hasRole('reseller') && !$reseller->hasRole('sub-reseller')) {
+        if (! $reseller || ! $reseller->hasRole('reseller') && ! $reseller->hasRole('sub-reseller')) {
             return null;
         }
 
@@ -96,12 +96,12 @@ class CommissionService
     {
         $commissions = [];
         $customer = $payment->user;
-        
+
         // Direct reseller commission
         $directReseller = $customer->createdBy;
         if ($directReseller && ($directReseller->hasRole('reseller') || $directReseller->hasRole('sub-reseller'))) {
             $commissions[] = $this->calculateCommission($payment);
-            
+
             // Check if direct reseller has a parent reseller
             if ($directReseller->hasRole('sub-reseller')) {
                 $parentReseller = $directReseller->createdBy;
@@ -109,7 +109,7 @@ class CommissionService
                     // Calculate parent reseller commission (smaller percentage)
                     $parentRate = 3.0; // 3% for parent reseller
                     $parentAmount = $payment->amount * ($parentRate / 100);
-                    
+
                     $commissions[] = Commission::create([
                         'tenant_id' => $payment->tenant_id,
                         'reseller_id' => $parentReseller->id,

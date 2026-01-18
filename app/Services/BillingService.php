@@ -17,7 +17,7 @@ class BillingService
     public function generateInvoice(User $user, ServicePackage $package, ?Carbon $billingDate = null): Invoice
     {
         $billingDate = $billingDate ?? now();
-        
+
         return DB::transaction(function () use ($user, $package, $billingDate) {
             $amount = $package->price;
             $taxRate = config('billing.tax_rate', 0); // VAT/TAX rate from config
@@ -76,7 +76,7 @@ class BillingService
                     'status' => 'paid',
                     'paid_at' => now(),
                 ]);
-                
+
                 // Auto-unlock account on payment
                 $user = $invoice->user;
                 if ($user) {
@@ -88,7 +88,7 @@ class BillingService
             if ($payment->status === 'completed') {
                 $commissionService = app(CommissionService::class);
                 $commissionService->calculateMultiLevelCommission($payment);
-                
+
                 // Send payment notification
                 $notificationService = app(NotificationService::class);
                 $notificationService->queuePaymentReceived($payment);
@@ -104,13 +104,13 @@ class BillingService
     public function generateDailyInvoice(User $user, ServicePackage $package, int $validityDays = 1): Invoice
     {
         $billingDate = now();
-        
+
         return DB::transaction(function () use ($user, $package, $validityDays, $billingDate) {
             // Calculate pro-rated amount based on validity days
             $dailyBaseDays = config('billing.daily_billing_base_days', 30);
             $dailyRate = $package->price / $dailyBaseDays;
             $amount = $dailyRate * $validityDays;
-            
+
             $taxRate = config('billing.tax_rate', 0);
             $taxAmount = $amount * ($taxRate / 100);
             $totalAmount = $amount + $taxAmount;
@@ -141,7 +141,7 @@ class BillingService
     public function generateMonthlyInvoice(User $user, ServicePackage $package, ?Carbon $billingDate = null): Invoice
     {
         $billingDate = $billingDate ?? now();
-        
+
         return DB::transaction(function () use ($user, $package, $billingDate) {
             $amount = $package->price;
             $taxRate = config('billing.tax_rate', 0);
@@ -174,10 +174,10 @@ class BillingService
     protected function calculateBillingPeriod(ServicePackage $package, Carbon $billingDate): array
     {
         $periodStart = $billingDate->copy()->startOfDay();
-        
+
         // Determine period based on package billing type
         $billingType = $package->billing_type ?? 'monthly';
-        
+
         if ($billingType === 'daily') {
             $validityDays = $package->validity_days ?? 1;
             $periodEnd = $periodStart->copy()->addDays($validityDays)->endOfDay();
@@ -221,7 +221,7 @@ class BillingService
             ->whereDate('due_date', '<', today())
             ->exists();
 
-        if (!$hasOverdueInvoices && !$user->is_active) {
+        if (! $hasOverdueInvoices && ! $user->is_active) {
             $user->update(['is_active' => true]);
         }
     }

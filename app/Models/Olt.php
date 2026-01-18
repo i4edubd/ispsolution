@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * OLT (Optical Line Terminal) Model
- * 
+ *
  * Represents an OLT device that manages multiple ONUs.
- * 
+ *
  * @property int $id
  * @property int|null $tenant_id
  * @property string $name
@@ -141,6 +141,6 @@ class Olt extends Model
      */
     public function canConnect(): bool
     {
-        return $this->isActive() && !empty($this->ip_address) && !empty($this->username) && !empty($this->password);
+        return $this->isActive() && ! empty($this->ip_address) && ! empty($this->username) && ! empty($this->password);
     }
 }

@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invoice;
 use App\Models\NetworkUser;
 use App\Models\NetworkUserSession;
-use App\Models\Invoice;
 use App\Models\Payment;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CustomerController extends Controller
@@ -18,16 +17,16 @@ class CustomerController extends Controller
     public function dashboard(): View
     {
         $user = auth()->user();
-        
+
         // Get customer's network user account
         $networkUser = NetworkUser::where('user_id', $user->id)->first();
-        
+
         // Calculate next billing due
         $nextInvoice = Invoice::where('user_id', $user->id)
             ->whereIn('status', ['pending', 'overdue'])
             ->orderBy('due_date')
             ->first();
-        
+
         $stats = [
             'current_package' => $user->currentPackage()?->name ?? 'No Package',
             'account_status' => $user->is_active ? 'Active' : 'Inactive',
@@ -54,7 +53,7 @@ class CustomerController extends Controller
     public function billing(): View
     {
         $user = auth()->user();
-        
+
         $invoices = Invoice::where('user_id', $user->id)
             ->with('package', 'payments')
             ->latest()
@@ -75,7 +74,7 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
         $networkUser = NetworkUser::where('user_id', $user->id)->first();
-        
+
         $sessions = [];
         if ($networkUser) {
             $sessions = NetworkUserSession::where('user_id', $networkUser->id)

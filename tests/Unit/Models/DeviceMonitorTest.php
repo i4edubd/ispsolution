@@ -6,7 +6,6 @@ namespace Tests\Unit\Models;
 
 use App\Models\DeviceMonitor;
 use App\Models\MikrotikRouter;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -37,7 +36,7 @@ class DeviceMonitorTest extends TestCase
         $online = DeviceMonitor::online()->get();
 
         $this->assertCount(2, $online);
-        $this->assertTrue($online->every(fn($m) => $m->status === 'online'));
+        $this->assertTrue($online->every(fn ($m) => $m->status === 'online'));
     }
 
     public function test_scope_offline_filters_offline_devices(): void
@@ -49,7 +48,7 @@ class DeviceMonitorTest extends TestCase
         $offline = DeviceMonitor::offline()->get();
 
         $this->assertCount(2, $offline);
-        $this->assertTrue($offline->every(fn($m) => $m->status === 'offline'));
+        $this->assertTrue($offline->every(fn ($m) => $m->status === 'offline'));
     }
 
     public function test_is_online_returns_correct_status(): void

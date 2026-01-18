@@ -18,8 +18,7 @@ class InvoiceOverdue extends Mailable
      */
     public function __construct(
         public Invoice $invoice
-    ) {
-    }
+    ) {}
 
     /**
      * Get the message envelope.

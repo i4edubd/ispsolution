@@ -402,8 +402,8 @@ Implementations:
 ## Documentation
 
 - [Phase-by-Phase Implementation Checklist](docs/TODO_REIMPLEMENT.md)
-- [Network Services Guide](docs/NETWORK_SERVICES.md) (coming soon)
-- [API Documentation](docs/API.md) (coming soon)
+- [Network Services Guide](docs/NETWORK_SERVICES.md)
+- [API Documentation](docs/API.md)
 
 ## Docker Services
 
@@ -524,21 +524,23 @@ See workflow files in `.github/workflows/` for details.
 ## Documentation
 
 ### Core Documentation
-- [Multi-Tenancy Role System](SUMMARY.md) - **NEW!** Complete role-based access control implementation
-- [Data Isolation Guide](DATA_ISOLATION.md) - Comprehensive role hierarchy and data access rules
-- [Role System Quick Reference](ROLE_SYSTEM_QUICK_REFERENCE.md) - Developer quick reference for roles
-- [Implementation Status](IMPLEMENTATION_STATUS.md) - Full tracking of role system implementation
-
-### Additional Documentation
-- [API Documentation](docs/API.md) - Complete REST API reference with examples
-- [Testing Guide](docs/TESTING.md) - How to run and write tests
-- [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment instructions
-- [Implementation Checklist](docs/TODO_REIMPLEMENT.md) - Detailed development roadmap
+- **[Documentation Index](docs/INDEX.md)** - Complete documentation catalog
+- **[Roles & Permissions Guide](docs/ROLES_AND_PERMISSIONS.md)** - Complete role hierarchy, permissions, and data isolation
+- **[API Documentation](docs/API.md)** - Complete REST API reference with authentication and examples
+- **[Testing Guide](docs/TESTING.md)** - How to run and write tests
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment instructions
+- **[Implementation Checklist](docs/TODO_REIMPLEMENT.md)** - Detailed development roadmap
 
 ### Feature Specifications
-- [TODO Features A-Z](TODO_FEATURES_A2Z.md) - Complete feature list and specifications
-- [Panel Specifications](PANELS_SPECIFICATION.md) - Detailed panel-specific documentation
-- [Multi-Tenancy Isolation](MULTI_TENANCY_ISOLATION.md) - Multi-tenancy architecture overview
+- **[Network Services Guide](docs/NETWORK_SERVICES.md)** - RADIUS, MikroTik, IPAM, and session monitoring
+- **[OLT Service Guide](docs/OLT_SERVICE_GUIDE.md)** - OLT/ONU management and provisioning
+- **[TODO Features A-Z](TODO_FEATURES_A2Z.md)** - Complete feature list and specifications
+- **[Panel Specifications](PANELS_SPECIFICATION.md)** - Detailed panel-specific documentation
+- **[Multi-Tenancy Isolation](MULTI_TENANCY_ISOLATION.md)** - Multi-tenancy architecture overview
+
+### MikroTik Integration
+- **[MikroTik Quick Start](MIKROTIK_QUICKSTART.md)** - Quick start guide for MikroTik integration
+- **[MikroTik Advanced Features](MIKROTIK_ADVANCED_FEATURES.md)** - Advanced MikroTik features and configuration
 
 ## Multi-Tenancy Role System
 

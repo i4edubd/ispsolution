@@ -10,7 +10,6 @@ use App\Models\BandwidthUsage;
 use App\Models\DeviceMonitor;
 use App\Models\MikrotikRouter;
 use App\Models\Olt;
-use App\Models\Onu;
 use App\Services\MonitoringService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,7 +20,9 @@ class MonitoringServiceTest extends TestCase
     use RefreshDatabase;
 
     private MonitoringService $service;
+
     private MikrotikServiceInterface $mikrotikService;
+
     private OltServiceInterface $oltService;
 
     protected function setUp(): void
@@ -81,7 +82,7 @@ class MonitoringServiceTest extends TestCase
     public function test_get_device_status_returns_monitoring_data(): void
     {
         $router = MikrotikRouter::factory()->create();
-        
+
         DeviceMonitor::create([
             'monitorable_type' => 'App\\Models\\MikrotikRouter',
             'monitorable_id' => $router->id,
@@ -125,7 +126,7 @@ class MonitoringServiceTest extends TestCase
     public function test_get_bandwidth_usage_returns_usage_data(): void
     {
         $router = MikrotikRouter::factory()->create();
-        
+
         BandwidthUsage::create([
             'monitorable_type' => 'App\\Models\\MikrotikRouter',
             'monitorable_id' => $router->id,
@@ -164,7 +165,7 @@ class MonitoringServiceTest extends TestCase
     public function test_get_bandwidth_graph_returns_chart_data(): void
     {
         $router = MikrotikRouter::factory()->create();
-        
+
         for ($i = 0; $i < 5; $i++) {
             BandwidthUsage::create([
                 'monitorable_type' => 'App\\Models\\MikrotikRouter',

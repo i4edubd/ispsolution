@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('burst_time')->nullable();
             $table->integer('priority')->default(8);
             $table->timestamps();
-            
+
             $table->unique(['router_id', 'name']);
         });
     }

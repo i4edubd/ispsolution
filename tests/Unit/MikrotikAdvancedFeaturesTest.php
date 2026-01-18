@@ -4,12 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use App\Models\MikrotikIpPool;
-use App\Models\MikrotikProfile;
-use App\Models\MikrotikQueue;
 use App\Models\MikrotikRouter;
-use App\Models\MikrotikVpnAccount;
-use App\Models\RouterConfiguration;
 use App\Services\MikrotikService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;

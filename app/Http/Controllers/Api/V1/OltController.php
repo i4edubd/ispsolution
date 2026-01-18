@@ -314,7 +314,7 @@ class OltController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Operation completed: {$successCount} of " . count($onuIds) . " successful",
+            'message' => "Operation completed: {$successCount} of " . count($onuIds) . ' successful',
             'results' => $results,
         ]);
     }

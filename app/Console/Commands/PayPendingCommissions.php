@@ -29,8 +29,9 @@ class PayPendingCommissions extends Command
     {
         $threshold = (float) $this->option('threshold');
 
-        if (!$this->option('force') && !$this->confirm("Do you want to auto-pay commissions >= {$threshold}?")) {
+        if (! $this->option('force') && ! $this->confirm("Do you want to auto-pay commissions >= {$threshold}?")) {
             $this->info('Operation cancelled.');
+
             return Command::SUCCESS;
         }
 

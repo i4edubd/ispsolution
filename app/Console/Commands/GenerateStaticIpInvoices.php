@@ -26,8 +26,9 @@ class GenerateStaticIpInvoices extends Command
      */
     public function handle(StaticIpBillingService $staticIpBillingService): int
     {
-        if (!$this->option('force') && !$this->confirm('Do you want to generate static IP invoices?')) {
+        if (! $this->option('force') && ! $this->confirm('Do you want to generate static IP invoices?')) {
             $this->info('Operation cancelled.');
+
             return Command::SUCCESS;
         }
 

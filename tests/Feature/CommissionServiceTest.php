@@ -2,12 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Tenant;
-use App\Models\Role;
-use App\Models\Payment;
-use App\Models\Invoice;
 use App\Models\Commission;
+use App\Models\Payment;
+use App\Models\Role;
+use App\Models\Tenant;
+use App\Models\User;
 use App\Services\CommissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,8 +16,11 @@ class CommissionServiceTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $reseller;
+
     protected User $customer;
+
     protected CommissionService $commissionService;
 
     protected function setUp(): void
@@ -26,7 +28,7 @@ class CommissionServiceTest extends TestCase
         parent::setUp();
 
         $tenant = Tenant::factory()->create();
-        
+
         $adminRole = Role::factory()->create(['name' => 'admin', 'level' => 90]);
         $resellerRole = Role::factory()->create(['name' => 'reseller', 'level' => 60]);
         $customerRole = Role::factory()->create(['name' => 'customer', 'level' => 10]);

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RechargeCard extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'tenant_id',
@@ -47,7 +47,7 @@ class RechargeCard extends Model
 
     public function isAvailable(): bool
     {
-        return $this->status === 'active' && 
+        return $this->status === 'active' &&
                ($this->expires_at === null || $this->expires_at->isFuture());
     }
 }

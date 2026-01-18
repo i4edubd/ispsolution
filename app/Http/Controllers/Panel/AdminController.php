@@ -3,18 +3,15 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\NetworkUser;
-use App\Models\ServicePackage;
+use App\Models\CiscoDevice;
 use App\Models\MikrotikRouter;
 use App\Models\Nas;
-use App\Models\CiscoDevice;
+use App\Models\NetworkUser;
 use App\Models\Olt;
-use App\Models\PaymentGateway;
 use App\Models\Payment;
-use App\Models\Invoice;
-use App\Models\RechargeCard;
-use Illuminate\Http\Request;
+use App\Models\PaymentGateway;
+use App\Models\ServicePackage;
+use App\Models\User;
 use Illuminate\View\View;
 
 class AdminController extends Controller
@@ -78,7 +75,7 @@ class AdminController extends Controller
 
     /**
      * Display MikroTik routers listing.
-     * 
+     *
      * Displays paginated list of MikroTik routers for admin users with full management access.
      * Includes 20 items per page with tenant isolation automatically applied via BelongsToTenant trait.
      */
@@ -91,7 +88,7 @@ class AdminController extends Controller
 
     /**
      * Display NAS devices listing.
-     * 
+     *
      * Displays paginated list of Network Access Server devices for admin users with full management access.
      * Includes 20 items per page with tenant isolation automatically applied via BelongsToTenant trait.
      */
@@ -104,7 +101,7 @@ class AdminController extends Controller
 
     /**
      * Display Cisco devices listing.
-     * 
+     *
      * Displays paginated list of Cisco network devices for admin users with full management access.
      * Includes 20 items per page with tenant isolation automatically applied via BelongsToTenant trait.
      */
@@ -117,7 +114,7 @@ class AdminController extends Controller
 
     /**
      * Display OLT devices listing.
-     * 
+     *
      * Displays paginated list of Optical Line Terminal devices for admin users with full management access.
      * Includes 20 items per page with tenant isolation automatically applied via BelongsToTenant trait.
      */
@@ -135,7 +132,7 @@ class AdminController extends Controller
     {
         $customers = NetworkUser::with('package')->latest()->paginate(20);
         $packages = ServicePackage::all();
-        
+
         $stats = [
             'total' => NetworkUser::count(),
             'active' => NetworkUser::where('status', 'active')->count(),
@@ -193,7 +190,7 @@ class AdminController extends Controller
     public function onlineCustomers(): View
     {
         $customers = NetworkUser::with('package')->where('status', 'active')->latest()->paginate(20);
-        
+
         $stats = [
             'online' => $customers->total(),
             'sessions' => 0,
@@ -462,12 +459,12 @@ class AdminController extends Controller
     public function paymentGateways(): View
     {
         $gateways = PaymentGateway::latest()->paginate(20);
-        
+
         $totalPayments = Payment::whereNotNull('payment_gateway_id')->count();
         $completedPayments = Payment::whereNotNull('payment_gateway_id')
             ->where('status', 'completed')
             ->count();
-        
+
         $stats = [
             'active' => PaymentGateway::where('is_active', true)->count(),
             'total_transactions' => $totalPayments,
@@ -494,7 +491,7 @@ class AdminController extends Controller
     public function routers(): View
     {
         $routers = MikrotikRouter::with('networkUsers')->paginate(20);
-        
+
         $stats = [
             'total' => MikrotikRouter::count(),
             'online' => MikrotikRouter::where('status', 'online')->count(),
@@ -519,7 +516,7 @@ class AdminController extends Controller
     public function oltList(): View
     {
         $devices = Olt::latest()->paginate(20);
-        
+
         $stats = [
             'total' => Olt::count(),
             'active' => Olt::where('status', 'active')->count(),
@@ -552,7 +549,7 @@ class AdminController extends Controller
     public function oltMonitor(int $id): View
     {
         $olt = Olt::findOrFail($id);
-        
+
         return view('panels.admin.olt.monitor', compact('olt'));
     }
 
@@ -562,7 +559,7 @@ class AdminController extends Controller
     public function oltPerformance(int $id): View
     {
         $olt = Olt::findOrFail($id);
-        
+
         return view('panels.admin.olt.performance', compact('olt'));
     }
 
@@ -604,7 +601,7 @@ class AdminController extends Controller
     public function devices(): View
     {
         $devices = collect(); // Replace with actual query combining multiple device types
-        
+
         $stats = [
             'total' => 0,
             'routers' => MikrotikRouter::count(),
@@ -639,7 +636,7 @@ class AdminController extends Controller
     public function devicesMap(): View
     {
         $devices = collect(); // Replace with actual query for devices with location data
-        
+
         $stats = [
             'online' => 0,
             'offline' => 0,
@@ -656,7 +653,7 @@ class AdminController extends Controller
     public function ipv4Pools(): View
     {
         $pools = collect(); // Replace with: IpPool::where('ip_version', 4)->paginate(20);
-        
+
         $stats = [
             'total' => 0,
             'available' => 0,
@@ -673,7 +670,7 @@ class AdminController extends Controller
     public function ipv6Pools(): View
     {
         $pools = collect(); // Replace with: IpPool::where('ip_version', 6)->paginate(20);
-        
+
         $stats = [
             'pools' => 0,
             'allocated' => 0,
@@ -689,7 +686,7 @@ class AdminController extends Controller
     public function pppoeProfiles(): View
     {
         $profiles = collect(); // Replace with: MikrotikProfile::paginate(20);
-        
+
         $stats = [
             'total' => 0,
             'active' => 0,

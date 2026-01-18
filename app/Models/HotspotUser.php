@@ -55,8 +55,8 @@ class HotspotUser extends Model
 
     public function isActive(): bool
     {
-        return $this->status === 'active' && 
-               $this->is_verified && 
-               (!$this->expires_at || $this->expires_at->isFuture());
+        return $this->status === 'active' &&
+               $this->is_verified &&
+               (! $this->expires_at || $this->expires_at->isFuture());
     }
 }

@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\PaymentGateway;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PaymentGatewayService
@@ -143,9 +142,11 @@ class PaymentGatewayService
                     'transaction_id' => $payload['transaction_id'] ?? null,
                     'data' => $payload,
                 ]);
+
                 return true;
             }
         }
+
         return false;
     }
 
@@ -165,9 +166,11 @@ class PaymentGatewayService
                     'transaction_id' => $payload['transaction_id'] ?? null,
                     'data' => $payload,
                 ]);
+
                 return true;
             }
         }
+
         return false;
     }
 
@@ -186,9 +189,11 @@ class PaymentGatewayService
                     'transaction_id' => $payload['tran_id'] ?? null,
                     'data' => $payload,
                 ]);
+
                 return true;
             }
         }
+
         return false;
     }
 
@@ -207,9 +212,11 @@ class PaymentGatewayService
                     'transaction_id' => $payload['id'] ?? null,
                     'data' => $payload,
                 ]);
+
                 return true;
             }
         }
+
         return false;
     }
 

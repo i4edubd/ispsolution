@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Role;
 use App\Models\ServicePackage;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Models\Role;
 use App\Services\BillingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,7 +15,9 @@ class DailyBillingTest extends TestCase
     use RefreshDatabase;
 
     protected User $customer;
+
     protected ServicePackage $dailyPackage;
+
     protected BillingService $billingService;
 
     protected function setUp(): void
@@ -49,7 +51,7 @@ class DailyBillingTest extends TestCase
         $this->assertNotNull($invoice);
         $this->assertEquals($this->customer->id, $invoice->user_id);
         $this->assertEquals($this->dailyPackage->id, $invoice->package_id);
-        
+
         // Pro-rated for 7 days: (300 / 30) * 7 = 70
         $this->assertEquals(70.00, $invoice->amount);
         $this->assertEquals('pending', $invoice->status);

@@ -5,8 +5,6 @@ namespace Tests\Unit;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\TenancyService;
-use App\Traits\BelongsToTenant;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

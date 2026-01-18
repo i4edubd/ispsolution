@@ -4,10 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Invoice;
 use App\Models\PaymentGateway;
+use App\Models\Role;
 use App\Models\ServicePackage;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Models\Role;
 use App\Services\PaymentGatewayService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,8 +17,11 @@ class PaymentGatewayTest extends TestCase
     use RefreshDatabase;
 
     protected User $customer;
+
     protected Invoice $invoice;
+
     protected PaymentGateway $gateway;
+
     protected PaymentGatewayService $paymentGatewayService;
 
     protected function setUp(): void

@@ -27,8 +27,9 @@ class GenerateMonthlyInvoices extends Command
      */
     public function handle(BillingService $billingService): int
     {
-        if (!$this->option('force') && !$this->confirm('Do you want to generate monthly invoices?')) {
+        if (! $this->option('force') && ! $this->confirm('Do you want to generate monthly invoices?')) {
             $this->info('Operation cancelled.');
+
             return Command::SUCCESS;
         }
 
@@ -39,8 +40,8 @@ class GenerateMonthlyInvoices extends Command
             $query->where('billing_type', 'monthly')
                 ->where('is_active', true);
         })
-        ->where('is_active', true)
-        ->get();
+            ->where('is_active', true)
+            ->get();
 
         $count = 0;
         foreach ($users as $user) {
@@ -50,7 +51,7 @@ class GenerateMonthlyInvoices extends Command
                 ->whereMonth('billing_period_start', now()->month)
                 ->exists();
 
-            if (!$hasInvoiceThisMonth) {
+            if (! $hasInvoiceThisMonth) {
                 $package = $user->package;
                 if ($package) {
                     $billingService->generateMonthlyInvoice($user, $package);

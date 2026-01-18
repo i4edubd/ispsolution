@@ -24,6 +24,7 @@ class MonitoringController extends Controller
     {
         try {
             $statuses = $this->monitoringService->getAllDeviceStatuses();
+
             return response()->json($statuses);
         } catch (\Exception $e) {
             return response()->json([
@@ -51,6 +52,7 @@ class MonitoringController extends Controller
 
         try {
             $status = $this->monitoringService->getDeviceStatus($type, $id);
+
             return response()->json($status);
         } catch (\Exception $e) {
             return response()->json([
@@ -78,6 +80,7 @@ class MonitoringController extends Controller
 
         try {
             $metrics = $this->monitoringService->monitorDevice($type, $id);
+
             return response()->json([
                 'message' => 'Device monitored successfully',
                 'metrics' => $metrics,
@@ -153,7 +156,7 @@ class MonitoringController extends Controller
         }
 
         try {
-            $startDate = $request->has('start_date') 
+            $startDate = $request->has('start_date')
                 ? Carbon::parse($request->input('start_date'))
                 : null;
 

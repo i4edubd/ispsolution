@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\ServicePackage;
 use App\Models\Commission;
+use App\Models\ServicePackage;
+use App\Models\User;
 use App\Services\CommissionService;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ResellerController extends Controller
@@ -26,7 +25,7 @@ class ResellerController extends Controller
     {
         $resellerId = auth()->id();
         $commissionSummary = $this->commissionService->getResellerCommissionSummary(auth()->user());
-        
+
         $stats = [
             'total_customers' => User::where('created_by', $resellerId)->count(),
             'active_customers' => User::where('created_by', $resellerId)

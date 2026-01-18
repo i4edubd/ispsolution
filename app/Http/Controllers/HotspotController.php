@@ -41,6 +41,7 @@ class HotspotController extends Controller
     public function create(): View
     {
         $packages = Package::where('is_active', true)->get();
+
         return view('hotspot.create', compact('packages'));
     }
 
@@ -58,7 +59,7 @@ class HotspotController extends Controller
 
         try {
             $validated['tenant_id'] = auth()->user()->tenant_id;
-            
+
             $hotspotUser = $this->hotspotService->createHotspotUser($validated);
 
             return redirect()->route('hotspot.show', $hotspotUser)
@@ -83,9 +84,9 @@ class HotspotController extends Controller
     public function show(HotspotUser $hotspotUser): View
     {
         $this->authorize('view', $hotspotUser);
-        
+
         $hotspotUser->load(['package']);
-        
+
         return view('hotspot.show', compact('hotspotUser'));
     }
 
@@ -95,9 +96,9 @@ class HotspotController extends Controller
     public function edit(HotspotUser $hotspotUser): View
     {
         $this->authorize('update', $hotspotUser);
-        
+
         $packages = Package::where('is_active', true)->get();
-        
+
         return view('hotspot.edit', compact('hotspotUser', 'packages'));
     }
 
@@ -117,7 +118,7 @@ class HotspotController extends Controller
         ]);
 
         try {
-            if (!empty($validated['password'])) {
+            if (! empty($validated['password'])) {
                 $validated['password'] = bcrypt($validated['password']);
             } else {
                 unset($validated['password']);

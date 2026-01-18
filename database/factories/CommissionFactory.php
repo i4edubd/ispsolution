@@ -3,9 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\Commission;
-use App\Models\User;
-use App\Models\Payment;
 use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CommissionFactory extends Factory
@@ -17,7 +17,7 @@ class CommissionFactory extends Factory
         $commissionPercentage = $this->faker->randomFloat(2, 5, 20);
         $paymentAmount = $this->faker->randomFloat(2, 100, 1000);
         $commissionAmount = ($paymentAmount * $commissionPercentage) / 100;
-        
+
         return [
             'tenant_id' => 1,
             'reseller_id' => User::factory(),

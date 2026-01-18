@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * Device Monitor Model
- * 
+ *
  * Stores real-time monitoring data for network devices.
- * 
+ *
  * @property int $id
  * @property int|null $tenant_id
  * @property string $monitorable_type
@@ -126,7 +126,7 @@ class DeviceMonitor extends Model
      */
     public function getUptimeHuman(): ?string
     {
-        if (!$this->uptime) {
+        if (! $this->uptime) {
             return null;
         }
 

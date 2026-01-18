@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * Bandwidth Usage Model
- * 
+ *
  * Stores bandwidth usage data for network devices.
- * 
+ *
  * @property int $id
  * @property int|null $tenant_id
  * @property string $monitorable_type
@@ -88,7 +88,7 @@ class BandwidthUsage extends Model
     public function scopeDevice($query, string $type, int $id)
     {
         return $query->where('monitorable_type', $type)
-                    ->where('monitorable_id', $id);
+            ->where('monitorable_id', $id);
     }
 
     /**

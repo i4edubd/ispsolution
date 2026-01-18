@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * ONU (Optical Network Unit) Model
- * 
+ *
  * Represents an ONU device connected to an OLT.
- * 
+ *
  * @property int $id
  * @property int|null $tenant_id
  * @property int $olt_id
@@ -131,13 +131,13 @@ class Onu extends Model
 
     /**
      * Get the full PON path for the ONU.
-     * 
+     *
      * @return string Format: "OLT-Name / PON Port / ONU ID"
      */
     public function getFullPonPath(): string
     {
         $oltName = $this->olt?->name ?? 'Unknown OLT';
-        
+
         return "{$oltName} / {$this->pon_port} / {$this->onu_id}";
     }
 }

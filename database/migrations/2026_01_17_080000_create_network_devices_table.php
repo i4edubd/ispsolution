@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('status')->default('active');
             $table->json('metadata')->nullable();
             $table->timestamps();
-            
+
             $table->index(['tenant_id', 'device_type']);
         });
 
@@ -35,7 +35,7 @@ return new class extends Migration
             $table->integer('bandwidth')->nullable(); // Mbps
             $table->string('status')->default('active');
             $table->timestamps();
-            
+
             $table->index(['tenant_id', 'status']);
         });
     }

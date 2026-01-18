@@ -23,14 +23,12 @@ class MenuService
      *   7. Staff
      *   8. Card Distributor
      *   9. Customer
-     *
-     * @return array
      */
     public function generateMenu(): array
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return [];
         }
 
@@ -78,8 +76,6 @@ class MenuService
 
     /**
      * Get Developer menu items (supreme authority).
-     *
-     * @return array
      */
     protected function getDeveloperMenu(): array
     {
@@ -137,8 +133,6 @@ class MenuService
 
     /**
      * Get Super Admin menu items.
-     *
-     * @return array
      */
     protected function getSuperAdminMenu(): array
     {
@@ -204,8 +198,6 @@ class MenuService
 
     /**
      * Get Admin menu items.
-     *
-     * @return array
      */
     protected function getAdminMenu(): array
     {
@@ -268,8 +260,6 @@ class MenuService
 
     /**
      * Get Manager menu items.
-     *
-     * @return array
      */
     protected function getManagerMenu(): array
     {
@@ -299,8 +289,6 @@ class MenuService
 
     /**
      * Get Reseller menu items.
-     *
-     * @return array
      */
     protected function getResellerMenu(): array
     {
@@ -330,8 +318,6 @@ class MenuService
 
     /**
      * Get Sub-Reseller menu items.
-     *
-     * @return array
      */
     protected function getSubResellerMenu(): array
     {
@@ -361,8 +347,6 @@ class MenuService
 
     /**
      * Get Staff menu items.
-     *
-     * @return array
      */
     protected function getStaffMenu(): array
     {
@@ -387,8 +371,6 @@ class MenuService
 
     /**
      * Get Card Distributor menu items.
-     *
-     * @return array
      */
     protected function getCardDistributorMenu(): array
     {
@@ -418,8 +400,6 @@ class MenuService
 
     /**
      * Get Customer menu items.
-     *
-     * @return array
      */
     protected function getCustomerMenu(): array
     {

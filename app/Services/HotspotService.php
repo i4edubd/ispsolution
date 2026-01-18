@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\Models\HotspotUser;
 use App\Models\Package;
-use App\Models\Tenant;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -47,7 +45,7 @@ class HotspotService
 
         // Return user with plain OTP for testing
         $hotspotUser->plain_otp = $otpCode;
-        
+
         return $hotspotUser;
     }
 
@@ -62,12 +60,12 @@ class HotspotService
             ->firstOrFail();
 
         // Check if OTP is expired
-        if (!$hotspotUser->isOtpValid()) {
+        if (! $hotspotUser->isOtpValid()) {
             throw new \Exception('OTP has expired. Please request a new one.');
         }
 
         // Verify OTP
-        if (!Hash::check($otpCode, $hotspotUser->otp_code)) {
+        if (! Hash::check($otpCode, $hotspotUser->otp_code)) {
             throw new \Exception('Invalid OTP code.');
         }
 
@@ -82,7 +80,7 @@ class HotspotService
     {
         return DB::transaction(function () use ($hotspotUser, $packageId) {
             $package = Package::findOrFail($packageId);
-            
+
             // Calculate expiration based on package
             $validityDays = $package->validity_days ?? 30;
             $expiresAt = now()->addDays($validityDays);
@@ -115,10 +113,10 @@ class HotspotService
     {
         return DB::transaction(function () use ($data) {
             $password = $data['password'] ?? Str::random(8);
-            
+
             $package = Package::findOrFail($data['package_id']);
             $validityDays = $package->validity_days ?? 30;
-            
+
             $hotspotUser = HotspotUser::create([
                 'tenant_id' => $data['tenant_id'],
                 'phone_number' => $data['phone_number'],
@@ -146,8 +144,8 @@ class HotspotService
             $package = Package::findOrFail($packageId);
             $validityDays = $package->validity_days ?? 30;
 
-            $currentExpiry = $hotspotUser->expires_at && $hotspotUser->expires_at->isFuture() 
-                ? $hotspotUser->expires_at 
+            $currentExpiry = $hotspotUser->expires_at && $hotspotUser->expires_at->isFuture()
+                ? $hotspotUser->expires_at
                 : now();
 
             $hotspotUser->update([
@@ -202,9 +200,9 @@ class HotspotService
     {
         $base = preg_replace('/[^0-9]/', '', $phoneNumber);
         $base = substr($base, -8); // Last 8 digits
-        
+
         $username = 'HS' . $base;
-        
+
         // Ensure uniqueness
         $counter = 1;
         $originalUsername = $username;

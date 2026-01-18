@@ -32,7 +32,7 @@ class MonitoringAggregateHourly extends Command
 
         try {
             $processed = $monitoringService->aggregateHourlyData();
-            
+
             if ($processed > 0) {
                 $this->info("✓ Aggregated {$processed} raw records to hourly summaries");
             } else {
@@ -42,6 +42,7 @@ class MonitoringAggregateHourly extends Command
             return self::SUCCESS;
         } catch (\Exception $e) {
             $this->error("Aggregation failed: {$e->getMessage()}");
+
             return self::FAILURE;
         }
     }

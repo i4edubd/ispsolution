@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
-use App\Models\NetworkUser;
+use App\Models\CiscoDevice;
 use App\Models\MikrotikRouter;
 use App\Models\Nas;
-use App\Models\CiscoDevice;
+use App\Models\NetworkUser;
 use App\Models\Olt;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class StaffController extends Controller
@@ -25,13 +24,13 @@ class StaffController extends Controller
 
         // Eager load roles to avoid N+1 queries
         $user = auth()->user()->load('roles');
-        
+
         // Check permissions and add device stats
         $canViewMikrotik = $user->hasPermission('devices.mikrotik.view');
         $canViewNas = $user->hasPermission('devices.nas.view');
         $canViewCisco = $user->hasPermission('devices.cisco.view');
         $canViewOlt = $user->hasPermission('devices.olt.view');
-        
+
         if ($canViewMikrotik) {
             $stats['total_mikrotik'] = MikrotikRouter::count();
         }
@@ -73,7 +72,7 @@ class StaffController extends Controller
      */
     public function mikrotikRouters(): View
     {
-        if (!auth()->user()->hasPermission('devices.mikrotik.view')) {
+        if (! auth()->user()->hasPermission('devices.mikrotik.view')) {
             abort(403, 'Unauthorized access to MikroTik routers.');
         }
 
@@ -87,7 +86,7 @@ class StaffController extends Controller
      */
     public function nasDevices(): View
     {
-        if (!auth()->user()->hasPermission('devices.nas.view')) {
+        if (! auth()->user()->hasPermission('devices.nas.view')) {
             abort(403, 'Unauthorized access to NAS devices.');
         }
 
@@ -101,7 +100,7 @@ class StaffController extends Controller
      */
     public function ciscoDevices(): View
     {
-        if (!auth()->user()->hasPermission('devices.cisco.view')) {
+        if (! auth()->user()->hasPermission('devices.cisco.view')) {
             abort(403, 'Unauthorized access to Cisco devices.');
         }
 
@@ -115,7 +114,7 @@ class StaffController extends Controller
      */
     public function oltDevices(): View
     {
-        if (!auth()->user()->hasPermission('devices.olt.view')) {
+        if (! auth()->user()->hasPermission('devices.olt.view')) {
             abort(403, 'Unauthorized access to OLT devices.');
         }
 

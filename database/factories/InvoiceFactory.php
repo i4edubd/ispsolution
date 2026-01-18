@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Invoice;
-use App\Models\User;
 use App\Models\ServicePackage;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class InvoiceFactory extends Factory
@@ -15,7 +15,7 @@ class InvoiceFactory extends Factory
     {
         $amount = $this->faker->randomFloat(2, 100, 5000);
         $taxAmount = $amount * 0.15; // 15% tax
-        
+
         return [
             'tenant_id' => 1,
             'invoice_number' => 'INV-' . $this->faker->unique()->numerify('######'),

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->integer('session_timeout')->nullable();
             $table->integer('idle_timeout')->nullable();
             $table->timestamps();
-            
+
             $table->unique(['router_id', 'name']);
         });
     }
