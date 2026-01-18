@@ -94,6 +94,46 @@ This integration includes 10 complete demo layouts, each showcasing different UI
 
 ## Features
 
+### Multi-Tenant Role Management
+
+The platform implements a hierarchical role-based access control (RBAC) system with strict tenant boundaries:
+
+#### Role Hierarchy (Lower level = Higher privilege)
+
+```
+Level 0:   Developer        - Supreme authority across all tenants
+Level 10:  Super Admin      - Manages Admins within own tenants only
+Level 20:  Admin            - Manages Operators within ISP tenant segment
+Level 30:  Operator         - Manages Sub-Operators and customers in segment
+Level 40:  Sub-Operator     - Manages only own customers
+Level 50:  Manager          - View-only scoped access
+Level 70:  Accountant       - View-only financial access
+Level 80:  Staff            - View-only scoped access
+Level 100: Customer         - End user
+```
+
+#### Role Creation Permissions
+
+- **Developer** → Creates/Manages Super Admins across all tenants
+- **Super Admin** → Creates/Manages Admins within their own tenants only
+- **Admin** → Creates/Manages Operators, Sub-Operators, Managers, Staff within their ISP
+- **Operator** → Creates/Manages Sub-Operators and customer accounts
+- **Sub-Operator** → Creates customer accounts only
+- **Manager/Staff/Accountant** → View-only access, cannot create users
+
+#### Data Isolation Rules
+
+- **Developer**: Access all tenants, all data (supreme authority)
+- **Super Admin**: Access only tenants they created
+- **Admin**: Access only data within their ISP tenant
+- **Operator**: Access own customers + sub-operator customers
+- **Sub-Operator**: Access only own customers
+- **View-Only Roles**: Permission-based read access within tenant
+
+For detailed documentation, see:
+- [DATA_ISOLATION.md](DATA_ISOLATION.md) - Complete data isolation rules
+- [ROLE_SYSTEM_QUICK_REFERENCE.md](ROLE_SYSTEM_QUICK_REFERENCE.md) - Quick reference guide
+
 ### ✅ Core Implementation
 
 1. **Laravel MVC Architecture**
