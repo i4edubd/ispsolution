@@ -333,9 +333,13 @@ class User extends Authenticatable
         // Super Admin can only manage users in their own tenants
         if ($this->operator_level === 10) {
             // Check if the other user belongs to a tenant created by this Super Admin
-            $tenant = \App\Models\Tenant::find($otherUser->tenant_id);
-            if ($tenant && $tenant->created_by === $this->id) {
-                return $this->operator_level < $otherUser->operator_level;
+            // Using a direct comparison to avoid N+1 query issues
+            if ($otherUser->tenant_id) {
+                $tenantCreatedBy = \App\Models\Tenant::where('id', $otherUser->tenant_id)
+                    ->value('created_by');
+                if ($tenantCreatedBy === $this->id) {
+                    return $this->operator_level < $otherUser->operator_level;
+                }
             }
             return false;
         }
@@ -350,7 +354,7 @@ class User extends Authenticatable
      * Enforces the role creation hierarchy:
      * - Developer: Can create Super Admins (level 10)
      * - Super Admin: Can create Admins (level 20) within their own tenants
-     * - Admin: Can create Operators (level 30) within their ISP
+     * - Admin: Can create Operators (30), Sub-Operators (40), Managers (50), Accountants (70), Staff (80), and Customers (100) within their ISP
      * - Operator: Can create Sub-Operators (level 40) and Customers (level 100)
      * - Sub-Operator: Can only create Customers (level 100)
      */
@@ -366,7 +370,7 @@ class User extends Authenticatable
             return $targetLevel >= 20 && $targetLevel > $this->operator_level;
         }
 
-        // Admin can create Operators, Sub-Operators, Managers, Staff, and Customers
+        // Admin can create Operators (30), Sub-Operators (40), Managers (50), Accountants (70), Staff (80), and Customers (100)
         if ($this->isAdmin()) {
             return $targetLevel >= 30 && $targetLevel > $this->operator_level;
         }
@@ -401,9 +405,13 @@ class User extends Authenticatable
         }
 
         // Super Admin can only manage users in their own tenants
+        // Using subquery for better performance
         if ($this->operator_level === 10) {
-            $ownTenantIds = \App\Models\Tenant::where('created_by', $this->id)->pluck('id');
-            $query->whereIn('tenant_id', $ownTenantIds);
+            $query->whereIn('tenant_id', function ($q) {
+                $q->select('id')
+                    ->from('tenants')
+                    ->where('created_by', $this->id);
+            });
             return $query;
         }
 

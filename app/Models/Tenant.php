@@ -23,6 +23,7 @@ class Tenant extends Model
         'database',
         'settings',
         'status',
+        'created_by',
     ];
 
     /**
@@ -40,6 +41,14 @@ class Tenant extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    /**
+     * Get the user who created this tenant (Super Admin).
+     */
+    public function creator(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
