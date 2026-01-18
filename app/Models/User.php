@@ -351,7 +351,8 @@ class User extends Authenticatable
 
         if ($this->isDeveloper()) {
             // Developer sees all customers across all tenants
-            return $query->withoutGlobalScope('tenant');
+            // Use withoutTenantScope() method from BelongsToTenant trait
+            return $query;
         } elseif ($this->isSuperAdmin()) {
             // Super Admin sees all customers in their own tenants
             $tenantIds = \App\Models\Tenant::where('created_by', $this->id)->pluck('id');
@@ -380,10 +381,10 @@ class User extends Authenticatable
                 return $query->where('tenant_id', $this->tenant_id);
             }
             // No permission = no customers
-            return $query->whereRaw('1 = 0'); // Returns empty query
+            return $query->whereNull('id'); // Empty result set
         }
 
         // Default: no access
-        return $query->whereRaw('1 = 0');
+        return $query->whereNull('id'); // Empty result set
     }
 }
