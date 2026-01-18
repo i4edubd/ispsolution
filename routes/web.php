@@ -333,8 +333,9 @@ Route::prefix('panel/sub-reseller')->name('panel.sub-reseller.')->middleware(['a
 // Card Distributor Panel
 Route::prefix('panel/card-distributor')->name('panel.card-distributor.')->middleware(['auth', 'role:card-distributor'])->group(function () {
     Route::get('/dashboard', [CardDistributorController::class, 'dashboard'])->name('dashboard');
-    Route::get('/cards', [CardDistributorController::class, 'cards'])->name('cards');
-    Route::get('/sales', [CardDistributorController::class, 'sales'])->name('sales');
+    Route::get('/cards', [CardDistributorController::class, 'cards'])->name('cards.index');
+    Route::get('/sales', [CardDistributorController::class, 'sales'])->name('sales.index');
+    Route::get('/commissions', [CardDistributorController::class, 'commissions'])->name('commissions.index');
     Route::get('/balance', [CardDistributorController::class, 'balance'])->name('balance');
 });
 

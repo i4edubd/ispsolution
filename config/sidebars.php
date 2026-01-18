@@ -462,4 +462,123 @@ return [
             'route' => 'panel.accountant.customers.statements',
         ],
     ],
+
+    'customer' => [
+        [
+            'key' => 'dashboard',
+            'label' => 'Dashboard',
+            'icon' => 'bi-speedometer2',
+            'route' => 'panel.customer.dashboard',
+        ],
+        [
+            'key' => 'profile',
+            'label' => 'Profile',
+            'icon' => 'bi-person',
+            'route' => 'panel.customer.profile',
+        ],
+        [
+            'key' => 'billing',
+            'label' => 'Billing',
+            'icon' => 'bi-receipt',
+            'route' => 'panel.customer.billing',
+        ],
+        [
+            'key' => 'usage',
+            'label' => 'Usage Statistics',
+            'icon' => 'bi-graph-up',
+            'route' => 'panel.customer.usage',
+        ],
+        [
+            'key' => 'tickets',
+            'label' => 'Support Tickets',
+            'icon' => 'bi-headset',
+            'route' => 'panel.customer.tickets',
+        ],
+    ],
+
+    'reseller' => [
+        [
+            'key' => 'dashboard',
+            'label' => 'Dashboard',
+            'icon' => 'bi-speedometer2',
+            'route' => 'panel.reseller.dashboard',
+        ],
+        [
+            'key' => 'customers',
+            'label' => 'Customers',
+            'icon' => 'bi-people',
+            'route' => 'panel.reseller.customers',
+        ],
+        [
+            'key' => 'packages',
+            'label' => 'Packages',
+            'icon' => 'bi-box',
+            'route' => 'panel.reseller.packages',
+        ],
+        [
+            'key' => 'commission',
+            'label' => 'Commission',
+            'icon' => 'bi-currency-dollar',
+            'route' => 'panel.reseller.commission',
+        ],
+    ],
+
+    'sub_reseller' => [
+        [
+            'key' => 'dashboard',
+            'label' => 'Dashboard',
+            'icon' => 'bi-speedometer2',
+            'route' => 'panel.sub-reseller.dashboard',
+        ],
+        [
+            'key' => 'customers',
+            'label' => 'Customers',
+            'icon' => 'bi-people',
+            'route' => 'panel.sub-reseller.customers',
+        ],
+        [
+            'key' => 'packages',
+            'label' => 'Packages',
+            'icon' => 'bi-box',
+            'route' => 'panel.sub-reseller.packages',
+        ],
+        [
+            'key' => 'commission',
+            'label' => 'Commission',
+            'icon' => 'bi-currency-dollar',
+            'route' => 'panel.sub-reseller.commission',
+        ],
+    ],
+
+    'staff' => [
+        [
+            'key' => 'dashboard',
+            'label' => 'Dashboard',
+            'icon' => 'bi-speedometer2',
+            'route' => 'panel.staff.dashboard',
+        ],
+        [
+            'key' => 'network_users',
+            'label' => 'Network Users',
+            'icon' => 'bi-people',
+            'route' => 'panel.staff.network-users',
+        ],
+        [
+            'key' => 'tickets',
+            'label' => 'Support Tickets',
+            'icon' => 'bi-headset',
+            'route' => 'panel.staff.tickets',
+        ],
+        [
+            'key' => 'devices',
+            'label' => 'Network Devices',
+            'icon' => 'bi-hdd-network',
+            'children' => [
+                ['label' => 'MikroTik', 'route' => 'panel.staff.mikrotik'],
+                ['label' => 'NAS Devices', 'route' => 'panel.staff.nas'],
+                ['label' => 'Cisco Devices', 'route' => 'panel.staff.cisco'],
+                ['label' => 'OLT Devices', 'route' => 'panel.staff.olt'],
+            ],
+        ],
+    ],
 ];

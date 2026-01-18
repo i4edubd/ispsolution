@@ -65,4 +65,15 @@ class CardDistributorController extends Controller
         
         return view('panels.card-distributor.balance', compact('summary'));
     }
+
+    /**
+     * Display commissions.
+     */
+    public function commissions(): View
+    {
+        // TODO: Implement commission tracking for card distributors
+        $commissions = collect([]);
+        
+        return view('panels.card-distributor.commissions.index', compact('commissions'));
+    }
 }
