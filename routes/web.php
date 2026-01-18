@@ -49,6 +49,35 @@ Route::post('webhooks/payment/{gateway}', [PaymentController::class, 'webhook'])
 
 /*
 |--------------------------------------------------------------------------
+| Hotspot Routes
+|--------------------------------------------------------------------------
+*/
+
+use App\Http\Controllers\HotspotController;
+
+// Public hotspot self-signup routes
+Route::prefix('hotspot')->name('hotspot.')->group(function () {
+    Route::get('signup', [HotspotController::class, 'signupForm'])->name('signup');
+    Route::post('request-otp', [HotspotController::class, 'requestOtp'])->name('request-otp');
+    Route::post('verify-otp', [HotspotController::class, 'verifyOtp'])->name('verify-otp');
+});
+
+// Admin hotspot management routes
+Route::prefix('hotspot')->name('hotspot.')->middleware(['auth'])->group(function () {
+    Route::get('/', [HotspotController::class, 'index'])->name('index');
+    Route::get('create', [HotspotController::class, 'create'])->name('create');
+    Route::post('/', [HotspotController::class, 'store'])->name('store');
+    Route::get('{hotspotUser}', [HotspotController::class, 'show'])->name('show');
+    Route::get('{hotspotUser}/edit', [HotspotController::class, 'edit'])->name('edit');
+    Route::put('{hotspotUser}', [HotspotController::class, 'update'])->name('update');
+    Route::delete('{hotspotUser}', [HotspotController::class, 'destroy'])->name('destroy');
+    Route::post('{hotspotUser}/suspend', [HotspotController::class, 'suspend'])->name('suspend');
+    Route::post('{hotspotUser}/reactivate', [HotspotController::class, 'reactivate'])->name('reactivate');
+    Route::post('{hotspotUser}/renew', [HotspotController::class, 'renew'])->name('renew');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 |

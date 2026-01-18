@@ -28,4 +28,16 @@ Schedule::command('monitoring:cleanup --days=90')->daily()->at('03:00');
 // Schedule billing commands
 Schedule::command('billing:generate-daily --force')->daily()->at('00:30');
 Schedule::command('billing:generate-monthly --force')->monthlyOn(1, '01:00');
+Schedule::command('billing:generate-static-ip --force')->monthlyOn(1, '01:15');
 Schedule::command('billing:lock-expired --force')->daily()->at('04:00');
+
+// Schedule commission commands
+Schedule::command('commission:pay-pending --threshold=100 --force')->weekly()->mondays()->at('09:00');
+
+// Schedule notification commands
+Schedule::command('notifications:pre-expiration --days=3 --force')->daily()->at('08:00');
+Schedule::command('notifications:pre-expiration --days=7 --force')->daily()->at('08:15');
+Schedule::command('notifications:overdue --force')->daily()->at('09:00');
+
+// Schedule hotspot commands
+Schedule::command('hotspot:deactivate-expired --force')->daily()->at('00:45');

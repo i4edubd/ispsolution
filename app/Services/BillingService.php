@@ -27,7 +27,7 @@ class BillingService
             // Determine billing period based on package type
             [$periodStart, $periodEnd, $dueDate] = $this->calculateBillingPeriod($package, $billingDate);
 
-            return Invoice::create([
+            $invoice = Invoice::create([
                 'tenant_id' => $user->tenant_id,
                 'invoice_number' => $this->generateInvoiceNumber(),
                 'user_id' => $user->id,
@@ -40,6 +40,12 @@ class BillingService
                 'billing_period_end' => $periodEnd,
                 'due_date' => $dueDate,
             ]);
+
+            // Send notification
+            $notificationService = app(NotificationService::class);
+            $notificationService->queueInvoiceGenerated($invoice);
+
+            return $invoice;
         });
     }
 
@@ -76,6 +82,16 @@ class BillingService
                 if ($user) {
                     $this->unlockAccountOnPayment($user);
                 }
+            }
+
+            // Automatically calculate commission if payment is completed
+            if ($payment->status === 'completed') {
+                $commissionService = app(CommissionService::class);
+                $commissionService->calculateMultiLevelCommission($payment);
+                
+                // Send payment notification
+                $notificationService = app(NotificationService::class);
+                $notificationService->queuePaymentReceived($payment);
             }
 
             return $payment;
