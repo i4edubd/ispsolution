@@ -261,6 +261,44 @@ Route::prefix('panel/manager')->name('panel.manager.')->middleware(['auth', 'rol
     Route::get('/network-users', [ManagerController::class, 'networkUsers'])->name('network-users');
     Route::get('/sessions', [ManagerController::class, 'sessions'])->name('sessions');
     Route::get('/reports', [ManagerController::class, 'reports'])->name('reports');
+    Route::get('/customers', [ManagerController::class, 'customers'])->name('customers.index');
+    Route::get('/payments', [ManagerController::class, 'payments'])->name('payments.index');
+    Route::get('/complaints', [ManagerController::class, 'complaints'])->name('complaints.index');
+});
+
+// Operator Panel
+Route::prefix('panel/operator')->name('panel.operator.')->middleware(['auth', 'role:operator'])->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Panel\OperatorController::class, 'dashboard'])->name('dashboard');
+    Route::get('/sub-operators', [\App\Http\Controllers\Panel\OperatorController::class, 'subOperators'])->name('sub-operators.index');
+    Route::get('/customers', [\App\Http\Controllers\Panel\OperatorController::class, 'customers'])->name('customers.index');
+    Route::get('/bills', [\App\Http\Controllers\Panel\OperatorController::class, 'bills'])->name('bills.index');
+    Route::get('/payments/create', [\App\Http\Controllers\Panel\OperatorController::class, 'createPayment'])->name('payments.create');
+    Route::get('/cards', [\App\Http\Controllers\Panel\OperatorController::class, 'cards'])->name('cards.index');
+    Route::get('/complaints', [\App\Http\Controllers\Panel\OperatorController::class, 'complaints'])->name('complaints.index');
+    Route::get('/reports', [\App\Http\Controllers\Panel\OperatorController::class, 'reports'])->name('reports.index');
+    Route::get('/sms', [\App\Http\Controllers\Panel\OperatorController::class, 'sms'])->name('sms.index');
+});
+
+// Sub-Operator Panel
+Route::prefix('panel/sub-operator')->name('panel.sub-operator.')->middleware(['auth', 'role:sub-operator'])->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Panel\SubOperatorController::class, 'dashboard'])->name('dashboard');
+    Route::get('/customers', [\App\Http\Controllers\Panel\SubOperatorController::class, 'customers'])->name('customers.index');
+    Route::get('/bills', [\App\Http\Controllers\Panel\SubOperatorController::class, 'bills'])->name('bills.index');
+    Route::get('/payments/create', [\App\Http\Controllers\Panel\SubOperatorController::class, 'createPayment'])->name('payments.create');
+    Route::get('/reports', [\App\Http\Controllers\Panel\SubOperatorController::class, 'reports'])->name('reports.index');
+});
+
+// Accountant Panel
+Route::prefix('panel/accountant')->name('panel.accountant.')->middleware(['auth', 'role:accountant'])->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Panel\AccountantController::class, 'dashboard'])->name('dashboard');
+    Route::get('/reports/income-expense', [\App\Http\Controllers\Panel\AccountantController::class, 'incomeExpenseReport'])->name('reports.income-expense');
+    Route::get('/reports/payments', [\App\Http\Controllers\Panel\AccountantController::class, 'paymentHistory'])->name('reports.payments');
+    Route::get('/reports/statements', [\App\Http\Controllers\Panel\AccountantController::class, 'customerStatements'])->name('reports.statements');
+    Route::get('/transactions', [\App\Http\Controllers\Panel\AccountantController::class, 'transactions'])->name('transactions.index');
+    Route::get('/expenses', [\App\Http\Controllers\Panel\AccountantController::class, 'expenses'])->name('expenses.index');
+    Route::get('/vat/collections', [\App\Http\Controllers\Panel\AccountantController::class, 'vatCollections'])->name('vat.collections');
+    Route::get('/payments/history', [\App\Http\Controllers\Panel\AccountantController::class, 'paymentsHistory'])->name('payments.history');
+    Route::get('/customers/{customer}/statement', [\App\Http\Controllers\Panel\AccountantController::class, 'customerStatement'])->name('customers.statements');
 });
 
 // Staff Panel
