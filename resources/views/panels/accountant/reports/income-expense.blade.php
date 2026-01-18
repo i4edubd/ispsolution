@@ -98,7 +98,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ $transaction->category }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" :class="$transaction->type === 'income' ? 'text-green-600' : 'text-red-600'">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {{ $transaction->type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
                                 {{ $transaction->type === 'income' ? '+' : '-' }}{{ number_format($transaction->amount, 2) }}
                             </td>
                         </tr>
