@@ -4,10 +4,15 @@ This document consolidates and rephrases the previous ISP Billing System Feature
 
 ---
 
-## Governance & Roles
-- **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
-- **Super Admin**: Tenancy owner. Represents the overarching tenant context.  
-- **Admin (Formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
+
+## Data Isolation & Roles Clarified:
+
+Developer: Supreme authority. All tenants (can create/manage tenants)
+Super Admin: Only OWN tenants. Represents the overarching tenant context. (can create/manage admins)
+Admin: Admin (Formerly Group Admin) ISP Owner, Own ISP data within a tenancy (can create/manage operators)
+Operator: Own + sub-operator customers (can create/manage sub-operators)
+Sub-Operator: Only own customers
+Manager/Staff: View based on permissions
 
 ---
 
@@ -373,7 +378,7 @@ This document provides a comprehensive list of all features available in the ISP
 - **Payment Gateway Temporary Failure Handling**: Manage failed transactions
 
 ### Group Management
-- **Admin (ISP, formerly Group Admin) Management**: Manage Admin (ISP, formerly Group Admin)istrators
+- **Admin (Formerly Group Admin) Management**: Manage Admin (Formerly Group Admin)istrators
 - **Group-based Permissions**: Permission assignment by admin groups
 
 ### General Features
@@ -917,7 +922,7 @@ The system defines **9 distinct roles** with hierarchical authority levels and s
 - **Description**: Top-level tenant administrator with unrestricted access to own tenant
 - **Hierarchy**: Special access role identified by `sid` field (typically reports to Developer)
 - **Key Responsibilities**:
-  - Oversee all Admin (ISP, formerly Group Admin)s and their operations
+  - Oversee all Admin (Formerly Group Admin)s and their operations
   - Manage tenant-wide configurations
   - Suspend/activate Admin/operator subscriptions
   - Access all features and data across the tenant
@@ -1045,7 +1050,7 @@ The system uses a **4-field hierarchy structure** for relationships:
 Field Name | Description                    | Purpose
 -----------|--------------------------------|------------------------------------------
 sid        | Super Admin ID                 | Links to the root Super Admin
-mgid       | Master Group ID / Admin        | Links to the managing Admin (ISP, formerly Group Admin)
+mgid       | Master Group ID / Admin        | Links to the managing Admin (Formerly Group Admin)
 gid        | Group ID / Parent Operator ID  | Links to the parent Operator
 new_id     | Legacy Migration ID            | Used for data migration (default: 0)
 ```
@@ -1059,7 +1064,7 @@ new_id     | Legacy Migration ID            | Used for data migration (default: 
          │
          ▼
 ┌─────────────────┐
-│  Admin (ISP, formerly Group Admin)    │ (mgid = self.id, sid = super_admin.id)
+│  Admin (Formerly Group Admin)    │ (mgid = self.id, sid = super_admin.id)
 │  (Level 2)      │
 └────────┬────────┘
          │
@@ -1080,7 +1085,7 @@ new_id     | Legacy Migration ID            | Used for data migration (default: 
 **Relationship Rules**:
 1. **Operator**: `gid == mgid` (same parent and master) = Primary reseller
 2. **Sub-Operator**: `gid != mgid` (different parent and master) = Secondary reseller
-3. **Manager**: `gid = group_admin.id` (directly under Admin (ISP, formerly Group Admin))
+3. **Manager**: `gid = group_admin.id` (directly under Admin (Formerly Group Admin))
 4. **Account Types**: 
    - `credit` (postpaid): Credit limit-based operations
    - `debit` (prepaid): Prepaid balance-based operations
@@ -1286,10 +1291,10 @@ Each role has access to a specific administrative panel with role-appropriate me
 
 The following table shows which roles can access specific features:
 
-| Feature Category | Super Admin | Admin (ISP, formerly Group Admin) | Operator | Sub-Operator | Manager | Card Distributor | Sales Manager | Developer | Accountant |
+| Feature Category | Super Admin | Admin (Formerly Group Admin) | Operator | Sub-Operator | Manager | Card Distributor | Sales Manager | Developer | Accountant |
 |------------------|:-----------:|:-----------:|:--------:|:------------:|:-------:|:----------------:|:-------------:|:---------:|:----------:|
 | **Operator Management** |
-| Create Admin (ISP, formerly Group Admin) | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Create Admin (Formerly Group Admin) | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Create Operator | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Create Sub-Operator | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Create Manager | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
@@ -1358,7 +1363,7 @@ The following table shows which roles can access specific features:
 - ¹ = Requires specific standard permission
 - ² = Limited to lead management
 - ³ = Requires special permission
-- ⁴ = If menu not disabled by Admin (ISP, formerly Group Admin)
+- ⁴ = If menu not disabled by Admin (Formerly Group Admin)
 - ⁵ = Limited to assigned department
 - ⁶ = Only for own account
 - ⁷ = For own subscription only
@@ -1367,11 +1372,11 @@ The following table shows which roles can access specific features:
 
 ### Menu and Page Access Control
 
-The system provides **dynamic menu visibility control** allowing Admin (ISP, formerly Group Admin)s to customize the operator experience.
+The system provides **dynamic menu visibility control** allowing Admin (Formerly Group Admin)s to customize the operator experience.
 
 #### Disabled Menu System
 
-**Purpose**: Allow Admin (ISP, formerly Group Admin) to hide specific menu sections from Operators and Sub-operators
+**Purpose**: Allow Admin (Formerly Group Admin) to hide specific menu sections from Operators and Sub-operators
 
 **Database Table**: `disabled_menus`
 ```sql
@@ -1443,27 +1448,27 @@ $this->authorize('assignSpecialPermission', $operator);
 ## NOTE Governance & Roles (UPDTE)
 - **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
 - **Tenancy (formerly Super Admin)**: Represents the overarching tenant context.  
-- **Admin (ISP, formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
+- **Admin (Formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
 
 ---
 #### Hierarchical Relationships
 
-**1. Super Admin → Admin (ISP, formerly Group Admin)**
-- **Relation**: One Super Admin can manage multiple Admin (ISP, formerly Group Admin)s
+**1. Super Admin → Admin (Formerly Group Admin)**
+- **Relation**: One Super Admin can manage multiple Admin (Formerly Group Admin)s
 - **Field**: `operators.sid` links to Super Admin
 - **Restrictions**:
-  - Super Admin can suspend Admin (ISP, formerly Group Admin) subscriptions
-  - Admin (ISP, formerly Group Admin) cannot modify Super Admin settings
-  - Billing flows from Admin (ISP, formerly Group Admin) to Super Admin
+  - Super Admin can suspend Admin (Formerly Group Admin) subscriptions
+  - Admin (Formerly Group Admin) cannot modify Super Admin settings
+  - Billing flows from Admin (Formerly Group Admin) to Super Admin
 
-**2. Admin (ISP, formerly Group Admin) → Operators**
-- **Relation**: One Admin (ISP, formerly Group Admin) can manage multiple Operators
-- **Field**: `operators.mgid` links to Admin (ISP, formerly Group Admin)
+**2. Admin (Formerly Group Admin) → Operators**
+- **Relation**: One Admin (Formerly Group Admin) can manage multiple Operators
+- **Field**: `operators.mgid` links to Admin (Formerly Group Admin)
 - **Restrictions**:
-  - Admin (ISP, formerly Group Admin) assigns packages and billing profiles
+  - Admin (Formerly Group Admin) assigns packages and billing profiles
   - Operators cannot access other operators' data
-  - Admin (ISP, formerly Group Admin) can view all operator customer data
-  - Admin (ISP, formerly Group Admin) controls operator menu visibility
+  - Admin (Formerly Group Admin) can view all operator customer data
+  - Admin (Formerly Group Admin) controls operator menu visibility
 
 **3. Operator → Sub-Operators**
 - **Relation**: One Operator can manage multiple Sub-operators
@@ -1474,16 +1479,16 @@ $this->authorize('assignSpecialPermission', $operator);
   - Operator can view all sub-operator customer data
   - Sub-operators have more restricted panel access
 
-**4. Admin (ISP, formerly Group Admin) → Managers**
-- **Relation**: One Admin (ISP, formerly Group Admin) can create multiple Managers
-- **Field**: `operators.gid` links to Admin (ISP, formerly Group Admin)
+**4. Admin (Formerly Group Admin) → Managers**
+- **Relation**: One Admin (Formerly Group Admin) can create multiple Managers
+- **Field**: `operators.gid` links to Admin (Formerly Group Admin)
 - **Restrictions**:
-  - Managers work within Admin (ISP, formerly Group Admin) scope
+  - Managers work within Admin (Formerly Group Admin) scope
   - Managers have permission-based feature access
   - Cannot manage operators or configurations
   - Department-based complaint assignment
 
-**5. Operator/Admin (ISP, formerly Group Admin) → Card Distributors**
+**5. Operator/Admin (Formerly Group Admin) → Card Distributors**
 - **Relation**: Many-to-one relationship via `card_distributors` table
 - **Field**: `card_distributors.operator_id`
 - **Restrictions**:
@@ -1496,26 +1501,26 @@ $this->authorize('assignSpecialPermission', $operator);
 
 **1. Customer Data**
 - Each operator can only access their own customers
-- Admin (ISP, formerly Group Admin) can access all customers in their group
+- Admin (Formerly Group Admin) can access all customers in their group
 - Super Admin has global access
 - Enforced at query level using operator_id filters
 
 **2. Financial Data**
 - Operators see only their own financial data
-- Admin (ISP, formerly Group Admin) sees aggregated group financial data
+- Admin (Formerly Group Admin) sees aggregated group financial data
 - Account balances tracked per operator (prepaid/postpaid)
 - Credit limits enforced for postpaid accounts
 
 **3. Package Assignment**
-- Admin (ISP, formerly Group Admin) controls which packages operators can use
+- Admin (Formerly Group Admin) controls which packages operators can use
 - Operators can only assign their assigned packages to customers
 - Package pricing can be operator-specific (with special permission)
-- Master packages managed only by Admin (ISP, formerly Group Admin)
+- Master packages managed only by Admin (Formerly Group Admin)
 
 **4. Billing Profile Assignment**
 - Controlled via `billing_profile_operator` pivot table
 - Operators can only use assigned billing profiles
-- Admin (ISP, formerly Group Admin) can change assignments
+- Admin (Formerly Group Admin) can change assignments
 - Affects billing calculation and invoice generation
 
 #### Account Type Restrictions
@@ -1525,14 +1530,14 @@ $this->authorize('assignSpecialPermission', $operator);
 - **Restriction**: Cannot exceed credit limit
 - **Applies To**: Operators, Sub-operators
 - **Balance**: Tracked as accounts payable
-- **Policy Check**: `editLimit()` policy requires Admin (ISP, formerly Group Admin)
+- **Policy Check**: `editLimit()` policy requires Admin (Formerly Group Admin)
 
 **Debit/Prepaid Accounts** (`account_type = 'debit'`):
 - **Feature**: Prepaid balance management
 - **Restriction**: Must maintain positive balance
 - **Applies To**: Operators, Sub-operators
 - **Balance**: Tracked as account balance
-- **Policy Check**: `addBalance()` policy requires Admin (ISP, formerly Group Admin)
+- **Policy Check**: `addBalance()` policy requires Admin (Formerly Group Admin)
 
 #### Subscription Restrictions
 
@@ -1547,16 +1552,16 @@ $this->authorize('assignSpecialPermission', $operator);
 **Enforcement**:
 - Checked in all policies before granting access
 - Super Admin can suspend subscriptions
-- Admin (ISP, formerly Group Admin) manages own subscription status
+- Admin (Formerly Group Admin) manages own subscription status
 - Suspended accounts cannot perform any operations
 
 #### Special Permission Restrictions
 
 **Assignment Rules**:
-1. **Only Admin (ISP, formerly Group Admin)** can assign special permissions
+1. **Only Admin (Formerly Group Admin)** can assign special permissions
 2. **Only to role='operator'** (Operators with gid=mgid)
 3. Cannot assign to:
-   - Other Admin (ISP, formerly Group Admin)s
+   - Other Admin (Formerly Group Admin)s
    - Managers (but can grant if they have operator role)
    - Card Distributors
    - Sales Managers
@@ -1565,16 +1570,16 @@ $this->authorize('assignSpecialPermission', $operator);
 **Permission Scope**:
 - Special permissions apply only to assigned operator
 - Do not cascade to sub-operators automatically
-- Admin (ISP, formerly Group Admin) can grant same permission to multiple operators
+- Admin (Formerly Group Admin) can grant same permission to multiple operators
 - Revocation removes permission immediately
 
 #### Menu Visibility Restrictions
 
 **Control Rules**:
-1. Only Admin (ISP, formerly Group Admin) can configure disabled menus
+1. Only Admin (Formerly Group Admin) can configure disabled menus
 2. Cannot disable menus for:
    - Super Admin
-   - Other Admin (ISP, formerly Group Admin)s
+   - Other Admin (Formerly Group Admin)s
    - Self (demo mode protection)
 3. Menu changes cached per operator
 4. Applies to Operators and Sub-operators only
@@ -1606,15 +1611,15 @@ The system uses **Laravel Policy classes** for fine-grained authorization:
 | Method | Purpose | Key Logic |
 |--------|---------|-----------|
 | `view()` | View operator details | User is self, gid, mgid, or sid |
-| `update()` | Edit operator info | User is gid (Admin (ISP, formerly Group Admin)) |
-| `delete()` | Delete operator | User is gid (Admin (ISP, formerly Group Admin)) |
+| `update()` | Edit operator info | User is gid (Admin (Formerly Group Admin)) |
+| `delete()` | Delete operator | User is gid (Admin (Formerly Group Admin)) |
 | `editLimit()` | Modify credit limit | User is gid with credit account |
 | `addBalance()` | Add prepaid balance | User is gid with debit account |
 | `assignPackages()` | Assign packages | User is gid, target is operator/sub-operator |
 | `assignProfiles()` | Assign billing profiles | User is gid, target is operator/sub-operator |
 | `assignSpecialPermission()` | Grant special perms | User is gid, target is operator only |
 | `getAccess()` | Access operator panel | User is group_admin or developer |
-| `suspend()` | Suspend operator | User is gid (Admin (ISP, formerly Group Admin)) |
+| `suspend()` | Suspend operator | User is gid (Admin (Formerly Group Admin)) |
 | `suspendSubscription()` | Suspend subscription | User is sid (Super Admin) |
 | `entryCashReceived()` | Cash entry | Account provider matches user |
 
@@ -1643,7 +1648,7 @@ Request → Controller → Policy → Database Check → Response
 
 ### Best Practices and Recommendations
 
-#### For Admin (ISP, formerly Group Admin)s
+#### For Admin (Formerly Group Admin)s
 1. **Permission Assignment**: Only grant special permissions when absolutely necessary
 2. **Menu Control**: Disable unused menus to simplify operator interface
 3. **Operator Monitoring**: Regularly review operator access logs
@@ -1652,7 +1657,7 @@ Request → Controller → Policy → Database Check → Response
 
 #### For Operators
 1. **Sub-Operator Creation**: Create sub-operators for regional management
-2. **Permission Requests**: Request special permissions from Admin (ISP, formerly Group Admin) when needed
+2. **Permission Requests**: Request special permissions from Admin (Formerly Group Admin) when needed
 3. **Customer Organization**: Use zones and custom fields for better organization
 4. **Billing Profiles**: Use appropriate billing profiles for different customer types
 5. **Report Generation**: Regularly generate reports for your customer base
@@ -1688,7 +1693,7 @@ Request → Controller → Policy → Database Check → Response
 | `/app/Http/Controllers/DisabledMenuController.php` | Menu management | - |
 | `/app/Http/Middleware/AccessControlList.php` | IP-based access control | - |
 | `/app/Helpers/Helper.php` | Menu checking helper function | - |
-| `/resources/views/admins/group_admin/sidebar.blade.php` | Admin (ISP, formerly Group Admin) menu structure | - |
+| `/resources/views/admins/group_admin/sidebar.blade.php` | Admin (Formerly Group Admin) menu structure | - |
 | `/resources/views/admins/operator/sidebar.blade.php` | Operator menu structure | - |
 
 ---
@@ -1697,7 +1702,7 @@ Request → Controller → Policy → Database Check → Response
 
 **Role Summary**:
 - **9 distinct roles** with hierarchical authority
-- **4-tier hierarchy** (Super Admin → Admin (ISP, formerly Group Admin) → Operator → Sub-operator)
+- **4-tier hierarchy** (Super Admin → Admin (Formerly Group Admin) → Operator → Sub-operator)
 - **16 standard permissions** for base functionality
 - **10 special permissions** for enhanced capabilities
 - **8 controllable menu sections** for customization
@@ -1740,7 +1745,7 @@ This ISP Billing System is a comprehensive solution with **400+ distinct feature
 - **Dashboard & Widgets**: 15+ features
 - **Technical Infrastructure**: 40+ features
 
-The system supports multiple user roles (Super Admin, Admin (ISP, formerly Group Admin), Operator, Sub-operator, Manager, Card Distributor, Sales Manager, Developer, Accountant) with granular permissions, multi-node distributed architecture, and extensive third-party integrations for a complete ISP business management solution.
+The system supports multiple user roles (Super Admin, Admin (Formerly Group Admin), Operator, Sub-operator, Manager, Card Distributor, Sales Manager, Developer, Accountant) with granular permissions, multi-node distributed architecture, and extensive third-party integrations for a complete ISP business management solution.
 
 
 @copilot follow this file and develop feature by taking knowledge from this file
