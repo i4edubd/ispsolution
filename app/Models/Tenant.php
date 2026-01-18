@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -23,6 +24,7 @@ class Tenant extends Model
         'database',
         'settings',
         'status',
+        'created_by',
     ];
 
     /**
@@ -40,6 +42,14 @@ class Tenant extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    /**
+     * Get the user who created this tenant (Super Admin).
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
