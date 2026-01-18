@@ -89,15 +89,38 @@ return [
     */
 
     'levels' => [
-        'developer' => 0,
-        'super_admin' => 10,
-        'group_admin' => 20,
-        'operator' => 30,
-        'sub_operator' => 40,
-        'manager' => 50,
-        'card_distributor' => 60,
-        'accountant' => 70,
-        'staff' => 80,
-        'customer' => 100,
+        'developer' => 0,        // Technical infrastructure and API
+        'super_admin' => 10,     // System-wide administrator
+        'group_admin' => 20,     // Tenant administrator (ISP Admin)
+        'operator' => 30,        // Operational staff with configurable menus
+        'sub_operator' => 40,    // Limited operator (subset of operator)
+        'manager' => 50,         // Task-specific access
+        'card_distributor' => 60, // Card operations only
+        'reseller' => 65,        // Customer management and sales
+        'accountant' => 70,      // Financial reporting (read-only)
+        'sub_reseller' => 75,    // Subordinate to reseller
+        'staff' => 80,           // Support staff
+        'customer' => 100,       // End user (lowest privilege)
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Controllable Menus for Operators
+    |--------------------------------------------------------------------------
+    |
+    | These menus can be disabled per operator by Admin users.
+    | The menu keys correspond to the 'key' field in config/sidebars.php
+    |
+    */
+
+    'controllable_menus' => [
+        'resellers_managers' => 'Resellers & Managers menu',
+        'routers_packages' => 'Routers & Packages menu',
+        'recharge_cards' => 'Recharge Card menu',
+        'customers' => 'Customer menu',
+        'bills_payments' => 'Bills & Payments menu',
+        'incomes_expenses' => 'Incomes & Expenses menu',
+        'affiliate_program' => 'Affiliate Program menu',
+        'vat_management' => 'VAT menu',
     ],
 ];

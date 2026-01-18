@@ -8,15 +8,18 @@ The system automatically generates appropriate menus based on the logged-in user
 
 ## Role Hierarchy
 
-1. **Developer (Level 1000)** - Supreme authority with all permissions
-2. **Super Admin (Level 100)** - Tenancy administrator
-3. **Admin (Level 90)** - Tenant administrator
-4. **Manager (Level 70)** - Operational permissions
-5. **Reseller (Level 60)** - Customer management
-6. **Sub-Reseller (Level 55)** - Subordinate to reseller
-7. **Staff (Level 50)** - Limited operational access
-8. **Card Distributor (Level 40)** - Recharge card management
-9. **Customer (Level 10)** - Self-service access
+1. **Developer (Level 0)** - Technical infrastructure and API management
+2. **Super Admin (Level 10)** - System-wide administrator across all tenants
+3. **Admin (Level 20)** - Tenant administrator (ISP Admin)
+4. **Operator (Level 30)** - Operational staff with configurable menus
+5. **Sub-Operator (Level 40)** - Limited operator (subset of operator)
+6. **Manager (Level 50)** - Task-specific access
+7. **Card Distributor (Level 60)** - Card operations only (separate portal)
+8. **Reseller (Level 65)** - Customer management and sales
+9. **Accountant (Level 70)** - Financial reporting (read-only)
+10. **Sub-Reseller (Level 75)** - Subordinate to reseller
+11. **Staff (Level 80)** - Support staff
+12. **Customer (Level 100)** - Self-service access
 
 ## Using the Menu Service
 
@@ -160,18 +163,76 @@ Each menu item has the following structure:
 ## Developer Panel Routes
 
 - Dashboard: `panel.developer.dashboard`
-- Tenancy Management: `panel.developer.tenancies.*`
-- System Access: `panel.developer.access-panel`
-- Customer Search: `panel.developer.customers.search`
-- Audit Logs: `panel.developer.audit-logs`
+- Tenant Management: `panel.developer.tenancies.*`
+- Subscription Management: `panel.developer.subscriptions.*`
+- Global Configuration: `panel.developer.config.*`
+- SMS Gateway: `panel.developer.sms-gateway.*`
+- Payment Gateway: `panel.developer.payment-gateway.*`
+- VPN Pools: `panel.developer.vpn-pools.*`
+- System Logs: `panel.developer.logs`
+- API Management: `panel.developer.api-docs`, `panel.developer.api-keys`
 
 ## Super Admin Panel Routes
 
 - Dashboard: `panel.super-admin.dashboard`
-- ISP Management: `panel.super-admin.isp.*`
-- Billing Configuration: `panel.super-admin.billing.*`
-- Payment Gateway: `panel.super-admin.payment-gateway.*`
-- SMS Gateway: `panel.super-admin.sms-gateway.*`
+- Tenant Management: `panel.super-admin.isp.*`
+- Admin Management: `panel.super-admin.users`
+- Subscription Management: `panel.super-admin.billing.*`
+- Global Configuration: `panel.super-admin.settings`, `panel.super-admin.payment-gateway.*`, `panel.super-admin.sms-gateway.*`
+- System Logs: `panel.super-admin.logs`
+- Monitoring: `panel.super-admin.monitoring`
+
+## Admin Panel Routes
+
+- Dashboard: `panel.admin.dashboard`
+- Resellers & Managers: `panel.admin.operators.*`
+- Routers & Packages: `panel.admin.packages.*`, `panel.admin.network.*`
+- Recharge Cards: `panel.admin.cards.*`
+- Customers: `panel.admin.customers.*`
+- Bills & Payments: `panel.admin.bills.*`, `panel.admin.payments.*`
+- Incomes & Expenses: `panel.admin.accounting.*`
+- Complaints & Support: `panel.admin.tickets.*`
+- Reports: `panel.admin.reports.*`
+- Affiliate Program: `panel.admin.affiliate.*`
+- VAT Management: `panel.admin.vat.*`
+- SMS Services: `panel.admin.sms.*`
+- Configuration: `panel.admin.config.*`
+- Activity Logs: `panel.admin.logs.*`
+
+## Operator Panel Routes
+
+- Dashboard: `panel.operator.dashboard`
+- Sub-Operators: `panel.operator.sub-operators.*`
+- Customers: `panel.operator.customers.*`
+- Bills & Payments: `panel.operator.bills.*`, `panel.operator.payments.*`
+- Recharge Cards: `panel.operator.cards.*`
+- Complaints: `panel.operator.complaints.*`
+- Reports: `panel.operator.reports.*`
+- SMS: `panel.operator.sms.*`
+
+## Sub-Operator Panel Routes
+
+- Dashboard: `panel.sub-operator.dashboard`
+- Customers: `panel.sub-operator.customers.*`
+- Bills & Payments: `panel.sub-operator.bills.*`, `panel.sub-operator.payments.*`
+- Reports: `panel.sub-operator.reports.*`
+
+## Manager Panel Routes
+
+- Dashboard: `panel.manager.dashboard`
+- Customer Viewing: `panel.manager.customers.*`
+- Payment Processing: `panel.manager.payments.*`
+- Complaint Management: `panel.manager.complaints.*`
+- Reports: `panel.manager.reports.*`
+
+## Accountant Panel Routes
+
+- Dashboard: `panel.accountant.dashboard`
+- Financial Reports: `panel.accountant.reports.*`
+- Income/Expense: `panel.accountant.transactions.*`, `panel.accountant.expenses.*`
+- VAT Collections: `panel.accountant.vat.*`
+- Payment History: `panel.accountant.payments.*`
+- Customer Statements: `panel.accountant.customers.statements`
 
 ## Best Practices
 

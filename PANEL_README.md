@@ -28,17 +28,20 @@ This PR implements comprehensive role-based panels for all 9 user roles in the I
 
 ## 🎯 What's Included
 
-### 1. Controllers (9) ✅
+### 1. Controllers (11) ✅
 Complete panel controllers for all roles with dashboard and CRUD methods:
-- `SuperAdminController` - System-wide administration
-- `AdminController` - Tenant administration
-- `ManagerController` - Network operations
+- `SuperAdminController` - System-wide administration (tenant-wide access)
+- `AdminController` - Tenant administration (14 main sections with controllable menus)
+- `OperatorController` - Restricted panel based on menu configuration
+- `SubOperatorController` - Further restricted operator panel
+- `ManagerController` - Task-specific panel with permission-based access
 - `StaffController` - Support staff
 - `ResellerController` - Service reseller
 - `SubResellerController` - Sub-level reseller
-- `CardDistributorController` - Card distribution
+- `CardDistributorController` - Card distribution (separate portal)
 - `CustomerController` - Customer self-service
-- `DeveloperController` - API and debugging
+- `DeveloperController` - Technical configuration and infrastructure
+- `AccountantController` - Financial reporting panel (read-only)
 
 ### 2. Middleware (3) ✅
 - `CheckRole` - Role-based access control

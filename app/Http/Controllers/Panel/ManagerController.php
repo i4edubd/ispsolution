@@ -63,4 +63,45 @@ class ManagerController extends Controller
     {
         return view('panels.manager.reports');
     }
+
+    /**
+     * Display customers (view-only based on permissions).
+     */
+    public function customers(): View
+    {
+        $tenantId = auth()->user()->tenant_id;
+        
+        // Managers can view operators' or sub-operators' customers based on permissions
+        $customers = \App\Models\User::where('tenant_id', $tenantId)
+            ->where('operator_level', 100)
+            ->latest()
+            ->paginate(20);
+
+        return view('panels.manager.customers.index', compact('customers'));
+    }
+
+    /**
+     * Display payments (if authorized).
+     */
+    public function payments(): View
+    {
+        $tenantId = auth()->user()->tenant_id;
+        
+        $payments = \App\Models\Payment::where('tenant_id', $tenantId)
+            ->latest()
+            ->paginate(20);
+
+        return view('panels.manager.payments.index', compact('payments'));
+    }
+
+    /**
+     * Display complaints (assigned department).
+     */
+    public function complaints(): View
+    {
+        // TODO: Implement ticket system filtering by department
+        $complaints = collect([]);
+
+        return view('panels.manager.complaints.index', compact('complaints'));
+    }
 }

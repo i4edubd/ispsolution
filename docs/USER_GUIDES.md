@@ -8,66 +8,78 @@ Complete user documentation for all 9 user roles in the ISP Solution system.
 
 1. [Super Admin Guide](#1-super-admin-guide)
 2. [Admin Guide](#2-admin-guide)
-3. [Manager Guide](#3-manager-guide)
-4. [Staff Guide](#4-staff-guide)
-5. [Reseller Guide](#5-reseller-guide)
-6. [Sub-Reseller Guide](#6-sub-reseller-guide)
-7. [Card Distributor Guide](#7-card-distributor-guide)
-8. [Customer Guide](#8-customer-guide)
-9. [Developer Guide](#9-developer-guide)
+3. [Operator Guide](#3-operator-guide)
+4. [Sub-Operator Guide](#4-sub-operator-guide)
+5. [Manager Guide](#5-manager-guide)
+6. [Staff Guide](#6-staff-guide)
+7. [Reseller Guide](#7-reseller-guide)
+8. [Sub-Reseller Guide](#8-sub-reseller-guide)
+9. [Card Distributor Guide](#9-card-distributor-guide)
+10. [Customer Guide](#10-customer-guide)
+11. [Developer Guide](#11-developer-guide)
+12. [Accountant Guide](#12-accountant-guide)
 
 ---
 
 ## 1. Super Admin Guide
 
 ### Overview
-Super Admins have system-wide access and can manage all ISPs, tenants, and system configuration.
+Super Admins have system-wide access across all tenants and can manage the entire ISP solution infrastructure without restrictions.
 
 ### Key Responsibilities
-- Manage ISP accounts (tenants)
+- Manage all ISP accounts (tenants)
 - Configure system-wide settings
 - Monitor overall system health
-- Manage billing configurations
+- Manage subscription billing
 - Configure payment and SMS gateways
+- Access all tenant features without restrictions
+
+### Access Level
+- **Scope**: All tenant features without restrictions
+- **URL**: `/panel/super-admin/*`
 
 ### Common Tasks
 
 #### 1.1 Create New ISP/Tenant
-1. Navigate to **Panel → Super Admin → ISP Management**
-2. Click **"Add New ISP"**
+1. Navigate to **Panel → Super Admin → Tenant Management**
+2. Click **"Add Tenant"**
 3. Fill in ISP details:
    - Company name
    - Contact email
    - Admin username and password
    - Billing plan (fixed, user-based, or panel-based)
-4. Click **"Create ISP"**
+4. Click **"Create Tenant"**
 
-#### 1.2 Configure Payment Gateway
-1. Go to **Panel → Super Admin → Payment Gateway**
-2. Click **"Add Gateway"**
-3. Select gateway type:
-   - bKash (Bangladeshi)
-   - Nagad (Bangladeshi)
-   - SSLCommerz (Bangladeshi)
-   - Stripe (International)
-4. Enter API credentials
-5. Enable test mode for testing
-6. Click **"Save"**
+#### 1.2 Manage Subscriptions
+1. Go to **Panel → Super Admin → Subscription Management**
+2. Select subscription type:
+   - Fixed billing plans
+   - User-based billing
+   - Panel-based billing
+3. Configure billing parameters
+4. Track subscription renewals
 
-#### 1.3 Configure SMS Gateway
-1. Navigate to **Panel → Super Admin → SMS Gateway**
-2. Select SMS provider (Twilio, Nexmo, BulkSMS, Local)
-3. Enter API credentials
-4. Test SMS sending
-5. Enable for production use
+#### 1.3 Configure Global Settings
+1. Navigate to **Panel → Super Admin → Global Configuration**
+2. Configure:
+   - System-wide settings
+   - Payment gateways (for all tenants)
+   - SMS gateways (for all tenants)
+3. Set system defaults and limits
 
-#### 1.4 View System Logs
-1. Go to **Panel → Super Admin → Logs**
+#### 1.4 Monitor System
+1. Go to **Panel → Super Admin → Monitoring**
+2. View system health metrics
+3. Check performance indicators
+4. Review error rates
+
+#### 1.5 View System Logs
+1. Navigate to **Panel → Super Admin → System Logs**
 2. Filter by:
    - Date range
    - Log level (info, warning, error)
    - Module
-3. Review error logs and take action
+3. Review logs and take action
 
 ---
 
@@ -140,18 +152,174 @@ Admins manage a single ISP/tenant and have full control over their organization'
 
 ---
 
-## 3. Manager Guide
+## 3. Operator Guide
 
 ### Overview
-Managers oversee daily operations, monitor network users, and handle customer support issues.
+Operators manage day-to-day operations with a restricted panel based on menu configuration set by the Admin. They can manage assigned customers and perform operational tasks.
+
+### Access Level
+- **Scope**: Assigned customers and features only
+- **URL**: `/panel/operator/*`
+- **Menu Control**: Admin configures which menus are visible
 
 ### Key Responsibilities
-- Monitor active network sessions
-- Review customer connections
-- Generate operational reports
-- Handle escalated support issues
+- Manage assigned customers
+- Process customer payments
+- Handle customer complaints
+- Create sub-operators (if enabled)
+- Send SMS to customers
+- Generate reports for own data
 
 ### Common Tasks
+
+#### 3.1 View Dashboard
+1. Login to **Operator Panel**
+2. View operator-specific metrics:
+   - Assigned customer count
+   - Payment collection summary
+   - Performance indicators
+
+#### 3.2 Manage Customers
+1. Navigate to **Panel → Operator → Customers**
+2. View only assigned customers
+3. Add new customers (if menu enabled)
+4. Update customer information
+5. View connection status
+
+#### 3.3 Process Payment
+1. Go to **Panel → Operator → Bills & Payments**
+2. Search for customer
+3. Select pending invoice
+4. Click **"Process Payment"**
+5. Enter payment details
+6. Confirm transaction
+
+#### 3.4 Handle Complaints
+1. Navigate to **Panel → Operator → Complaints**
+2. View tickets for own customers
+3. Respond to customer issues
+4. Update ticket status
+5. Escalate if needed
+
+#### 3.5 Send SMS
+1. Go to **Panel → Operator → SMS**
+2. Select customers (own customers only)
+3. Compose message
+4. Send or schedule
+
+#### 3.6 View Reports
+1. Navigate to **Panel → Operator → Reports**
+2. Generate reports limited to own data
+3. Export for records
+
+### Restrictions
+- Cannot create Admins or Operators
+- Cannot access other operators' data
+- Cannot modify system configurations
+- Menu visibility controlled by Admin
+
+---
+
+## 4. Sub-Operator Guide
+
+### Overview
+Sub-Operators work under Operators with further restricted access to a subset of customers.
+
+### Access Level
+- **Scope**: Assigned customer subset only
+- **URL**: `/panel/sub-operator/*`
+- **Reports to**: Parent Operator
+
+### Key Responsibilities
+- Manage assigned customer subset
+- Process payments for assigned customers
+- Basic reporting
+
+### Common Tasks
+
+#### 4.1 View Dashboard
+1. Login to **Sub-Operator Panel**
+2. View limited metrics for assigned customers
+
+#### 4.2 Manage Assigned Customers
+1. Navigate to **Panel → Sub-Operator → Customers**
+2. View only assigned customers (subset)
+3. Update basic customer information
+4. Monitor connection status
+
+#### 4.3 Process Payments
+1. Go to **Panel → Sub-Operator → Bills & Payments**
+2. Select customer
+3. Process payment
+4. View payment history
+
+#### 4.4 Generate Basic Reports
+1. Navigate to **Panel → Sub-Operator → Reports**
+2. View collection reports
+3. Check customer activity
+4. Review own performance metrics
+
+### Restrictions
+- Cannot create any operators
+- Cannot manage packages or profiles
+- Limited to assigned customers only
+- Most administrative features disabled
+- Cannot see other sub-operators' data
+
+---
+
+## 5. Manager Guide
+
+### Overview
+Managers have task-specific access with permission-based features, focusing on payment processing and complaint management.
+
+### Access Level
+- **Scope**: Group metrics and assigned permissions
+- **URL**: `/panel/manager/*`
+
+### Key Responsibilities
+- View customers based on permissions (can view operators' or sub-operators' customers)
+- Process payments (if authorized)
+- Manage assigned department complaints
+- Generate basic reports
+
+### Common Tasks
+
+#### 5.1 View Customers
+1. Navigate to **Panel → Manager → Customer Viewing**
+2. View customers based on permissions
+3. Search and filter customers
+4. View customer details (read-only typically)
+
+#### 5.2 Process Payments
+1. Go to **Panel → Manager → Payment Processing**
+2. Find customer
+3. Record payment (if authorized)
+4. Verify payment details
+5. View payment history
+
+#### 5.3 Manage Complaints
+1. Navigate to **Panel → Manager → Complaint Management**
+2. View assigned department tickets
+3. Assign tickets to team members
+4. Respond to complaints
+5. Update status and escalate if needed
+
+#### 5.4 Generate Reports
+1. Go to **Panel → Manager → Basic Reports**
+2. View department-level reports
+3. Check performance metrics
+4. Export reports
+
+### Restrictions
+- Cannot modify operators or sub-operators
+- Cannot modify packages or configurations
+- Can view operators or sub-operators customers (read-only)
+- Limited to assigned permissions
+
+---
+
+## 6. Staff Guide
 
 #### 3.1 Monitor Active Sessions
 1. Navigate to **Panel → Manager → Active Sessions**
@@ -420,6 +588,88 @@ Developers integrate with the system via API and manage system customizations.
 
 ---
 
+## 12. Accountant Guide
+
+### Overview
+Accountants have read-only access to financial data and can generate comprehensive financial reports for compliance and analysis.
+
+### Access Level
+- **Scope**: Financial data and reports (read-only)
+- **URL**: `/panel/accountant/*`
+
+### Key Responsibilities
+- Generate financial reports
+- Track income/expense
+- Monitor VAT collections
+- Review payment history
+- Prepare customer statements
+
+### Common Tasks
+
+#### 12.1 View Dashboard
+1. Login to **Accountant Panel**
+2. View financial overview:
+   - Revenue metrics
+   - Outstanding balances
+   - Collection summary
+
+#### 12.2 Generate Financial Reports
+1. Navigate to **Panel → Accountant → Financial Reports**
+2. Select report type:
+   - Income/Expense Report
+   - Payment History Report
+   - Customer Statement Report
+   - Revenue Analysis
+3. Select date range
+4. Click **"Generate Report"**
+5. Export to PDF or Excel
+
+#### 12.3 Track Income/Expense
+1. Go to **Panel → Accountant → Income/Expense Tracking**
+2. View transaction history (read-only)
+3. Review expense records
+4. Analyze category-wise breakdown
+5. Compare periods
+
+#### 12.4 Review VAT Collections
+1. Navigate to **Panel → Accountant → VAT Collections**
+2. View VAT collected summary
+3. Generate tax reports
+4. Download compliance documentation
+5. Track period-wise VAT
+
+#### 12.5 View Payment History
+1. Go to **Panel → Accountant → Payment History**
+2. View all payment records (read-only)
+3. Filter by:
+   - Date range
+   - Payment method
+   - Customer
+4. Export payment history
+
+#### 12.6 Generate Customer Statements
+1. Navigate to **Panel → Accountant → Customer Statements**
+2. Select customer
+3. Choose date range
+4. Generate statement
+5. Export or email to customer
+
+### Restrictions
+- Typically read-only access (view and export only)
+- Cannot modify customer data
+- Cannot process payments (view-only payment data)
+- No system configuration access
+- Focus on financial viewing and reporting
+
+### Key Features
+- Comprehensive financial reporting
+- Export capabilities (PDF, Excel)
+- Period-wise analysis
+- Compliance reporting
+- Audit trail viewing
+
+---
+
 ## Common Features Across All Roles
 
 ### Notifications
@@ -480,6 +730,6 @@ Developers integrate with the system via API and manage system customizations.
 
 ---
 
-**Document Version:** 1.0  
+**Document Version:** 2.0  
 **Last Updated:** 2026-01-18  
 **Next Review:** 2026-04-18
