@@ -805,9 +805,8 @@ This document provides a comprehensive list of all features available in the ISP
 
 ### Architecture & Technical
 - **Multi-tenant Architecture**: Support for multiple ISPs
-- **Node-based Distribution**: Distributed database across nodes (up to 10 nodes)
 - **Central Database Management**: Centralized control with distributed nodes
-- **Laravel Framework**: Built on Laravel 9.11
+- **Laravel Framework**: Built on Laravel
 - **MySQL/PostgreSQL Support**: Multiple database backend support
 - **Redis Cache**: High-performance caching
 - **Queue System**: Asynchronous job processing
@@ -825,14 +824,14 @@ This document provides a comprehensive list of all features available in the ISP
 - **Trait System**: Reusable code components
 - **Helper Functions**: Utility functions library
 - **Dockerization**: Container support
-- **Gitpod Integration**: Cloud development environment
+
 
 ### Integration Capabilities
 - **bKash Integration**: Mobile financial service
 - **Nagad Integration**: Mobile payment gateway
 - **RADIUS Integration**: Authentication server
 - **MikroTik API**: Router management
-- **Telegram Bot API**: Messaging integration
+- **Intercom/Telegram Bot API**: Messaging integration
 - **SMS Gateway APIs**: Multiple provider support
 - **Payment Gateway APIs**: Online payment processing
 - **Email Services**: SMTP and API-based email
