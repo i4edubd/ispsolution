@@ -6,8 +6,8 @@ This document consolidates and rephrases the previous ISP Billing System Feature
 
 ## Governance & Roles
 - **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
-- **Tenancy (formerly Super Admin)**: Represents the overarching tenant context.  
-- **Admin (ISP, formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
+- **Super Admin**: Tenancy owner. Represents the overarching tenant context.  
+- **Admin (Formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
 
 ---
 
@@ -876,10 +876,11 @@ This document provides a comprehensive list of all features available in the ISP
 
 ### Overview
 
-## NOTE Governance & Roles (UPDTE)
+
+## Governance & Roles (UPDTE)
 - **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
-- **Tenancy (formerly Super Admin)**: Represents the overarching tenant context.  
-- **Admin (ISP, formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
+- **Super Admin**: Tenancy owner. Represents the overarching tenant context.  
+- **Admin (Formerly Group Admin)**: Manages ISP-specific operations within a tenancy. 
 
 ---
 
@@ -891,10 +892,10 @@ The ISP Billing System implements a comprehensive **9-tier role-based access con
 
 The system defines **9 distinct roles** with hierarchical authority levels and specific functional responsibilities:
 
-## NOTE Governance & Roles (UPDTE)
+## Governance & Roles (UPDTE)
 - **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
-- **Tenancy (formerly Super Admin)**: Represents the overarching tenant context.  
-- **Admin (ISP, formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
+- **Super Admin**: Tenancy owner. Represents the overarching tenant context.  
+- **Admin (Formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
 
 ---
 #### 1. **Developer** (Level 1 - Highest Authority)
@@ -1032,10 +1033,10 @@ The system defines **9 distinct roles** with hierarchical authority levels and s
 
 ### Hierarchical Relationships
 
-## NOTE Governance & Roles (UPDTE)
+## Governance & Roles (UPDTE)
 - **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
-- **Tenancy (formerly Super Admin)**: Represents the overarching tenant context.  
-- **Admin (ISP, formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
+- **Super Admin**: Tenancy owner. Represents the overarching tenant context.  
+- **Admin (Formerly Group Admin)**: Manages ISP-specific operations within a tenancy. 
 
 ---
 The system uses a **4-field hierarchy structure** for relationships:
@@ -1145,10 +1146,10 @@ Advanced permissions that must be explicitly granted by Admin.
 ---
 
 ### Panel Access by Role
-## NOTE Governance & Roles (UPDTE)
+## Governance & Roles (UPDTE)
 - **Developer**: Supreme authority and source code owner, with unrestricted permissions.  
-- **Tenancy (formerly Super Admin)**: Represents the overarching tenant context.  
-- **Admin (ISP, formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
+- **Super Admin**: Tenancy owner. Represents the overarching tenant context.  
+- **Admin (Formerly Group Admin)**: Manages ISP-specific operations within a tenancy.  
 
 ---
 
