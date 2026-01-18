@@ -33,6 +33,18 @@ Route::middleware('auth:sanctum')->prefix('data')->group(function () {
     Route::get('/recent-activities', [DataController::class, 'getRecentActivities'])->name('api.data.recent-activities');
 });
 
+// Chart API Routes (for ApexCharts)
+Route::middleware('auth:sanctum')->prefix('charts')->group(function () {
+    Route::get('/revenue', [\App\Http\Controllers\Api\ChartController::class, 'getRevenueChart'])->name('api.charts.revenue');
+    Route::get('/invoice-status', [\App\Http\Controllers\Api\ChartController::class, 'getInvoiceStatusChart'])->name('api.charts.invoice-status');
+    Route::get('/user-growth', [\App\Http\Controllers\Api\ChartController::class, 'getUserGrowthChart'])->name('api.charts.user-growth');
+    Route::get('/payment-methods', [\App\Http\Controllers\Api\ChartController::class, 'getPaymentMethodChart'])->name('api.charts.payment-methods');
+    Route::get('/daily-revenue', [\App\Http\Controllers\Api\ChartController::class, 'getDailyRevenueChart'])->name('api.charts.daily-revenue');
+    Route::get('/package-distribution', [\App\Http\Controllers\Api\ChartController::class, 'getPackageDistributionChart'])->name('api.charts.package-distribution');
+    Route::get('/commission', [\App\Http\Controllers\Api\ChartController::class, 'getCommissionChart'])->name('api.charts.commission');
+    Route::get('/dashboard', [\App\Http\Controllers\Api\ChartController::class, 'getDashboardCharts'])->name('api.charts.dashboard');
+});
+
 Route::prefix('v1')->group(function () {
     // IPAM Routes
     Route::prefix('ipam')->group(function () {
