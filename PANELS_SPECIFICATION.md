@@ -29,69 +29,69 @@ This document provides comprehensive specifications for all user panels in the I
 ## 1. Super Admin Panel
 
 ### Access Level
-- **Highest Authority**: Full system-wide access
-- **Scope**: All tenant features without restrictions
+- **Role Level**: 10 (Manages Admins within own tenants)
+- **Authority**: Full access to own tenants only
+- **Scope**: Only tenants created by this Super Admin
 - **URL Prefix**: `/panel/super-admin/*`
 
 ### Main Sections
 
 #### 1.1 Dashboard
-- Tenant-wide metrics and analytics
-- System health monitoring
-- Quick stats across all tenants
-- Revenue overview
+- Tenant-wide metrics for own tenants
+- System health monitoring for own tenants
+- Quick stats across own tenants
+- Revenue overview for own tenants
 
 #### 1.2 Tenant Management
-- View all ISP/tenants
-- Create new tenants
-- Manage tenant status (active/inactive)
-- Configure tenant billing plans
+- View only own tenants (created by this Super Admin)
+- Manage tenant status (active/inactive) for own tenants
+- Configure tenant billing plans for own tenants
+- Cannot create new tenants (only Developer can)
 
 #### 1.3 Admin Management
-- View all tenant administrators
-- Create/edit admin users
-- Assign roles and permissions
-- Manage admin access levels
+- View Admins in own tenants only
+- Create/edit Admin users within own tenants
+- Assign roles and permissions to Admins
+- Manage Admin access levels
+- Cannot create Super Admins (only Developer can)
 
 #### 1.4 Subscription Management
-- Fixed billing plans
-- User-based billing
-- Panel-based billing
+- Fixed billing plans for own tenants
+- User-based billing for own tenants
+- Panel-based billing for own tenants
 - Subscription renewals and upgrades
 
-#### 1.5 Global Configuration
-- System-wide settings
-- Payment gateway configuration (all tenants)
-- SMS gateway configuration (all tenants)
-- System defaults and limits
+#### 1.5 Tenant Configuration
+- Payment gateway configuration for own tenants
+- SMS gateway configuration for own tenants
+- Tenant-specific settings and limits
 
-#### 1.6 System Logs and Monitoring
-- Application logs
-- Error tracking
-- Performance metrics
-- Security events
-- Audit trails
-
-#### 1.7 All Features from Lower-Level Panels
-- Can access any tenant's panel
-- Override permissions when needed
-- System-wide reporting
+#### 1.6 Logs and Monitoring
+- Application logs for own tenants
+- Error tracking for own tenants
+- Performance metrics for own tenants
+- Security events for own tenants
+- Audit trails for own tenants
 
 ### Key Features
-- Multi-tenancy management
-- Global system configuration
-- Cross-tenant analytics
+- Multi-tenant management (own tenants only)
+- Tenant-specific configuration
+- Cross-tenant analytics (own tenants only)
 - Subscription billing management
-- System-wide monitoring and alerts
+- Tenant-wide monitoring and alerts
 
 ### Restrictions
-- None - full system access
+- Cannot access other Super Admins' tenants
+- Cannot create new tenants
+- Cannot create Super Admins
+- Limited to tenants they created
 
 ---
 
 ## 2. Admin Panel
 
 ### Access Level
+- **Role Level**: 20 (Manages Operators within ISP tenant)
 - **Full Administrative Access**: Complete control over their ISP/tenant
 - **Scope**: Single tenant operations
 - **URL Prefix**: `/panel/admin/*`
@@ -107,11 +107,15 @@ This document provides comprehensive specifications for all user panels in the I
 
 #### 2.2 Resellers & Managers
 **Controllable Menu** - Can be disabled per operator
-- **Operators**: Create and manage operator accounts
-- **Sub-Operators**: Manage sub-level operators
-- **Managers**: Task-specific manager accounts
+- **Operators**: Create and manage operator accounts (Level 30)
+- **Sub-Operators**: Manage sub-level operators (Level 40)
+- **Managers**: Task-specific manager accounts (Level 50)
+- **Staff**: Support staff accounts (Level 80)
+- **Accountant**: Financial view-only accounts (Level 70)
 - Configure disabled menus for each operator
 - Set permissions and access levels
+- Assign special permissions
+- Cannot create Admins or Super Admins (only manages roles below Admin level)
 
 #### 2.3 Routers & Packages
 **Controllable Menu** - Can be disabled per operator
@@ -234,32 +238,34 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 ## 3. Operator Panel
 
 ### Access Level
+- **Role Level**: 30 (Manages Sub-Operators and customers in segment)
 - **Restricted Panel**: Based on menu configuration by Admin
-- **Scope**: Assigned customers and features only
+- **Scope**: Own customers + sub-operator customers
 - **URL Prefix**: `/panel/operator/*`
 
 ### Main Sections
 
 #### 3.1 Dashboard
 - Operator-specific metrics
-- Assigned customer statistics
+- Own + sub-operator customer statistics
 - Payment collection summary
 - Performance indicators
 
 #### 3.2 Sub-Operator Management
-- Create sub-operators (if enabled)
+- Create sub-operators (Level 40)
 - Manage assigned sub-operators
 - Track sub-operator performance
+- Cannot create Operators or higher roles
 
 #### 3.3 Customer Management
-- View assigned customers only
-- Add new customers (if enabled)
+- View own customers + sub-operator customers
+- Add new customers (Level 100)
 - Customer profile management
 - Connection management
 - Cannot access other operators' customers
 
 #### 3.4 Bills and Payments
-- Process payments for own customers
+- Process payments for own and sub-operator customers
 - View billing history
 - Generate invoices (if enabled)
 - Payment collection tracking
@@ -270,7 +276,7 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 - Cannot generate cards
 
 #### 3.6 Complaints
-- Handle tickets for own customers
+- Handle tickets for own and sub-operator customers
 - Submit and track complaints
 - Response management
 
@@ -286,14 +292,15 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 - Cannot broadcast to all customers
 
 ### Restrictions
-- **Cannot create Admins or Operators**: Only sub-operators if enabled
+- **Cannot create Admins or Operators**: Can only create Sub-Operators and Customers
 - **Cannot access other operators' data**: Strict data isolation
 - **Cannot modify system configurations**: Network devices, packages, billing rules
 - **Menu visibility controlled by `disabled_menus`**: Admin configures available menus
 
 ### Data Isolation
-- Operator Level: 30 (lower than Admin's 20)
+- Operator Level: 30 (lower privilege than Admin's 20)
 - Can only see customers created by themselves or their sub-operators
+- Can create Sub-Operators (Level 40) and Customers (Level 100)
 - Cannot modify packages or network settings
 
 ---
@@ -301,8 +308,9 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 ## 4. Sub-Operator Panel
 
 ### Access Level
+- **Role Level**: 40 (Manages only own customers)
 - **Further Restricted**: Subset of Operator panel
-- **Scope**: Assigned customer subset only
+- **Scope**: Own customers only
 - **URL Prefix**: `/panel/sub-operator/*`
 
 ### Main Sections
@@ -313,39 +321,42 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 - Basic statistics
 
 #### 4.2 Customer Management
-- View assigned subset of customers only
+- View own customers only
+- Create new customers (Level 100)
 - Basic customer operations
 - Connection status monitoring
-- Cannot access operator's full customer base
+- Cannot access operator's other customers
 
 #### 4.3 Bills and Payments
-- Process payments for assigned customers
+- Process payments for own customers
 - View payment history
 - Basic invoice viewing
 
 #### 4.4 Basic Reports
-- Collection reports
+- Collection reports for own customers
 - Customer activity
 - Own performance metrics
 
 ### Restrictions
-- **Cannot create any operators**: No user management
+- **Cannot create any operators**: Can only create Customers (Level 100)
+- **Cannot create Sub-Operators**: No user hierarchy management
 - **Cannot manage packages or profiles**: Read-only network config
-- **Limited to assigned customers only**: Strict subset isolation
-- **Most administrative features disabled**: Minimal operational access
+- **Limited to own customers only**: Strict data isolation
 
 ### Data Isolation
-- Operator Level: 40 (lower than Operator's 30)
+- Operator Level: 40 (lower privilege than Operator's 30)
 - Reports to parent Operator
-- Cannot see other sub-operators' data
+- Cannot see other sub-operators' data or parent operator's direct customers
+- Can only create customer accounts
 
 ---
 
 ## 5. Manager Panel
 
 ### Access Level
+- **Role Level**: 50 (View-only scoped access)
 - **Task-Specific Panel**: Permission-based feature access
-- **Scope**: Group metrics and assigned permissions
+- **Scope**: Read-only within tenant, cannot create users
 - **URL Prefix**: `/panel/manager/*`
 
 ### Main Sections
@@ -354,40 +365,41 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 - Group metrics (department or team)
 - Assigned task overview
 - Performance indicators
-- Quick actions
+- Quick actions (view-only focused)
 
 #### 5.2 Customer Viewing
 - View customers based on permissions
-- Can view operators' or sub-operators' customers
-- Read-only access (typically)
+- Can view operators' or sub-operators' customers (read-only)
 - Search and filter capabilities
+- Cannot create or delete customers
 
 #### 5.3 Payment Processing
-- Process customer payments (if authorized)
-- Verify payments
-- Record transactions
+- Process customer payments (if explicitly authorized by permission)
+- Verify payments (view-only typically)
+- View transactions
 - Payment history viewing
 
 #### 5.4 Complaint Management
-- Assigned department tickets
+- Assigned department tickets (view and respond)
 - Ticket assignment and escalation
 - Response management
 - Status tracking
 
 #### 5.5 Basic Reports
-- Department-level reports
+- Department-level reports (read-only)
 - Customer satisfaction metrics
 - Resolution statistics
 - Performance reports
 
 ### Restrictions
+- **Cannot create any users**: No user management capabilities
 - **Cannot modify operators or sub-operators**: No user hierarchy management
 - **Cannot modify packages or configurations**: No system changes
-- **Can view operators or sub-operators customers**: Read-only access
+- **View-only access**: Cannot create customers or manage accounts
 - **Limited to assigned permissions**: Granular permission control
 
 ### Permission Model
-- Operator Level: 50
+- Operator Level: 50 (view-only scoped access)
 - Permission-based feature access
 - Can be assigned specific departments or teams
 - View-only access to most features
