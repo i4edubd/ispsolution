@@ -205,6 +205,6 @@ class RoleSeeder extends Seeder
             );
         }
 
-        $this->command->info(count($roles).' roles seeded successfully with updated hierarchy!');
+        $this->command->info(count($roles) . ' roles seeded successfully with updated hierarchy!');
     }
 }

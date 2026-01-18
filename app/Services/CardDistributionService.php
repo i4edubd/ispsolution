@@ -16,7 +16,7 @@ class CardDistributionService
     public function generateCards(int $quantity, float $denomination, User $generatedBy, ?Carbon $expiresAt = null): array
     {
         $cards = [];
-        
+
         DB::transaction(function () use ($quantity, $denomination, $generatedBy, $expiresAt, &$cards) {
             for ($i = 0; $i < $quantity; $i++) {
                 $cards[] = RechargeCard::create([
@@ -58,7 +58,7 @@ class CardDistributionService
                 ->lockForUpdate()
                 ->first();
 
-            if (!$card || !$card->isAvailable()) {
+            if (! $card || ! $card->isAvailable()) {
                 return null;
             }
 

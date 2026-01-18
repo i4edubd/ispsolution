@@ -18,8 +18,7 @@ class InvoiceGenerated extends Mailable
      */
     public function __construct(
         public Invoice $invoice
-    ) {
-    }
+    ) {}
 
     /**
      * Get the message envelope.

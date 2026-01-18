@@ -39,7 +39,7 @@ class MonitoringCollect extends Command
         $this->info('Starting device monitoring...');
 
         if ($type && $id) {
-            return $this->monitorSpecificDevice($monitoringService, $type, (int)$id);
+            return $this->monitorSpecificDevice($monitoringService, $type, (int) $id);
         }
 
         if ($type) {
@@ -57,7 +57,7 @@ class MonitoringCollect extends Command
         try {
             $this->info("Monitoring {$type} #{$id}...");
             $metrics = $service->monitorDevice($type, $id);
-            
+
             $this->line("  Status: {$metrics['status']}");
             if (isset($metrics['cpu_usage'])) {
                 $this->line("  CPU: {$metrics['cpu_usage']}%");
@@ -65,11 +65,13 @@ class MonitoringCollect extends Command
             if (isset($metrics['memory_usage'])) {
                 $this->line("  Memory: {$metrics['memory_usage']}%");
             }
-            
+
             $this->info('✓ Monitoring completed');
+
             return self::SUCCESS;
         } catch (\Exception $e) {
             $this->error("Failed to monitor {$type} #{$id}: {$e->getMessage()}");
+
             return self::FAILURE;
         }
     }
@@ -88,6 +90,7 @@ class MonitoringCollect extends Command
 
         if ($devices->isEmpty()) {
             $this->warn("No active {$type}s found");
+
             return self::SUCCESS;
         }
 

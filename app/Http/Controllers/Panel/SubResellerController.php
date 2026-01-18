@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\ServicePackage;
-use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\View\View;
 
 class SubResellerController extends Controller
@@ -16,7 +15,7 @@ class SubResellerController extends Controller
     public function dashboard(): View
     {
         $subResellerId = auth()->id();
-        
+
         $stats = [
             'total_customers' => User::where('created_by', $subResellerId)->count(),
             'active_customers' => User::where('created_by', $subResellerId)

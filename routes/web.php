@@ -1,15 +1,15 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Panel\SuperAdminController;
 use App\Http\Controllers\Panel\AdminController;
-use App\Http\Controllers\Panel\ManagerController;
-use App\Http\Controllers\Panel\StaffController;
-use App\Http\Controllers\Panel\ResellerController;
-use App\Http\Controllers\Panel\SubResellerController;
 use App\Http\Controllers\Panel\CardDistributorController;
 use App\Http\Controllers\Panel\CustomerController;
 use App\Http\Controllers\Panel\DeveloperController;
+use App\Http\Controllers\Panel\ManagerController;
+use App\Http\Controllers\Panel\ResellerController;
+use App\Http\Controllers\Panel\StaffController;
+use App\Http\Controllers\Panel\SubResellerController;
+use App\Http\Controllers\Panel\SuperAdminController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,7 +37,7 @@ Route::prefix('payments')->name('payments.')->middleware(['auth'])->group(functi
     Route::get('invoices/{invoice}', [PaymentController::class, 'show'])->name('show');
     Route::post('invoices/{invoice}/initiate', [PaymentController::class, 'initiate'])->name('initiate');
     Route::post('invoices/{invoice}/manual', [PaymentController::class, 'recordManualPayment'])->name('manual');
-    
+
     // Payment callbacks
     Route::get('success', [PaymentController::class, 'success'])->name('success');
     Route::get('failure', [PaymentController::class, 'failure'])->name('failure');
@@ -147,27 +147,27 @@ Route::prefix('panel/super-admin')->name('panel.super-admin.')->middleware(['aut
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [SuperAdminController::class, 'users'])->name('users');
     Route::get('/roles', [SuperAdminController::class, 'roles'])->name('roles');
-    
+
     // ISP/Admin Management
     Route::get('/isp', [SuperAdminController::class, 'ispIndex'])->name('isp.index');
     Route::get('/isp/create', [SuperAdminController::class, 'ispCreate'])->name('isp.create');
     Route::post('/isp', [SuperAdminController::class, 'ispStore'])->name('isp.store');
-    
+
     // Billing Configuration
     Route::get('/billing/fixed', [SuperAdminController::class, 'billingFixed'])->name('billing.fixed');
     Route::get('/billing/user-base', [SuperAdminController::class, 'billingUserBase'])->name('billing.user-base');
     Route::get('/billing/panel-base', [SuperAdminController::class, 'billingPanelBase'])->name('billing.panel-base');
-    
+
     // Payment Gateway Management
     Route::get('/payment-gateway', [SuperAdminController::class, 'paymentGatewayIndex'])->name('payment-gateway.index');
     Route::get('/payment-gateway/create', [SuperAdminController::class, 'paymentGatewayCreate'])->name('payment-gateway.create');
     Route::post('/payment-gateway', [SuperAdminController::class, 'paymentGatewayStore'])->name('payment-gateway.store');
-    
+
     // SMS Gateway Management
     Route::get('/sms-gateway', [SuperAdminController::class, 'smsGatewayIndex'])->name('sms-gateway.index');
     Route::get('/sms-gateway/create', [SuperAdminController::class, 'smsGatewayCreate'])->name('sms-gateway.create');
     Route::post('/sms-gateway', [SuperAdminController::class, 'smsGatewayStore'])->name('sms-gateway.store');
-    
+
     // Logs & Settings
     Route::get('/logs', [SuperAdminController::class, 'logs'])->name('logs');
     Route::get('/settings', [SuperAdminController::class, 'settings'])->name('settings');
@@ -180,13 +180,13 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/network-users', [AdminController::class, 'networkUsers'])->name('network-users');
     Route::get('/packages', [AdminController::class, 'packages'])->name('packages');
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
-    
+
     // Network Device Management
     Route::get('/mikrotik', [AdminController::class, 'mikrotikRouters'])->name('mikrotik');
     Route::get('/nas', [AdminController::class, 'nasDevices'])->name('nas');
     Route::get('/cisco', [AdminController::class, 'ciscoDevices'])->name('cisco');
     Route::get('/olt', [AdminController::class, 'oltDevices'])->name('olt');
-    
+
     // Customer Management
     Route::get('/customers', [AdminController::class, 'customers'])->name('customers');
     Route::get('/customers/create', [AdminController::class, 'customersCreate'])->name('customers.create');
@@ -198,7 +198,7 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/customers/import-requests', [AdminController::class, 'customerImportRequests'])->name('customers.import-requests');
     Route::get('/customers/pppoe-import', [AdminController::class, 'pppoeCustomerImport'])->name('customers.pppoe-import');
     Route::get('/customers/bulk-update', [AdminController::class, 'bulkUpdateUsers'])->name('customers.bulk-update');
-    
+
     // Accounting & Finance
     Route::get('/accounting/transactions', [AdminController::class, 'accountTransactions'])->name('accounting.transactions');
     Route::get('/accounting/payment-gateway-transactions', [AdminController::class, 'paymentGatewayTransactions'])->name('accounting.payment-gateway-transactions');
@@ -211,7 +211,7 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/accounting/vat-collections', [AdminController::class, 'vatCollections'])->name('accounting.vat-collections');
     Route::get('/accounting/customer-payments', [AdminController::class, 'customerPayments'])->name('accounting.customer-payments');
     Route::get('/accounting/gateway-customer-payments', [AdminController::class, 'gatewayCustomerPayments'])->name('accounting.gateway-customer-payments');
-    
+
     // Operators Management
     Route::get('/operators', [AdminController::class, 'operators'])->name('operators');
     Route::get('/operators/create', [AdminController::class, 'operatorsCreate'])->name('operators.create');
@@ -220,11 +220,11 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/operators/staff', [AdminController::class, 'staff'])->name('operators.staff');
     Route::get('/operators/{id}/profile', [AdminController::class, 'operatorProfile'])->name('operators.profile');
     Route::get('/operators/{id}/special-permissions', [AdminController::class, 'operatorSpecialPermissions'])->name('operators.special-permissions');
-    
+
     // Payment Gateway Management
     Route::get('/payment-gateways', [AdminController::class, 'paymentGateways'])->name('payment-gateways');
     Route::get('/payment-gateways/create', [AdminController::class, 'paymentGatewaysCreate'])->name('payment-gateways.create');
-    
+
     // Network Devices Management
     Route::get('/network/routers', [AdminController::class, 'routers'])->name('network.routers');
     Route::get('/network/routers/create', [AdminController::class, 'routersCreate'])->name('network.routers.create');
@@ -245,7 +245,7 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/network/pppoe-profiles', [AdminController::class, 'pppoeProfiles'])->name('network.pppoe-profiles');
     Route::get('/network/package-fup-edit/{id}', [AdminController::class, 'packageFupEdit'])->name('network.package-fup-edit');
     Route::get('/network/ping-test', [AdminController::class, 'pingTest'])->name('network.ping-test');
-    
+
     // SMS Management
     Route::get('/sms/send', [AdminController::class, 'smsSend'])->name('sms.send');
     Route::get('/sms/broadcast', [AdminController::class, 'smsBroadcast'])->name('sms.broadcast');
@@ -306,7 +306,7 @@ Route::prefix('panel/staff')->name('panel.staff.')->middleware(['auth', 'role:st
     Route::get('/dashboard', [StaffController::class, 'dashboard'])->name('dashboard');
     Route::get('/network-users', [StaffController::class, 'networkUsers'])->name('network-users');
     Route::get('/tickets', [StaffController::class, 'tickets'])->name('tickets');
-    
+
     // Network Device Management (permission-based)
     Route::get('/mikrotik', [StaffController::class, 'mikrotikRouters'])->name('mikrotik');
     Route::get('/nas', [StaffController::class, 'nasDevices'])->name('nas');
@@ -351,32 +351,31 @@ Route::prefix('panel/customer')->name('panel.customer.')->middleware(['auth', 'r
 // Developer Panel (Supreme Authority)
 Route::prefix('panel/developer')->name('panel.developer.')->middleware(['auth', 'role:developer'])->group(function () {
     Route::get('/dashboard', [DeveloperController::class, 'dashboard'])->name('dashboard');
-    
+
     // Tenancy Management
     Route::get('/tenancies', [DeveloperController::class, 'tenancies'])->name('tenancies.index');
     Route::get('/tenancies/create', [DeveloperController::class, 'createTenancy'])->name('tenancies.create');
     Route::post('/tenancies', [DeveloperController::class, 'storeTenancy'])->name('tenancies.store');
     Route::post('/tenancies/{tenant}/toggle-status', [DeveloperController::class, 'toggleTenancyStatus'])->name('tenancies.toggle-status');
-    
+
     // Subscription Management
     Route::get('/subscriptions', [DeveloperController::class, 'subscriptions'])->name('subscriptions.index');
-    
+
     // System Access
     Route::get('/access-panel', [DeveloperController::class, 'accessPanel'])->name('access-panel');
     Route::get('/customers/search', [DeveloperController::class, 'searchCustomers'])->name('customers.search');
     Route::get('/customers', [DeveloperController::class, 'allCustomers'])->name('customers.index');
-    
+
     // Audit & Logs
     Route::get('/audit-logs', [DeveloperController::class, 'auditLogs'])->name('audit-logs');
     Route::get('/logs', [DeveloperController::class, 'logs'])->name('logs');
     Route::get('/error-logs', [DeveloperController::class, 'errorLogs'])->name('error-logs');
-    
+
     // API Management
     Route::get('/api-docs', [DeveloperController::class, 'apiDocs'])->name('api-docs');
     Route::get('/api-keys', [DeveloperController::class, 'apiKeys'])->name('api-keys');
-    
+
     // System Tools
     Route::get('/settings', [DeveloperController::class, 'settings'])->name('settings');
     Route::get('/debug', [DeveloperController::class, 'debug'])->name('debug');
 });
-

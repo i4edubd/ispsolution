@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Tenant;
-use App\Models\Role;
-use App\Models\ServicePackage;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\Role;
+use App\Models\ServicePackage;
+use App\Models\Tenant;
+use App\Models\User;
 use App\Services\BillingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,8 +17,11 @@ class BillingServiceTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $customer;
+
     protected ServicePackage $package;
+
     protected BillingService $billingService;
 
     protected function setUp(): void
@@ -26,7 +29,7 @@ class BillingServiceTest extends TestCase
         parent::setUp();
 
         $tenant = Tenant::factory()->create();
-        
+
         $adminRole = Role::factory()->create(['name' => 'admin', 'level' => 90]);
         $customerRole = Role::factory()->create(['name' => 'customer', 'level' => 10]);
 
@@ -69,7 +72,7 @@ class BillingServiceTest extends TestCase
         $this->assertInstanceOf(Payment::class, $payment);
         $this->assertEquals($invoice->id, $payment->invoice_id);
         $this->assertEquals('completed', $payment->status);
-        
+
         $invoice->refresh();
         $this->assertEquals('paid', $invoice->status);
         $this->assertNotNull($invoice->paid_at);

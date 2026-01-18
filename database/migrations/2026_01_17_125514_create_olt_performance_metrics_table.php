@@ -25,7 +25,7 @@ return new class extends Migration
             $table->integer('offline_onus')->default(0);
             $table->json('port_utilization')->nullable();
             $table->timestamps();
-            
+
             $table->index(['olt_id', 'created_at']);
         });
     }

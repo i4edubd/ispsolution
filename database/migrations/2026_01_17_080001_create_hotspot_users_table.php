@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('status')->default('pending'); // pending, active, suspended, expired
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
-            
+
             $table->index(['tenant_id', 'status']);
             $table->index('phone_number');
         });

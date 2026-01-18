@@ -28,8 +28,9 @@ class SendPreExpirationNotifications extends Command
     {
         $days = (int) $this->option('days');
 
-        if (!$this->option('force') && !$this->confirm("Send pre-expiration notifications for invoices expiring in {$days} days?")) {
+        if (! $this->option('force') && ! $this->confirm("Send pre-expiration notifications for invoices expiring in {$days} days?")) {
             $this->info('Operation cancelled.');
+
             return Command::SUCCESS;
         }
 

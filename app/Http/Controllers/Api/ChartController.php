@@ -27,7 +27,7 @@ class ChartController extends Controller
                 ->whereMonth('paid_at', $month)
                 ->where('status', 'completed')
                 ->sum('amount');
-            
+
             $data[] = [
                 'month' => Carbon::create($year, $month)->format('M'),
                 'revenue' => (float) $revenue,
@@ -77,7 +77,7 @@ class ChartController extends Controller
                 ->whereYear('created_at', '<=', $date->year)
                 ->whereMonth('created_at', '<=', $date->month)
                 ->count();
-            
+
             $data[] = [
                 'month' => $date->format('M Y'),
                 'users' => $count,
@@ -137,7 +137,7 @@ class ChartController extends Controller
                 ->whereDate('paid_at', $date)
                 ->where('status', 'completed')
                 ->sum('amount');
-            
+
             $data[] = [
                 'date' => $date->format('M d'),
                 'revenue' => (float) $revenue,
@@ -200,7 +200,7 @@ class ChartController extends Controller
                 ->whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->sum('commission_amount');
-            
+
             $data[] = [
                 'month' => $date->format('M Y'),
                 'earnings' => (float) $earnings,

@@ -26,15 +26,16 @@ class DeactivateExpiredHotspotUsers extends Command
      */
     public function handle(HotspotService $hotspotService): int
     {
-        if (!$this->option('force') && !$this->confirm('Do you want to deactivate expired hotspot users?')) {
+        if (! $this->option('force') && ! $this->confirm('Do you want to deactivate expired hotspot users?')) {
             $this->info('Operation cancelled.');
+
             return Command::SUCCESS;
         }
 
         $this->info('Deactivating expired hotspot users...');
 
         $tenantId = $this->option('tenant');
-        
+
         if ($tenantId) {
             $count = $hotspotService->deactivateExpiredUsers((int) $tenantId);
             $this->info("Deactivated {$count} expired hotspot user(s) for tenant {$tenantId}.");
@@ -42,12 +43,12 @@ class DeactivateExpiredHotspotUsers extends Command
             // Process all tenants
             $tenants = \App\Models\Tenant::pluck('id');
             $totalCount = 0;
-            
+
             foreach ($tenants as $tid) {
                 $count = $hotspotService->deactivateExpiredUsers($tid);
                 $totalCount += $count;
             }
-            
+
             $this->info("Deactivated {$totalCount} expired hotspot user(s) across all tenants.");
         }
 

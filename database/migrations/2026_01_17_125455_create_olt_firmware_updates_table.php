@@ -25,7 +25,7 @@ return new class extends Migration
             $table->timestamp('completed_at')->nullable();
             $table->foreignId('initiated_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
-            
+
             $table->index(['olt_id', 'status']);
         });
     }

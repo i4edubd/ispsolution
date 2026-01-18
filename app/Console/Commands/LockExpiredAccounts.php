@@ -26,8 +26,9 @@ class LockExpiredAccounts extends Command
      */
     public function handle(BillingService $billingService): int
     {
-        if (!$this->option('force') && !$this->confirm('Do you want to lock expired accounts?')) {
+        if (! $this->option('force') && ! $this->confirm('Do you want to lock expired accounts?')) {
             $this->info('Operation cancelled.');
+
             return Command::SUCCESS;
         }
 

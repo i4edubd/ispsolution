@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'tenant_id',
@@ -60,8 +60,8 @@ class Invoice extends Model
 
     public function isOverdue(): bool
     {
-        return $this->status !== 'paid' && 
-               $this->due_date && 
+        return $this->status !== 'paid' &&
+               $this->due_date &&
                $this->due_date->isPast();
     }
 }

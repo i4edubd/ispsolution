@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamp('applied_at')->nullable();
             $table->string('status')->default('pending');
             $table->timestamps();
-            
+
             $table->index(['router_id', 'config_type']);
         });
     }

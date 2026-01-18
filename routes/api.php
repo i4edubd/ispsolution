@@ -188,7 +188,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/onu/{onuId}/authorize', [OltController::class, 'authorizeOnu'])->name('api.olt.onu.authorize');
         Route::post('/onu/{onuId}/unauthorize', [OltController::class, 'unauthorizeOnu'])->name('api.olt.onu.unauthorize');
         Route::post('/onu/{onuId}/reboot', [OltController::class, 'rebootOnu'])->name('api.olt.onu.reboot');
-        
+
         // Bulk Operations
         Route::post('/onu/bulk-operations', [OltController::class, 'bulkOnuOperations'])->name('api.olt.onu.bulk-operations');
     });

@@ -25,7 +25,7 @@ return new class extends Migration
             $table->timestamp('acknowledged_at')->nullable();
             $table->foreignId('acknowledged_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
-            
+
             $table->index(['olt_id', 'created_at']);
             $table->index('is_acknowledged');
         });

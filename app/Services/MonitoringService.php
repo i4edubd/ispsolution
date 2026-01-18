@@ -14,7 +14,6 @@ use App\Models\Olt;
 use App\Models\Onu;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class MonitoringService implements MonitoringServiceInterface
@@ -30,8 +29,8 @@ class MonitoringService implements MonitoringServiceInterface
     public function monitorDevice(string $type, int $id): array
     {
         $device = $this->resolveDevice($type, $id);
-        
-        if (!$device) {
+
+        if (! $device) {
             throw new \InvalidArgumentException("Device not found: {$type}#{$id}");
         }
 
@@ -70,7 +69,7 @@ class MonitoringService implements MonitoringServiceInterface
             ->where('monitorable_id', $id)
             ->first();
 
-        if (!$monitor) {
+        if (! $monitor) {
             return ['status' => 'unknown', 'message' => 'No monitoring data available'];
         }
 
@@ -111,9 +110,10 @@ class MonitoringService implements MonitoringServiceInterface
     public function recordBandwidthUsage(string $type, int $id, int $upload, int $download): bool
     {
         $device = $this->resolveDevice($type, $id);
-        
-        if (!$device) {
+
+        if (! $device) {
             Log::warning("Cannot record bandwidth for non-existent device: {$type}#{$id}");
+
             return false;
         }
 
@@ -152,7 +152,7 @@ class MonitoringService implements MonitoringServiceInterface
             'period' => $period,
             'start_date' => $startDate->toDateTimeString(),
             'end_date' => $endDate->toDateTimeString(),
-            'data' => $usages->map(fn($usage) => [
+            'data' => $usages->map(fn ($usage) => [
                 'timestamp' => $usage->timestamp->toDateTimeString(),
                 'upload_bytes' => $usage->upload_bytes,
                 'download_bytes' => $usage->download_bytes,
@@ -231,13 +231,13 @@ class MonitoringService implements MonitoringServiceInterface
     public function aggregateHourlyData(): int
     {
         $cutoffTime = Carbon::now()->subHours(2);
-        
+
         $rawData = BandwidthUsage::raw()
             ->where('timestamp', '<', $cutoffTime)
             ->get()
             ->groupBy(function ($item) {
-                return $item->monitorable_type . '_' . 
-                       $item->monitorable_id . '_' . 
+                return $item->monitorable_type . '_' .
+                       $item->monitorable_id . '_' .
                        $item->timestamp->format('Y-m-d H');
             });
 
@@ -277,13 +277,13 @@ class MonitoringService implements MonitoringServiceInterface
     public function aggregateDailyData(): int
     {
         $cutoffDate = Carbon::now()->subDays(2)->startOfDay();
-        
+
         $hourlyData = BandwidthUsage::hourly()
             ->where('timestamp', '<', $cutoffDate)
             ->get()
             ->groupBy(function ($item) {
-                return $item->monitorable_type . '_' . 
-                       $item->monitorable_id . '_' . 
+                return $item->monitorable_type . '_' .
+                       $item->monitorable_id . '_' .
                        $item->timestamp->format('Y-m-d');
             });
 
@@ -323,13 +323,13 @@ class MonitoringService implements MonitoringServiceInterface
     public function aggregateWeeklyData(): int
     {
         $cutoffDate = Carbon::now()->subWeeks(2)->startOfWeek();
-        
+
         $dailyData = BandwidthUsage::daily()
             ->where('timestamp', '<', $cutoffDate)
             ->get()
             ->groupBy(function ($item) {
-                return $item->monitorable_type . '_' . 
-                       $item->monitorable_id . '_' . 
+                return $item->monitorable_type . '_' .
+                       $item->monitorable_id . '_' .
                        $item->timestamp->startOfWeek()->format('Y-m-d');
             });
 
@@ -369,13 +369,13 @@ class MonitoringService implements MonitoringServiceInterface
     public function aggregateMonthlyData(): int
     {
         $cutoffDate = Carbon::now()->subMonths(2)->startOfMonth();
-        
+
         $weeklyData = BandwidthUsage::weekly()
             ->where('timestamp', '<', $cutoffDate)
             ->get()
             ->groupBy(function ($item) {
-                return $item->monitorable_type . '_' . 
-                       $item->monitorable_id . '_' . 
+                return $item->monitorable_type . '_' .
+                       $item->monitorable_id . '_' .
                        $item->timestamp->format('Y-m');
             });
 
@@ -416,17 +416,18 @@ class MonitoringService implements MonitoringServiceInterface
     {
         try {
             $resources = $this->mikrotikService->getResources($router->id);
-            
+
             return [
                 'status' => 'online',
                 'cpu_usage' => $resources['cpu-load'] ?? null,
-                'memory_usage' => isset($resources['free-memory'], $resources['total-memory']) 
+                'memory_usage' => isset($resources['free-memory'], $resources['total-memory'])
                     ? round((1 - ($resources['free-memory'] / $resources['total-memory'])) * 100, 2)
                     : null,
                 'uptime' => $this->parseUptime($resources['uptime'] ?? null),
             ];
         } catch (\Exception $e) {
             Log::warning("Failed to monitor router {$router->id}: {$e->getMessage()}");
+
             return ['status' => 'offline'];
         }
     }
@@ -438,7 +439,7 @@ class MonitoringService implements MonitoringServiceInterface
     {
         try {
             $stats = $this->oltService->getOltStatistics($olt->id);
-            
+
             return [
                 'status' => $stats['online_onus'] > 0 ? 'online' : 'degraded',
                 'cpu_usage' => $stats['cpu_usage'] ?? null,
@@ -447,6 +448,7 @@ class MonitoringService implements MonitoringServiceInterface
             ];
         } catch (\Exception $e) {
             Log::warning("Failed to monitor OLT {$olt->id}: {$e->getMessage()}");
+
             return ['status' => 'offline'];
         }
     }
@@ -458,7 +460,7 @@ class MonitoringService implements MonitoringServiceInterface
     {
         try {
             $status = $this->oltService->getOnuStatus($onu->id);
-            
+
             return [
                 'status' => $status['status'] === 'online' ? 'online' : 'offline',
                 'cpu_usage' => null, // ONUs typically don't report CPU
@@ -467,6 +469,7 @@ class MonitoringService implements MonitoringServiceInterface
             ];
         } catch (\Exception $e) {
             Log::warning("Failed to monitor ONU {$onu->id}: {$e->getMessage()}");
+
             return ['status' => 'offline'];
         }
     }
@@ -502,16 +505,16 @@ class MonitoringService implements MonitoringServiceInterface
      */
     private function parseUptime(?string $uptime): ?int
     {
-        if (!$uptime) {
+        if (! $uptime) {
             return null;
         }
 
         // Parse MikroTik uptime format (e.g., "1w2d3h4m5s")
         preg_match_all('/(\d+)([wdhms])/', $uptime, $matches, PREG_SET_ORDER);
-        
+
         $seconds = 0;
         foreach ($matches as $match) {
-            $value = (int)$match[1];
+            $value = (int) $match[1];
             $seconds += match ($match[2]) {
                 'w' => $value * 604800,
                 'd' => $value * 86400,

@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Tenant;
-use App\Models\Role;
 use App\Models\RechargeCard;
+use App\Models\Role;
+use App\Models\Tenant;
+use App\Models\User;
 use App\Services\CardDistributionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,8 +15,11 @@ class CardDistributionServiceTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected User $distributor;
+
     protected User $customer;
+
     protected CardDistributionService $cardService;
 
     protected function setUp(): void
@@ -24,7 +27,7 @@ class CardDistributionServiceTest extends TestCase
         parent::setUp();
 
         $tenant = Tenant::factory()->create();
-        
+
         $adminRole = Role::factory()->create(['name' => 'admin', 'level' => 90]);
         $distributorRole = Role::factory()->create(['name' => 'card-distributor', 'level' => 40]);
         $customerRole = Role::factory()->create(['name' => 'customer', 'level' => 10]);
@@ -46,7 +49,7 @@ class CardDistributionServiceTest extends TestCase
         $cards = $this->cardService->generateCards(5, 100.00, $this->admin);
 
         $this->assertCount(5, $cards);
-        
+
         foreach ($cards as $card) {
             $this->assertInstanceOf(RechargeCard::class, $card);
             $this->assertEquals(100.00, $card->denomination);
@@ -66,7 +69,7 @@ class CardDistributionServiceTest extends TestCase
         $count = $this->cardService->assignCardsToDistributor($cardIds, $this->distributor);
 
         $this->assertEquals(3, $count);
-        
+
         foreach ($cards as $card) {
             $card->refresh();
             $this->assertEquals($this->distributor->id, $card->assigned_to);

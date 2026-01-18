@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('profile')->nullable();
             $table->boolean('enabled')->default(true);
             $table->timestamps();
-            
+
             $table->unique(['router_id', 'username']);
         });
     }

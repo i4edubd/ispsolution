@@ -16,7 +16,7 @@ class OnuTest extends TestCase
     public function test_onu_can_be_created(): void
     {
         $olt = Olt::factory()->create();
-        
+
         $onu = Onu::create([
             'olt_id' => $olt->id,
             'pon_port' => '0/1/1',
@@ -84,7 +84,7 @@ class OnuTest extends TestCase
     {
         $olt1 = Olt::factory()->create();
         $olt2 = Olt::factory()->create();
-        
+
         Onu::factory()->create(['olt_id' => $olt1->id]);
         Onu::factory()->create(['olt_id' => $olt1->id]);
         Onu::factory()->create(['olt_id' => $olt2->id]);
@@ -137,7 +137,7 @@ class OnuTest extends TestCase
 
         // Refresh the ONU to clear the relationship cache
         $onu->refresh();
-        
+
         $path = $onu->getFullPonPath();
 
         $this->assertEquals('Unknown OLT / 0/1/1 / 5', $path);
@@ -159,7 +159,7 @@ class OnuTest extends TestCase
     public function test_onu_unique_constraint_on_olt_pon_onu_combination(): void
     {
         $olt = Olt::factory()->create();
-        
+
         Onu::factory()->create([
             'olt_id' => $olt->id,
             'pon_port' => '0/1/1',

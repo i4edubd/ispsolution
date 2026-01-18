@@ -27,8 +27,9 @@ class GenerateDailyInvoices extends Command
      */
     public function handle(BillingService $billingService): int
     {
-        if (!$this->option('force') && !$this->confirm('Do you want to generate daily invoices?')) {
+        if (! $this->option('force') && ! $this->confirm('Do you want to generate daily invoices?')) {
             $this->info('Operation cancelled.');
+
             return Command::SUCCESS;
         }
 
@@ -39,12 +40,12 @@ class GenerateDailyInvoices extends Command
             $query->where('billing_type', 'daily')
                 ->where('is_active', true);
         })
-        ->where('is_active', true)
-        ->whereDoesntHave('invoices', function ($query) {
-            $query->where('status', 'pending')
-                ->whereDate('billing_period_start', today());
-        })
-        ->get();
+            ->where('is_active', true)
+            ->whereDoesntHave('invoices', function ($query) {
+                $query->where('status', 'pending')
+                    ->whereDate('billing_period_start', today());
+            })
+            ->get();
 
         $count = 0;
         foreach ($users as $user) {

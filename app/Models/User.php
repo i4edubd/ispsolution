@@ -227,7 +227,7 @@ class User extends Authenticatable
 
     /**
      * Check if user is an operator (staff member).
-     * 
+     *
      * According to config/operators_permissions.php, level 100 represents a customer.
      * This method treats only users with operator_level < 100 as operators,
      * so level 100 users (customers) are NOT considered operators.
@@ -410,6 +410,7 @@ class User extends Authenticatable
             if ($this->hasPermission('customers.view')) {
                 return $query->where('tenant_id', $this->tenant_id);
             }
+
             // No permission = no customers
             return $query->whereRaw('1 = 0'); // Empty result set
         }

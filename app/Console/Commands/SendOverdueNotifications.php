@@ -26,8 +26,9 @@ class SendOverdueNotifications extends Command
      */
     public function handle(NotificationService $notificationService): int
     {
-        if (!$this->option('force') && !$this->confirm('Send overdue notifications?')) {
+        if (! $this->option('force') && ! $this->confirm('Send overdue notifications?')) {
             $this->info('Operation cancelled.');
+
             return Command::SUCCESS;
         }
 

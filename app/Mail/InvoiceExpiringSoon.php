@@ -19,8 +19,7 @@ class InvoiceExpiringSoon extends Mailable
     public function __construct(
         public Invoice $invoice,
         public int $daysUntilExpiry
-    ) {
-    }
+    ) {}
 
     /**
      * Get the message envelope.

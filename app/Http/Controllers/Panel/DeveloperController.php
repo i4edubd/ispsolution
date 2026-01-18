@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class DeveloperController extends Controller
 {
@@ -18,7 +18,7 @@ class DeveloperController extends Controller
     {
         // Get system statistics
         $systemStats = $this->getSystemStats();
-        
+
         // Get ISP statistics
         $stats = [
             'total_tenancies' => Tenant::count(),
@@ -27,7 +27,7 @@ class DeveloperController extends Controller
             'api_calls_today' => 0, // To be implemented
             'total_endpoints' => 0, // To be implemented
             'system_health' => 'Healthy',
-            
+
             // ISP Statistics (reusing active_tenancies for total_isp)
             'ppp_users' => \App\Models\MikrotikPppoeUser::count(),
             'hotspot_users' => \App\Models\HotspotUser::count(),
@@ -37,7 +37,7 @@ class DeveloperController extends Controller
 
         return view('panels.developer.dashboard', compact('stats', 'systemStats'));
     }
-    
+
     /**
      * Get system statistics (RAM, CPU, HDD, etc.)
      */
@@ -63,7 +63,7 @@ class DeveloperController extends Controller
                 'load_15' => 0,
             ],
         ];
-        
+
         // Try to get actual system stats (Linux only)
         if (PHP_OS_FAMILY === 'Linux') {
             try {
@@ -72,17 +72,17 @@ class DeveloperController extends Controller
                     $meminfo = file_get_contents('/proc/meminfo');
                     preg_match('/MemTotal:\s+(\d+)/', $meminfo, $total);
                     preg_match('/MemAvailable:\s+(\d+)/', $meminfo, $available);
-                    
-                    if (!empty($total[1]) && !empty($available[1])) {
+
+                    if (! empty($total[1]) && ! empty($available[1])) {
                         $stats['ram']['total'] = round($total[1] / 1024 / 1024, 2); // Convert to GB
                         $stats['ram']['free'] = round($available[1] / 1024 / 1024, 2);
                         $stats['ram']['used'] = round($stats['ram']['total'] - $stats['ram']['free'], 2);
-                        $stats['ram']['percentage'] = $stats['ram']['total'] > 0 
-                            ? round(($stats['ram']['used'] / $stats['ram']['total']) * 100, 1) 
+                        $stats['ram']['percentage'] = $stats['ram']['total'] > 0
+                            ? round(($stats['ram']['used'] / $stats['ram']['total']) * 100, 1)
                             : 0;
                     }
                 }
-                
+
                 // Get disk info
                 $diskTotal = disk_total_space('/');
                 $diskFree = disk_free_space('/');
@@ -90,18 +90,18 @@ class DeveloperController extends Controller
                     $stats['disk']['total'] = round($diskTotal / 1024 / 1024 / 1024, 2); // Convert to GB
                     $stats['disk']['free'] = round($diskFree / 1024 / 1024 / 1024, 2);
                     $stats['disk']['used'] = round($stats['disk']['total'] - $stats['disk']['free'], 2);
-                    $stats['disk']['percentage'] = $stats['disk']['total'] > 0 
-                        ? round(($stats['disk']['used'] / $stats['disk']['total']) * 100, 1) 
+                    $stats['disk']['percentage'] = $stats['disk']['total'] > 0
+                        ? round(($stats['disk']['used'] / $stats['disk']['total']) * 100, 1)
                         : 0;
                 }
-                
+
                 // Get CPU info
                 if (file_exists('/proc/cpuinfo')) {
                     $cpuinfo = file_get_contents('/proc/cpuinfo');
                     preg_match_all('/^processor/m', $cpuinfo, $matches);
                     $stats['cpu']['cores'] = count($matches[0]);
                 }
-                
+
                 // Get load average
                 if (function_exists('sys_getloadavg')) {
                     $load = sys_getloadavg();
@@ -113,7 +113,7 @@ class DeveloperController extends Controller
                 // Silent fail - return default values
             }
         }
-        
+
         return $stats;
     }
 
@@ -208,11 +208,11 @@ class DeveloperController extends Controller
         if ($query) {
             // Escape special LIKE characters to prevent unintended wildcard matching
             $escapedQuery = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $query);
-            
+
             $customers = User::allTenants()
-                ->where(function($q) use ($escapedQuery) {
+                ->where(function ($q) use ($escapedQuery) {
                     $q->where('email', 'like', "%{$escapedQuery}%")
-                      ->orWhere('name', 'like', "%{$escapedQuery}%");
+                        ->orWhere('name', 'like', "%{$escapedQuery}%");
                 })
                 ->with(['tenant', 'roles'])
                 ->paginate(20);
@@ -255,7 +255,7 @@ class DeveloperController extends Controller
         // For now, return empty collection for logs
         // This can be implemented with a proper log model later
         $logs = collect([]);
-        
+
         $stats = [
             'info' => 0,
             'warning' => 0,
@@ -263,7 +263,7 @@ class DeveloperController extends Controller
             'debug' => 0,
             'total' => 0,
         ];
-        
+
         return view('panels.developer.logs', compact('logs', 'stats'));
     }
 

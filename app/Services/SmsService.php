@@ -30,6 +30,7 @@ class SmsService
                 'gateway' => $gateway,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -39,12 +40,12 @@ class SmsService
      */
     public function sendInvoiceGeneratedSms(Invoice $invoice): bool
     {
-        if (!$invoice->user || !$invoice->user->phone) {
+        if (! $invoice->user || ! $invoice->user->phone) {
             return false;
         }
 
         $message = sprintf(
-            "New invoice %s generated. Amount: %.2f. Due: %s. Pay at: %s",
+            'New invoice %s generated. Amount: %.2f. Due: %s. Pay at: %s',
             $invoice->invoice_number,
             $invoice->total_amount,
             $invoice->due_date->format('Y-m-d'),
@@ -59,12 +60,12 @@ class SmsService
      */
     public function sendPaymentReceivedSms(Payment $payment): bool
     {
-        if (!$payment->user || !$payment->user->phone) {
+        if (! $payment->user || ! $payment->user->phone) {
             return false;
         }
 
         $message = sprintf(
-            "Payment received! Amount: %.2f. Transaction: %s. Thank you!",
+            'Payment received! Amount: %.2f. Transaction: %s. Thank you!',
             $payment->amount,
             $payment->payment_number
         );
@@ -77,12 +78,12 @@ class SmsService
      */
     public function sendInvoiceExpiringSoonSms(Invoice $invoice, int $daysUntilExpiry): bool
     {
-        if (!$invoice->user || !$invoice->user->phone) {
+        if (! $invoice->user || ! $invoice->user->phone) {
             return false;
         }
 
         $message = sprintf(
-            "Reminder: Invoice %s expires in %d day(s). Amount: %.2f. Please pay soon.",
+            'Reminder: Invoice %s expires in %d day(s). Amount: %.2f. Please pay soon.',
             $invoice->invoice_number,
             $daysUntilExpiry,
             $invoice->total_amount
@@ -96,12 +97,12 @@ class SmsService
      */
     public function sendInvoiceOverdueSms(Invoice $invoice): bool
     {
-        if (!$invoice->user || !$invoice->user->phone) {
+        if (! $invoice->user || ! $invoice->user->phone) {
             return false;
         }
 
         $message = sprintf(
-            "URGENT: Invoice %s is overdue. Amount: %.2f. Please pay immediately to avoid service interruption.",
+            'URGENT: Invoice %s is overdue. Amount: %.2f. Please pay immediately to avoid service interruption.',
             $invoice->invoice_number,
             $invoice->total_amount
         );
@@ -115,7 +116,7 @@ class SmsService
     public function sendOtpSms(string $phoneNumber, string $otpCode): bool
     {
         $message = sprintf(
-            "Your OTP code is: %s. Valid for 10 minutes. Do not share this code with anyone.",
+            'Your OTP code is: %s. Valid for 10 minutes. Do not share this code with anyone.',
             $otpCode
         );
 
@@ -131,8 +132,9 @@ class SmsService
         $authToken = config('sms.twilio.auth_token');
         $fromNumber = config('sms.twilio.from_number');
 
-        if (!$accountSid || !$authToken || !$fromNumber) {
+        if (! $accountSid || ! $authToken || ! $fromNumber) {
             Log::warning('Twilio credentials not configured');
+
             return false;
         }
 
@@ -146,6 +148,7 @@ class SmsService
 
         if ($response->successful()) {
             Log::info('SMS sent via Twilio', ['phone' => $phoneNumber]);
+
             return true;
         }
 
@@ -167,8 +170,9 @@ class SmsService
         $apiSecret = config('sms.nexmo.api_secret');
         $fromNumber = config('sms.nexmo.from_number');
 
-        if (!$apiKey || !$apiSecret) {
+        if (! $apiKey || ! $apiSecret) {
             Log::warning('Nexmo credentials not configured');
+
             return false;
         }
 
@@ -184,6 +188,7 @@ class SmsService
             $data = $response->json();
             if (isset($data['messages'][0]['status']) && $data['messages'][0]['status'] === '0') {
                 Log::info('SMS sent via Nexmo', ['phone' => $phoneNumber]);
+
                 return true;
             }
         }
@@ -204,8 +209,9 @@ class SmsService
         $username = config('sms.bulksms.username');
         $password = config('sms.bulksms.password');
 
-        if (!$username || !$password) {
+        if (! $username || ! $password) {
             Log::warning('BulkSMS credentials not configured');
+
             return false;
         }
 
@@ -218,6 +224,7 @@ class SmsService
 
         if ($response->successful()) {
             Log::info('SMS sent via BulkSMS', ['phone' => $phoneNumber]);
+
             return true;
         }
 
@@ -238,8 +245,9 @@ class SmsService
         $senderId = config('sms.bangladeshi.sender_id');
         $apiUrl = config('sms.bangladeshi.api_url');
 
-        if (!$apiKey || !$senderId || !$apiUrl) {
+        if (! $apiKey || ! $senderId || ! $apiUrl) {
             Log::warning('Bangladeshi SMS gateway not configured');
+
             return false;
         }
 
@@ -253,6 +261,7 @@ class SmsService
 
         if ($response->successful()) {
             Log::info('SMS sent via Bangladeshi gateway', ['phone' => $phoneNumber]);
+
             return true;
         }
 
@@ -277,7 +286,7 @@ class SmsService
 
         foreach ($phoneNumbers as $phoneNumber) {
             $sent = $this->sendSms($phoneNumber, $message, $gateway);
-            
+
             if ($sent) {
                 $results['success']++;
             } else {

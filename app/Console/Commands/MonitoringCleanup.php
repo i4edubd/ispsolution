@@ -54,7 +54,7 @@ class MonitoringCleanup extends Command
 
             $totalDeleted = $bandwidthDeleted + $monthlyDeleted + $monitorDeleted;
 
-            $this->info("✓ Cleanup completed:");
+            $this->info('✓ Cleanup completed:');
             $this->line("  - Bandwidth records: {$bandwidthDeleted}");
             $this->line("  - Monthly aggregates: {$monthlyDeleted}");
             $this->line("  - Monitor records: {$monitorDeleted}");
@@ -63,6 +63,7 @@ class MonitoringCleanup extends Command
             return self::SUCCESS;
         } catch (\Exception $e) {
             $this->error("Cleanup failed: {$e->getMessage()}");
+
             return self::FAILURE;
         }
     }

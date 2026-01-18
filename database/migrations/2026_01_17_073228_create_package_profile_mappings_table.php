@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('profile_name');
             $table->string('speed_control_method')->default('router');
             $table->timestamps();
-            
+
             $table->unique(['package_id', 'router_id']);
         });
     }

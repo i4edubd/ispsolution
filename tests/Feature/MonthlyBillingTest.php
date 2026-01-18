@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Role;
 use App\Models\ServicePackage;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Models\Role;
 use App\Services\BillingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,7 +15,9 @@ class MonthlyBillingTest extends TestCase
     use RefreshDatabase;
 
     protected User $customer;
+
     protected ServicePackage $monthlyPackage;
+
     protected BillingService $billingService;
 
     protected function setUp(): void

@@ -14,6 +14,7 @@ use Illuminate\View\View;
 class PaymentController extends Controller
 {
     protected PaymentGatewayService $paymentGatewayService;
+
     protected BillingService $billingService;
 
     public function __construct(
@@ -88,7 +89,7 @@ class PaymentController extends Controller
     {
         try {
             $payload = $request->all();
-            
+
             Log::info("Received webhook from {$gateway}", $payload);
 
             $success = $this->paymentGatewayService->processWebhook($gateway, $payload);
@@ -165,7 +166,7 @@ class PaymentController extends Controller
         $this->authorize('recordPayment', $invoice);
 
         $manualMethods = array_keys(config('payment.manual_methods', ['cash' => 'Cash', 'bank_transfer' => 'Bank Transfer', 'check' => 'Check']));
-        
+
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required|string|in:' . implode(',', $manualMethods),

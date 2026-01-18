@@ -11,7 +11,6 @@ use App\Models\PackageProfileMapping;
 use App\Services\MikrotikService;
 use App\Services\PackageSpeedService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class PackageSpeedServiceTest extends TestCase
