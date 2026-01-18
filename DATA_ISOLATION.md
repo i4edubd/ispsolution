@@ -335,7 +335,7 @@ Developers can bypass tenant filtering:
 ```php
 // Developer accessing all tenants
 if (auth()->user()->isDeveloper()) {
-    $allCustomers = Customer::withoutTenantScope()->get();
+    $allCustomers = Customer::withoutGlobalScope('tenant')->get();
 }
 ```
 
@@ -560,7 +560,7 @@ public function test_developer_can_access_all_tenant_data()
     
     $this->actingAs($developer);
     
-    $customers = Customer::withoutTenantScope()->get();
+    $customers = Customer::withoutGlobalScope('tenant')->get();
     
     $this->assertCount(2, $customers);
 }

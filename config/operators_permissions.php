@@ -104,7 +104,7 @@ return [
         'sub_operator' => 40,    // Only own customers
         'manager' => 50,         // View based on permissions - Task-specific access
         'card_distributor' => 60, // Card operations only
-        'reseller' => 60,        // Customer management and sales (same level as card distributor)
+        'reseller' => 61,        // Customer management and sales
         'sub_reseller' => 65,    // Subordinate to reseller
         'accountant' => 70,      // View based on permissions - Financial reporting (read-only)
         'staff' => 80,           // View based on permissions - Support staff
