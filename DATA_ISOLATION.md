@@ -260,17 +260,12 @@ $customers = User::where('created_by', auth()->id())
 
 #### Accountant Responsibilities (Level 70):
 - View financial reports (read-only)
-- View VAT reports
+- View VAT reports and collections
 - View payment transactions
 - View income and expense reports
-- No user creation or management capabilities
-
-#### Accountant Responsibilities (Level 70):
-- View all financial reports
-- View transactions (read-only)
-- View VAT collections
-- Export financial data
+- Export financial data (if permitted)
 - View customer statements
+- No user creation or management capabilities
 
 #### Restrictions:
 - Typically read-only access
