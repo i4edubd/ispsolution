@@ -46,6 +46,7 @@ return [
         'access_token' => env('WHATSAPP_ACCESS_TOKEN'),
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
         'app_secret' => env('WHATSAPP_APP_SECRET'),
+        'default_country_code' => env('WHATSAPP_DEFAULT_COUNTRY_CODE', '880'),
     ],
 
     'telegram' => [

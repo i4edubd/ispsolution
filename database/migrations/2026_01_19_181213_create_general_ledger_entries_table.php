@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
             $table->date('date');
-            $table->string('reference_number')->unique();
+            $table->string('reference_number');
             $table->string('description');
             $table->enum('type', ['invoice', 'payment', 'expense', 'adjustment']);
             $table->string('source_type')->nullable();
@@ -31,6 +31,7 @@ return new class extends Migration
             $table->foreignId('reversed_by')->nullable()->constrained('users');
             $table->timestamps();
 
+            $table->unique(['tenant_id', 'reference_number']);
             $table->index(['tenant_id', 'date']);
             $table->index(['tenant_id', 'type']);
             $table->index(['source_type', 'source_id']);

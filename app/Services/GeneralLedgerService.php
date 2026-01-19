@@ -52,8 +52,12 @@ class GeneralLedgerService
      */
     public function recordInvoiceEntry(Invoice $invoice): GeneralLedgerEntry
     {
-        $accountsReceivable = Account::where('code', '1200')->first(); // Accounts Receivable
-        $revenue = Account::where('code', '4000')->first(); // Service Revenue
+        $accountsReceivable = Account::where('code', '1200')->first();
+        $revenue = Account::where('code', '4000')->first();
+
+        if (!$accountsReceivable || !$revenue) {
+            throw new \Exception('Required accounts not found. Please ensure chart of accounts is set up correctly.');
+        }
 
         return $this->createJournalEntry([
             'date' => $invoice->invoice_date,
@@ -72,8 +76,12 @@ class GeneralLedgerService
      */
     public function recordPaymentEntry(Payment $payment): GeneralLedgerEntry
     {
-        $cash = Account::where('code', '1000')->first(); // Cash/Bank
-        $accountsReceivable = Account::where('code', '1200')->first(); // Accounts Receivable
+        $cash = Account::where('code', '1000')->first();
+        $accountsReceivable = Account::where('code', '1200')->first();
+
+        if (!$cash || !$accountsReceivable) {
+            throw new \Exception('Required accounts not found. Please ensure chart of accounts is set up correctly.');
+        }
 
         return $this->createJournalEntry([
             'date' => $payment->payment_date,

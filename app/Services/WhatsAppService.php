@@ -204,11 +204,14 @@ class WhatsAppService
         // Remove all non-numeric characters
         $phone = preg_replace('/[^0-9]/', '', $phone);
 
-        // Add country code if not present (assuming Bangladesh +880)
-        if (!str_starts_with($phone, '880') && !str_starts_with($phone, '+880')) {
+        // Get default country code from config
+        $defaultCountryCode = config('services.whatsapp.default_country_code', '880');
+
+        // Add country code if not present
+        if (!str_starts_with($phone, $defaultCountryCode) && !str_starts_with($phone, '+' . $defaultCountryCode)) {
             // Remove leading zero if present
             $phone = ltrim($phone, '0');
-            $phone = '880' . $phone;
+            $phone = $defaultCountryCode . $phone;
         }
 
         return $phone;
