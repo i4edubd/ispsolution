@@ -21,10 +21,18 @@ class AdminController extends Controller
      */
     public function dashboard(): View
     {
+        // Exclude developer and super-admin from user counts
+        $excludedRoleSlugs = ['developer', 'super-admin'];
+        
         $stats = [
-            'total_users' => User::count(),
+            'total_users' => User::whereDoesntHave('roles', function ($query) use ($excludedRoleSlugs) {
+                $query->whereIn('slug', $excludedRoleSlugs);
+            })->count(),
             'total_network_users' => NetworkUser::count(),
-            'active_users' => User::where('is_active', true)->count(),
+            'active_users' => User::where('is_active', true)
+                ->whereDoesntHave('roles', function ($query) use ($excludedRoleSlugs) {
+                    $query->whereIn('slug', $excludedRoleSlugs);
+                })->count(),
             'total_packages' => ServicePackage::count(),
             'total_mikrotik' => MikrotikRouter::count(),
             'total_nas' => Nas::count(),

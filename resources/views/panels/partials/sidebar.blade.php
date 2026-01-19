@@ -42,7 +42,7 @@
         $menus = [
             ['label' => 'Dashboard', 'route' => 'panel.admin.dashboard', 'icon' => 'home'],
             ['label' => 'Users', 'route' => 'panel.admin.users', 'icon' => 'users'],
-            ['label' => 'Network Users', 'route' => 'panel.admin.network-users', 'icon' => 'globe'],
+            // Removed 'Network Users' - customers now managed through customer menu
             ['label' => 'Packages', 'route' => 'panel.admin.packages', 'icon' => 'box'],
             [
                 'label' => 'Customers',
@@ -139,7 +139,7 @@
     } elseif ($userRole === 'manager') {
         $menus = [
             ['label' => 'Dashboard', 'route' => 'panel.manager.dashboard', 'icon' => 'home'],
-            ['label' => 'Network Users', 'route' => 'panel.manager.network-users', 'icon' => 'globe'],
+            // Removed 'Network Users' - customers managed through customers menu
             ['label' => 'Customers', 'route' => 'panel.manager.customers.index', 'icon' => 'users'],
             ['label' => 'Payments', 'route' => 'panel.manager.payments.index', 'icon' => 'currency'],
             ['label' => 'Complaints', 'route' => 'panel.manager.complaints.index', 'icon' => 'ticket'],
@@ -149,7 +149,7 @@
     } elseif ($userRole === 'staff') {
         $menus = [
             ['label' => 'Dashboard', 'route' => 'panel.staff.dashboard', 'icon' => 'home'],
-            ['label' => 'Network Users', 'route' => 'panel.staff.network-users', 'icon' => 'globe'],
+            // Removed 'Network Users' - managed through device-specific interfaces
             ['label' => 'Support Tickets', 'route' => 'panel.staff.tickets', 'icon' => 'ticket'],
             [
                 'label' => 'Network Devices',
