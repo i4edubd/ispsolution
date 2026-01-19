@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->string('currency', 3)->default('BDT');
             $table->enum('billing_cycle', ['monthly', 'quarterly', 'yearly'])->default('monthly');
-            $table->json('features')->nullable(); // Store features as JSON array
+            $table->json('features')->nullable(); // Array of feature strings, e.g., ["Feature 1", "Feature 2"]
             $table->unsignedInteger('max_users')->nullable(); // Max users allowed, null = unlimited
             $table->unsignedInteger('max_routers')->nullable(); // Max routers allowed
             $table->unsignedInteger('max_olts')->nullable(); // Max OLTs allowed

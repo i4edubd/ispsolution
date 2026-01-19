@@ -549,4 +549,15 @@ class User extends Authenticatable
         // Default: no access
         return $query->whereRaw('1 = 0'); // Empty result set
     }
+
+    /**
+     * Check if two-factor authentication is enabled for the user.
+     * This method abstracts the internal implementation detail of checking the secret.
+     *
+     * @return bool
+     */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return !empty($this->two_factor_secret);
+    }
 }

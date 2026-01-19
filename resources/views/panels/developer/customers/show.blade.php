@@ -110,7 +110,7 @@
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Two-Factor Auth</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            @if($customer->two_factor_secret)
+                            @if($customer->hasTwoFactorEnabled())
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                     Enabled
                                 </span>
