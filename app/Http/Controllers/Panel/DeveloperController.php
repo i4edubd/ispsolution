@@ -203,7 +203,6 @@ class DeveloperController extends Controller
         ]);
 
         $query = $request->input('query');
-        $customers = [];
 
         if ($query) {
             // Escape special LIKE characters to prevent unintended wildcard matching
@@ -216,9 +215,28 @@ class DeveloperController extends Controller
                 })
                 ->with(['tenant', 'roles'])
                 ->paginate(20);
+        } else {
+            // When no query is provided, show all customers (consistent with allCustomers())
+            $customers = User::allTenants()
+                ->with(['tenant', 'roles'])
+                ->latest()
+                ->paginate(20);
         }
 
-        return view('panels.developer.customers.index', compact('customers', 'query'));
+        // Calculate stats for the view with a single aggregated query
+        $statsData = User::allTenants()
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw("SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active")
+            ->first();
+
+        $stats = [
+            'total' => (int) ($statsData->total ?? 0),
+            'active' => (int) ($statsData->active ?? 0),
+            'online' => 0, // TODO: Implement online user tracking
+            'offline' => 0, // TODO: Implement offline user tracking
+        ];
+
+        return view('panels.developer.customers.index', compact('customers', 'query', 'stats'));
     }
 
     /**
@@ -233,7 +251,20 @@ class DeveloperController extends Controller
             ->latest()
             ->paginate(20);
 
-        return view('panels.developer.customers.index', compact('customers', 'query'));
+        // Calculate stats for the view with a single aggregated query
+        $statsData = User::allTenants()
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw("SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active")
+            ->first();
+
+        $stats = [
+            'total' => (int) ($statsData->total ?? 0),
+            'active' => (int) ($statsData->active ?? 0),
+            'online' => 0, // TODO: Implement online user tracking
+            'offline' => 0, // TODO: Implement offline user tracking
+        ];
+
+        return view('panels.developer.customers.index', compact('customers', 'query', 'stats'));
     }
 
     /**
@@ -252,9 +283,15 @@ class DeveloperController extends Controller
      */
     public function logs(): View
     {
-        // For now, return empty collection for logs
-        // This can be implemented with a proper log model later
-        $logs = collect([]);
+        // TODO: Implement proper log model and viewer
+        // For now, return empty paginated collection to prevent blade errors
+        $logs = new \Illuminate\Pagination\LengthAwarePaginator(
+            [],
+            0,
+            20,
+            1,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         $stats = [
             'info' => 0,
