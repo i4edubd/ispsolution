@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -32,5 +33,16 @@ class Package extends Model
     public function networkUsers(): HasMany
     {
         return $this->hasMany(NetworkUser::class, 'package_id');
+    }
+
+    // Query scopes for optimization
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeByTenant(Builder $query, int $tenantId): Builder
+    {
+        return $query->where('tenant_id', $tenantId);
     }
 }

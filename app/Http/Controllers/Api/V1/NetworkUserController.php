@@ -22,10 +22,15 @@ class NetworkUserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = NetworkUser::with(['package', 'ipAllocations']);
+        // Optimized: Use eager loading with select to avoid N+1 queries
+        $query = NetworkUser::select([
+            'id', 'username', 'email', 'service_type', 
+            'package_id', 'status', 'user_id', 'tenant_id', 
+            'created_at', 'updated_at'
+        ])->with(['package:id,name,price,bandwidth_upload,bandwidth_download']);
 
         if ($request->has('service_type')) {
-            $query->where('service_type', $request->service_type);
+            $query->byServiceType($request->service_type);
         }
 
         if ($request->has('status')) {
@@ -33,11 +38,7 @@ class NetworkUserController extends Controller
         }
 
         if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('username', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
+            $query->search($request->search);
         }
 
         $users = $query->paginate($request->get('per_page', 15));
@@ -86,8 +87,19 @@ class NetworkUserController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $user = NetworkUser::with(['package', 'ipAllocations', 'sessions'])
-            ->findOrFail($id);
+        // Optimized: Load only necessary relations with specific columns
+        $user = NetworkUser::select([
+            'id', 'username', 'email', 'service_type',
+            'package_id', 'status', 'user_id', 'tenant_id',
+            'created_at', 'updated_at'
+        ])->with([
+            'package:id,name,price,bandwidth_upload,bandwidth_download',
+            'sessions' => function ($q) {
+                $q->select('id', 'user_id', 'start_time', 'stop_time', 'input_octets', 'output_octets')
+                  ->latest()
+                  ->limit(10);
+            }
+        ])->findOrFail($id);
 
         return response()->json($user);
     }
