@@ -96,24 +96,43 @@ class SuperAdminController extends Controller
 
     /**
      * Display user-based billing configuration.
-     *
-     * Currently not implemented.
      */
-    public function billingUserBase()
+    public function billingUserBase(): View
     {
-        // User-based billing configuration view not yet implemented.
-        abort(501, 'User-based billing configuration is not yet implemented.');
+        // Get billing configuration per user
+        $subscriptions = \App\Models\Subscription::with(['tenant', 'plan'])
+            ->latest()
+            ->paginate(20);
+
+        $stats = [
+            'total_subscriptions' => \App\Models\Subscription::count(),
+            'active_subscriptions' => \App\Models\Subscription::active()->count(),
+            'total_revenue' => 0, // Calculate from subscription payments
+            'monthly_recurring' => 0, // Calculate monthly recurring revenue
+        ];
+
+        return view('panels.super-admin.billing.user-base', compact('subscriptions', 'stats'));
     }
 
     /**
      * Display panel-based billing configuration.
-     *
-     * Currently not implemented.
      */
-    public function billingPanelBase()
+    public function billingPanelBase(): View
     {
-        // Panel-based billing configuration is not yet implemented.
-        abort(501, 'Panel-based billing configuration is not yet implemented.');
+        // Get billing configuration per panel/tenant
+        $tenants = Tenant::withCount('users')
+            ->with('subscription')
+            ->latest()
+            ->paginate(20);
+
+        $stats = [
+            'total_tenants' => Tenant::count(),
+            'active_tenants' => Tenant::where('status', 'active')->count(),
+            'total_users' => User::count(),
+            'revenue_this_month' => 0, // Calculate from tenant subscriptions
+        ];
+
+        return view('panels.super-admin.billing.panel-base', compact('tenants', 'stats'));
     }
 
     /**
@@ -227,15 +246,21 @@ class SuperAdminController extends Controller
 
     /**
      * Display logs.
-     *
-     * To be implemented with a log viewer.
-     *
-     * @throws \Symfony\Component\HttpKernel\Exception\HttpException
      */
-    public function logs()
+    public function logs(): View
     {
-        // Not yet implemented: no logs view exists.
-        abort(501, 'Logs view not implemented yet.');
+        $logs = \App\Models\AuditLog::with(['user', 'auditable'])
+            ->latest()
+            ->paginate(50);
+
+        $stats = [
+            'total' => \App\Models\AuditLog::count(),
+            'today' => \App\Models\AuditLog::whereDate('created_at', today())->count(),
+            'this_week' => \App\Models\AuditLog::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'this_month' => \App\Models\AuditLog::whereMonth('created_at', now()->month)->count(),
+        ];
+
+        return view('panels.super-admin.logs', compact('logs', 'stats'));
     }
 
     /**

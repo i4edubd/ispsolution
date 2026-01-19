@@ -101,6 +101,14 @@ class Tenant extends Model
     }
 
     /**
+     * Get the subscription for the tenant.
+     */
+    public function subscription()
+    {
+        return $this->hasOne(Subscription::class)->latestOfMany();
+    }
+
+    /**
      * Check if tenant is active.
      */
     public function isActive(): bool

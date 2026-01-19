@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Models\PaymentGateway;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -172,25 +173,25 @@ class DeveloperController extends Controller
 
     /**
      * Display subscription plans.
-     *
-     * Currently not implemented.
      */
-    public function subscriptions()
+    public function subscriptions(): View
     {
-        // To be implemented with subscription model and corresponding view.
-        abort(501, 'Subscriptions feature is not implemented yet.');
+        $plans = \App\Models\SubscriptionPlan::withCount('subscriptions')
+            ->orderBy('sort_order')
+            ->paginate(20);
+
+        return view('panels.developer.subscriptions.index', compact('plans'));
     }
 
     /**
      * Access any panel (select panel to access).
-     *
-     * Currently not implemented.
      */
-    public function accessPanel()
+    public function accessPanel(): View
     {
-        // Feature not yet implemented: the corresponding view does not exist.
-        // Once implemented, replace this with a valid view() call.
-        abort(501, 'Access panel feature is not yet implemented.');
+        // Get all tenancies for panel access selection
+        $tenancies = Tenant::with('users')->where('status', 'active')->get();
+        
+        return view('panels.developer.access-panel', compact('tenancies'));
     }
 
     /**
@@ -269,13 +270,22 @@ class DeveloperController extends Controller
 
     /**
      * Display audit logs.
-     *
-     * Currently not implemented.
      */
-    public function auditLogs()
+    public function auditLogs(): View
     {
-        // Not yet implemented: audit log model and view will be added later.
-        abort(501, 'Audit logs view is not yet implemented.');
+        $logs = \App\Models\AuditLog::allTenants()
+            ->with(['user', 'auditable'])
+            ->latest()
+            ->paginate(50);
+
+        $stats = [
+            'total' => \App\Models\AuditLog::allTenants()->count(),
+            'today' => \App\Models\AuditLog::allTenants()->whereDate('created_at', today())->count(),
+            'this_week' => \App\Models\AuditLog::allTenants()->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'this_month' => \App\Models\AuditLog::allTenants()->whereMonth('created_at', now()->month)->count(),
+        ];
+
+        return view('panels.developer.audit-logs', compact('logs', 'stats'));
     }
 
     /**
@@ -306,13 +316,26 @@ class DeveloperController extends Controller
 
     /**
      * Display error logs.
-     *
-     * Currently not implemented.
      */
-    public function errorLogs()
+    public function errorLogs(): View
     {
-        // Not yet implemented: error log viewer
-        abort(501, 'Error logs view is not yet implemented.');
+        // Read Laravel log file
+        $logFile = storage_path('logs/laravel.log');
+        $logs = collect();
+        
+        if (file_exists($logFile)) {
+            $content = file_get_contents($logFile);
+            $lines = explode("\n", $content);
+            
+            // Get last 100 error entries
+            $errorLines = array_filter($lines, function($line) {
+                return str_contains($line, '[error]') || str_contains($line, 'ERROR') || str_contains($line, 'Exception');
+            });
+            
+            $logs = collect(array_slice($errorLines, -100))->reverse();
+        }
+
+        return view('panels.developer.error-logs', compact('logs'));
     }
 
     /**
@@ -325,12 +348,21 @@ class DeveloperController extends Controller
 
     /**
      * Manage API keys.
-     *
-     * Currently not implemented.
      */
-    public function apiKeys()
+    public function apiKeys(): View
     {
-        abort(501, 'API key management is not yet implemented.');
+        $apiKeys = \App\Models\ApiKey::allTenants()
+            ->with('user')
+            ->latest()
+            ->paginate(20);
+
+        $stats = [
+            'total' => \App\Models\ApiKey::allTenants()->count(),
+            'active' => \App\Models\ApiKey::allTenants()->active()->count(),
+            'expired' => \App\Models\ApiKey::allTenants()->where('expires_at', '<', now())->count(),
+        ];
+
+        return view('panels.developer.api-keys', compact('apiKeys', 'stats'));
     }
 
     /**
@@ -376,8 +408,9 @@ class DeveloperController extends Controller
      */
     public function paymentGateways(): View
     {
-        // TODO: Implement PaymentGateway model
-        $gateways = collect([]);
+        $gateways = PaymentGateway::allTenants()
+            ->latest()
+            ->paginate(20);
 
         return view('panels.developer.gateways.payment', compact('gateways'));
     }
@@ -387,8 +420,9 @@ class DeveloperController extends Controller
      */
     public function smsGateways(): View
     {
-        // TODO: Implement SmsGateway model
-        $gateways = collect([]);
+        $gateways = \App\Models\SmsGateway::allTenants()
+            ->latest()
+            ->paginate(20);
 
         return view('panels.developer.gateways.sms', compact('gateways'));
     }
@@ -398,10 +432,18 @@ class DeveloperController extends Controller
      */
     public function vpnPools(): View
     {
-        // TODO: Implement VpnPool model
-        $pools = collect([]);
+        $pools = \App\Models\VpnPool::with('vpnAccounts')
+            ->latest()
+            ->paginate(20);
 
-        return view('panels.developer.vpn-pools', compact('pools'));
+        $stats = [
+            'total' => \App\Models\VpnPool::count(),
+            'active' => \App\Models\VpnPool::active()->count(),
+            'total_ips' => \App\Models\VpnPool::sum('total_ips'),
+            'used_ips' => \App\Models\VpnPool::sum('used_ips'),
+        ];
+
+        return view('panels.developer.vpn-pools', compact('pools', 'stats'));
     }
 
     /**
@@ -409,10 +451,18 @@ class DeveloperController extends Controller
      */
     public function subscriptionPlans(): View
     {
-        // TODO: Implement SubscriptionPlan model
-        $plans = collect([]);
+        $plans = \App\Models\SubscriptionPlan::withCount('subscriptions')
+            ->orderBy('sort_order')
+            ->paginate(20);
 
-        return view('panels.developer.subscriptions.index', compact('plans'));
+        $stats = [
+            'total' => \App\Models\SubscriptionPlan::count(),
+            'active' => \App\Models\SubscriptionPlan::active()->count(),
+            'total_subscriptions' => \App\Models\Subscription::count(),
+            'active_subscriptions' => \App\Models\Subscription::active()->count(),
+        ];
+
+        return view('panels.developer.subscriptions.index', compact('plans', 'stats'));
     }
 
     /**
