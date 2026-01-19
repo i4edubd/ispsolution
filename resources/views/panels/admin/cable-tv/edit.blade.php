@@ -12,7 +12,7 @@
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Edit Cable TV Subscription</h1>
                     <p class="mt-2 text-gray-600 dark:text-gray-400">Update subscription details - {{ $subscription->subscriber_id }}</p>
                 </div>
-                <a href="{{ route('admin.cable-tv.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition">
+                <a href="{{ route('panel.admin.cable-tv.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
@@ -25,7 +25,7 @@
     <!-- Form -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
-            <form method="POST" action="{{ route('admin.cable-tv.update', $subscription) }}" class="space-y-6">
+            <form method="POST" action="{{ route('panel.admin.cable-tv.update', $subscription) }}" class="space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -152,7 +152,7 @@
                 </div>
 
                 <div class="flex justify-end space-x-3">
-                    <a href="{{ route('admin.cable-tv.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest hover:bg-gray-400 dark:hover:bg-gray-600 transition">
+                    <a href="{{ route('panel.admin.cable-tv.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest hover:bg-gray-400 dark:hover:bg-gray-600 transition">
                         Cancel
                     </a>
                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
