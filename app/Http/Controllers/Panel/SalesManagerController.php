@@ -17,6 +17,11 @@ class SalesManagerController extends Controller
     {
         $user = auth()->user();
         
+        // Ensure user has a tenant_id (Sales Manager must be assigned to a tenant)
+        if (! $user->tenant_id) {
+            abort(403, 'Sales Manager must be assigned to a tenant.');
+        }
+        
         // Get sales statistics
         $stats = [
             'total_leads' => 0, // TODO: Implement leads tracking
@@ -43,6 +48,11 @@ class SalesManagerController extends Controller
     public function admins(): View
     {
         $user = auth()->user();
+        
+        // Ensure user has a tenant_id
+        if (! $user->tenant_id) {
+            abort(403, 'Sales Manager must be assigned to a tenant.');
+        }
         
         $admins = User::where('operator_level', 20)
             ->where('tenant_id', $user->tenant_id)
