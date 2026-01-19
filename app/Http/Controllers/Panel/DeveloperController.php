@@ -227,7 +227,7 @@ class DeveloperController extends Controller
         // Calculate stats for the view with a single aggregated query
         $statsData = User::allTenants()
             ->selectRaw('COUNT(*) as total')
-            ->selectRaw("SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active")
+            ->selectRaw("SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active")
             ->first();
 
         $stats = [
@@ -255,7 +255,7 @@ class DeveloperController extends Controller
         // Calculate stats for the view with a single aggregated query
         $statsData = User::allTenants()
             ->selectRaw('COUNT(*) as total')
-            ->selectRaw("SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active")
+            ->selectRaw("SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active")
             ->first();
 
         $stats = [
