@@ -86,6 +86,7 @@ class AdminController extends Controller
     /**
      * Display MikroTik routers listing.
      *
+     * @deprecated This is a legacy route. Use routers() method at panel.admin.network.routers instead.
      * Displays paginated list of MikroTik routers for admin users with full management access.
      * Includes 20 items per page with tenant isolation automatically applied via BelongsToTenant trait.
      */
@@ -127,6 +128,11 @@ class AdminController extends Controller
      *
      * Displays paginated list of Optical Line Terminal devices for admin users with full management access.
      * Includes 20 items per page with tenant isolation automatically applied via BelongsToTenant trait.
+     */
+    /**
+     * Display OLT devices listing.
+     *
+     * @deprecated This is a legacy route. Use oltList() method at panel.admin.network.olt instead.
      */
     public function oltDevices(): View
     {
