@@ -28,13 +28,12 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
         // Content Security Policy
-        // Use nonce-based CSP for better security (avoid unsafe-inline/unsafe-eval)
-        // TODO: Implement nonce generation and injection for inline scripts
-        // For now, use a more restrictive policy that still allows necessary CDNs
+        // Allow unsafe-eval for Alpine.js and unsafe-inline for inline styles
+        // This is required for Alpine.js to work properly with x-data and similar directives
         $response->headers->set('Content-Security-Policy', 
             "default-src 'self'; " .
-            "script-src 'self' cdn.jsdelivr.net cdnjs.cloudflare.com static.cloudflareinsights.com; " .
-            "style-src 'self' cdn.jsdelivr.net cdnjs.cloudflare.com fonts.googleapis.com; " .
+            "script-src 'self' 'unsafe-eval' cdn.jsdelivr.net cdnjs.cloudflare.com static.cloudflareinsights.com; " .
+            "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com fonts.googleapis.com; " .
             "font-src 'self' fonts.gstatic.com cdnjs.cloudflare.com cdn.jsdelivr.net; " .
             "img-src 'self' data: https:; " .
             "connect-src 'self'; " .

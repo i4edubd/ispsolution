@@ -953,4 +953,86 @@ class AdminController extends Controller
 
         return view('panels.admin.logs.laravel', compact('logs', 'stats'));
     }
+
+    /**
+     * Display PPP connection/disconnection logs.
+     */
+    public function pppLogs(): View
+    {
+        $user = auth()->user();
+        $userRole = $user->roles->first()?->slug ?? '';
+        
+        // Base query for PPP sessions from RADIUS accounting
+        $query = \App\Models\RadAcct::where('username', 'LIKE', '%ppp%')
+            ->orWhere('nasporttype', 'PPP');
+        
+        // Filter by ownership for non-admin roles
+        if (!in_array($userRole, ['developer', 'super-admin', 'admin', 'manager'])) {
+            // For operators and staff, show only their assigned customers
+            if ($userRole === 'operator' || $userRole === 'staff') {
+                $customerIds = $user->customers()->pluck('id')->toArray();
+                $query->whereHas('user', function ($q) use ($customerIds) {
+                    $q->whereIn('id', $customerIds);
+                });
+            }
+            // For customers, show only their own logs
+            elseif ($userRole === 'customer') {
+                $query->where('username', $user->username);
+            }
+        }
+        
+        $logs = $query->latest('acctstarttime')->paginate(50);
+
+        $stats = [
+            'total' => $query->count(),
+            'today' => (clone $query)->whereDate('acctstarttime', today())->count(),
+            'active_sessions' => (clone $query)->whereNull('acctstoptime')->count(),
+            'total_bandwidth' => $query->sum('acctinputoctets') + $query->sum('acctoutputoctets'),
+        ];
+
+        return view('panels.admin.logs.ppp', compact('logs', 'stats'));
+    }
+
+    /**
+     * Display Hotspot connection/disconnection logs.
+     */
+    public function hotspotLogs(): View
+    {
+        $user = auth()->user();
+        $userRole = $user->roles->first()?->slug ?? '';
+        
+        // Base query for Hotspot sessions from RADIUS accounting
+        $query = \App\Models\RadAcct::where('username', 'NOT LIKE', '%ppp%')
+            ->where(function ($q) {
+                $q->where('nasporttype', 'Wireless-802.11')
+                  ->orWhere('nasporttype', 'Ethernet')
+                  ->orWhereNull('nasporttype');
+            });
+        
+        // Filter by ownership for non-admin roles
+        if (!in_array($userRole, ['developer', 'super-admin', 'admin', 'manager'])) {
+            // For operators and staff, show only their assigned customers
+            if ($userRole === 'operator' || $userRole === 'staff') {
+                $customerIds = $user->customers()->pluck('id')->toArray();
+                $query->whereHas('user', function ($q) use ($customerIds) {
+                    $q->whereIn('id', $customerIds);
+                });
+            }
+            // For customers, show only their own logs
+            elseif ($userRole === 'customer') {
+                $query->where('username', $user->username);
+            }
+        }
+        
+        $logs = $query->latest('acctstarttime')->paginate(50);
+
+        $stats = [
+            'total' => $query->count(),
+            'today' => (clone $query)->whereDate('acctstarttime', today())->count(),
+            'active_sessions' => (clone $query)->whereNull('acctstoptime')->count(),
+            'total_bandwidth' => $query->sum('acctinputoctets') + $query->sum('acctoutputoctets'),
+        ];
+
+        return view('panels.admin.logs.hotspot', compact('logs', 'stats'));
+    }
 }

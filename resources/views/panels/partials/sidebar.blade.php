@@ -138,10 +138,9 @@
                 'icon' => 'clipboard',
                 'children' => [
                     ['label' => 'System Log', 'route' => 'panel.admin.logs.system'],
-                    ['label' => 'Laravel Log', 'route' => 'panel.admin.logs.laravel'],
-                    ['label' => 'Scheduler Log', 'route' => 'panel.admin.logs.scheduler'],
                     ['label' => 'Router Log', 'route' => 'panel.admin.logs.router'],
-                    ['label' => 'RADIUS Log', 'route' => 'panel.admin.logs.radius'],
+                    ['label' => 'PPP Log', 'route' => 'panel.admin.logs.ppp'],
+                    ['label' => 'Hotspot Log', 'route' => 'panel.admin.logs.hotspot'],
                     ['label' => 'Activity Log', 'route' => 'panel.admin.logs.activity'],
                 ]
             ],
@@ -285,6 +284,8 @@
                     ['label' => 'Application Logs', 'route' => 'panel.developer.logs'],
                     ['label' => 'Audit Logs', 'route' => 'panel.developer.audit-logs'],
                     ['label' => 'Error Logs', 'route' => 'panel.developer.error-logs'],
+                    ['label' => 'RADIUS Logs', 'route' => 'panel.admin.logs.radius'],
+                    ['label' => 'Laravel Logs', 'route' => 'panel.admin.logs.laravel'],
                 ]
             ],
             [
