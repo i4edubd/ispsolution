@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
-use App\Models\Tenant;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class SalesManagerController extends Controller

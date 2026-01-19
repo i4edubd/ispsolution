@@ -26,7 +26,7 @@
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($pendingPayments as $payment)
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">#{{ $payment->id ?? rand(1000, 9999) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">#{{ $payment->id ?? 'TBD' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $payment->client_name ?? 'N/A' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-semibold">৳{{ number_format($payment->amount ?? 0, 2) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ ucfirst($payment->method ?? 'N/A') }}</td>
@@ -44,6 +44,25 @@
                 </tbody>
             </table>
         </div>
+
+        @if(method_exists($pendingPayments, 'links') && $pendingPayments->count())
+        <div class="px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                    Showing
+                    <span class="font-medium">{{ $pendingPayments->firstItem() }}</span>
+                    to
+                    <span class="font-medium">{{ $pendingPayments->lastItem() }}</span>
+                    of
+                    <span class="font-medium">{{ $pendingPayments->total() }}</span>
+                    results
+                </div>
+                <div>
+                    {{ $pendingPayments->links() }}
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 @endsection

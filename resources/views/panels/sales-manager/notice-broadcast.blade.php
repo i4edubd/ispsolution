@@ -10,7 +10,7 @@
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <form action="#" method="POST" class="space-y-6">
+        <form action="#" method="POST" class="space-y-6" onsubmit="event.preventDefault(); alert('Notice broadcast functionality will be implemented soon.');">
             @csrf
 
             <div>

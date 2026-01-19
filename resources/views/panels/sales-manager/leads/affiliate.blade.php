@@ -54,6 +54,11 @@
                 </tbody>
             </table>
         </div>
+        @if (method_exists($leads, 'links'))
+        <div class="px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            {{ $leads->links() }}
+        </div>
+        @endif
     </div>
 </div>
 @endsection

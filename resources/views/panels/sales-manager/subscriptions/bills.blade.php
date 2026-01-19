@@ -31,7 +31,7 @@
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($bills as $bill)
                     <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">#{{ $bill->invoice_number ?? rand(1000, 9999) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">#{{ $bill->invoice_number ?? 'Pending' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $bill->client_name ?? 'N/A' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-semibold">৳{{ number_format($bill->amount ?? 0, 2) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ $bill->due_date ?? now()->format('Y-m-d') }}</td>
@@ -53,6 +53,31 @@
                 </tbody>
             </table>
         </div>
+
+        @php
+            $isPaginator = $bills instanceof \Illuminate\Contracts\Pagination\Paginator;
+        @endphp
+
+        @if($isPaginator && $bills->hasPages())
+            <div class="px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="text-sm text-gray-700 dark:text-gray-300">
+                        {!! __('Showing') !!}
+                        <span class="font-medium">{{ $bills->firstItem() ?? 0 }}</span>
+                        {!! __('to') !!}
+                        <span class="font-medium">{{ $bills->lastItem() ?? 0 }}</span>
+                        {!! __('of') !!}
+                        <span class="font-medium">
+                            {{ method_exists($bills, 'total') ? $bills->total() : $bills->count() }}
+                        </span>
+                        {!! __('results') !!}
+                    </div>
+                    <div>
+                        {{ $bills->links() }}
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 </div>
 @endsection

@@ -39,5 +39,11 @@
         </div>
         @endforelse
     </div>
+
+    @if (isset($comments) && method_exists($comments, 'links'))
+    <div class="mt-6">
+        {{ $comments->links() }}
+    </div>
+    @endif
 </div>
 @endsection
