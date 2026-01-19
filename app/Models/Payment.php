@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTenant;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -50,5 +51,46 @@ class Payment extends Model
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
+    }
+
+    // Optimized query scopes with indexed filters
+    public function scopeCompleted(Builder $query): Builder
+    {
+        return $query->where('status', 'completed');
+    }
+
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopeByStatus(Builder $query, string $status): Builder
+    {
+        return $query->where('status', $status);
+    }
+
+    public function scopeByTenant(Builder $query, int $tenantId): Builder
+    {
+        return $query->where('tenant_id', $tenantId);
+    }
+
+    public function scopeByPaymentMethod(Builder $query, string $method): Builder
+    {
+        return $query->where('payment_method', $method);
+    }
+
+    public function scopeWithRelations(Builder $query): Builder
+    {
+        // Optimized: Eager load with select to minimize data transfer
+        return $query->with([
+            'user:id,name,email',
+            'invoice:id,invoice_number,total_amount,status',
+            'gateway:id,name,type'
+        ]);
+    }
+
+    public function scopeRecentPayments(Builder $query, int $days = 30): Builder
+    {
+        return $query->where('paid_at', '>=', now()->subDays($days));
     }
 }

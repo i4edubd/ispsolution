@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -58,5 +59,25 @@ class HotspotUser extends Model
         return $this->status === 'active' &&
                $this->is_verified &&
                (! $this->expires_at || $this->expires_at->isFuture());
+    }
+
+    // Optimized query scopes with indexed filters
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', 'active')
+            ->where('is_verified', true);
+    }
+
+    public function scopeByTenant(Builder $query, int $tenantId): Builder
+    {
+        return $query->where('tenant_id', $tenantId);
+    }
+
+    public function scopeNotExpired(Builder $query): Builder
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('expires_at')
+              ->orWhere('expires_at', '>', now());
+        });
     }
 }

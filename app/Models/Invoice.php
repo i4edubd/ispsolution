@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\BelongsToTenant;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -63,5 +64,53 @@ class Invoice extends Model
         return $this->status !== 'paid' &&
                $this->due_date &&
                $this->due_date->isPast();
+    }
+
+    // Optimized query scopes with indexed filters
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopePaid(Builder $query): Builder
+    {
+        return $query->where('status', 'paid');
+    }
+
+    public function scopeOverdue(Builder $query): Builder
+    {
+        return $query->where('status', '!=', 'paid')
+            ->where('due_date', '<', now());
+    }
+
+    public function scopeByStatus(Builder $query, string $status): Builder
+    {
+        return $query->where('status', $status);
+    }
+
+    public function scopeByTenant(Builder $query, int $tenantId): Builder
+    {
+        return $query->where('tenant_id', $tenantId);
+    }
+
+    public function scopeWithUserAndPayments(Builder $query): Builder
+    {
+        // Optimized: Eager load with select to minimize data transfer
+        return $query->with([
+            'user:id,name,email',
+            'payments' => function ($q) {
+                $q->select('id', 'invoice_id', 'amount', 'status', 'paid_at');
+            }
+        ]);
+    }
+
+    public function scopeWithRelations(Builder $query): Builder
+    {
+        // Optimized: Load all necessary relations in one query
+        return $query->with([
+            'user:id,name,email',
+            'package:id,name,price',
+            'payments:id,invoice_id,amount,status,paid_at'
+        ]);
     }
 }

@@ -18,12 +18,15 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
-        // Get customer's network user account
-        $networkUser = NetworkUser::where('user_id', $user->id)->first();
+        // Optimized: Get customer's network user account with package
+        $networkUser = NetworkUser::where('user_id', $user->id)
+            ->with('package:id,name,price')
+            ->first();
 
-        // Calculate next billing due
+        // Optimized: Calculate next billing due with minimal data
         $nextInvoice = Invoice::where('user_id', $user->id)
             ->whereIn('status', ['pending', 'overdue'])
+            ->select('id', 'total_amount', 'due_date', 'status')
             ->orderBy('due_date')
             ->first();
 
@@ -54,13 +57,15 @@ class CustomerController extends Controller
     {
         $user = auth()->user();
 
+        // Optimized: Use withRelations scope to avoid N+1 queries
         $invoices = Invoice::where('user_id', $user->id)
-            ->with('package', 'payments')
+            ->withRelations()
             ->latest()
             ->paginate(20);
 
+        // Optimized: Use withRelations scope for payments
         $payments = Payment::where('user_id', $user->id)
-            ->with('invoice', 'gateway')
+            ->withRelations()
             ->latest()
             ->paginate(20);
 
