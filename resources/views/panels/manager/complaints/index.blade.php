@@ -203,7 +203,8 @@
                                     {{ $complaint->created_at->format('M d, Y') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ route('panel.manager.complaints.show', $complaint->id) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">View</a>
+                                    {{-- TODO: Implement complaint details view --}}
+                                    <span class="text-gray-400 dark:text-gray-500 cursor-not-allowed">View</span>
                                 </td>
                             </tr>
                         @empty
