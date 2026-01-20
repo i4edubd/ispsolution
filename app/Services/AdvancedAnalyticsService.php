@@ -154,15 +154,25 @@ class AdvancedAnalyticsService
             ->groupBy('service_packages.id', 'service_packages.name', 'service_packages.price')
             ->get();
 
-        // Service performance
+        // Service performance with ARPU calculation
         $servicePerformance = [];
+        $totalCustomers = $packageDistribution->sum('customer_count');
+        
         foreach ($packageDistribution as $package) {
+            $customerCount = (int) $package->customer_count;
+            $monthlyRevenue = (float) $package->total_monthly_revenue;
+            
             $servicePerformance[] = [
                 'package_name' => $package->name,
                 'price' => $package->price,
-                'customer_count' => $package->customer_count,
-                'monthly_revenue' => $package->total_monthly_revenue,
-                'market_share' => round(($package->customer_count / $packageDistribution->sum('customer_count')) * 100, 2),
+                'customer_count' => $customerCount,
+                'monthly_revenue' => $monthlyRevenue,
+                'market_share' => $totalCustomers > 0 
+                    ? round(($customerCount / $totalCustomers) * 100, 2) 
+                    : 0,
+                'arpu' => $customerCount > 0 
+                    ? round($monthlyRevenue / $customerCount, 2) 
+                    : 0,
             ];
         }
 
@@ -293,19 +303,9 @@ class AdvancedAnalyticsService
     public function getPredictiveAnalytics(int $tenantId): array
     {
         // Revenue forecast (simple moving average)
-        $revenueForecast = $this->forecastRevenue($tenantId);
+        $forecast = $this->forecastRevenue($tenantId);
 
-        // Churn prediction
-        $churnRisk = $this->identifyChurnRisk($tenantId);
-
-        // Growth opportunities
-        $opportunities = $this->identifyGrowthOpportunities($tenantId);
-
-        return [
-            'revenue_forecast' => $revenueForecast,
-            'churn_risk_customers' => $churnRisk,
-            'growth_opportunities' => $opportunities,
-        ];
+        return $forecast;
     }
 
     // Helper methods
@@ -378,10 +378,77 @@ class AdvancedAnalyticsService
 
     private function forecastRevenue(int $tenantId): array
     {
-        // Simple forecast based on historical data
+        // Simple forecast based on available months of data (up to 3 months)
+        $endDate = now();
+        $startDate = (clone $endDate)->subMonths(3);
+
+        $paymentsQuery = Payment::where('tenant_id', $tenantId)
+            ->where('status', 'completed')
+            ->whereBetween('payment_date', [$startDate, $endDate]);
+
+        $last3MonthsRevenue = $paymentsQuery->sum('amount');
+        $firstPaymentDate = $paymentsQuery->min('payment_date');
+
+        if ($firstPaymentDate === null) {
+            // No payment data in the last 3 months; default to zero revenue forecast.
+            $avgMonthlyRevenue = 0;
+        } else {
+            $firstPaymentCarbon = Carbon::parse($firstPaymentDate);
+            // Calculate actual months of data available (at least 1, at most 3)
+            $monthsOfData = max(1, min(3, $firstPaymentCarbon->diffInMonths($endDate) + 1));
+
+            $avgMonthlyRevenue = $last3MonthsRevenue / $monthsOfData;
+        }
+        
+        // Calculate growth rate from available historical data
+        $previousPeriodStart = (clone $startDate)->subMonths(3);
+        $previousPeriodRevenue = Payment::where('tenant_id', $tenantId)
+            ->where('status', 'completed')
+            ->whereBetween('payment_date', [$previousPeriodStart, $startDate])
+            ->sum('amount');
+        
+        $growthRate = $previousPeriodRevenue > 0 
+            ? (($last3MonthsRevenue - $previousPeriodRevenue) / $previousPeriodRevenue)
+            : 0.05; // Default 5% if no historical data
+        
+        // Limit growth rate to reasonable bounds (-50% to +100%)
+        $growthRate = max(-0.5, min(1.0, $growthRate));
+        
+        // Calculate customer growth from actual data
+        $lastMonthCustomers = NetworkUser::where('tenant_id', $tenantId)
+            ->whereBetween('created_at', [now()->subMonth(), now()])
+            ->count();
+        
+        $previousMonthCustomers = NetworkUser::where('tenant_id', $tenantId)
+            ->whereBetween('created_at', [now()->subMonths(2), now()->subMonth()])
+            ->count();
+        
+        $customerGrowthRate = $previousMonthCustomers > 0
+            ? (($lastMonthCustomers - $previousMonthCustomers) / $previousMonthCustomers)
+            : 0.1; // Default 10% if no historical data
+        
+        // Limit customer growth rate
+        $customerGrowthRate = max(-0.5, min(1.0, $customerGrowthRate));
+        
+        // Calculate churn from actual data
+        $lastMonthChurn = NetworkUser::where('tenant_id', $tenantId)
+            ->where('is_active', false)
+            ->whereBetween('updated_at', [now()->subMonth(), now()])
+            ->count();
+        
+        $previousMonthChurn = NetworkUser::where('tenant_id', $tenantId)
+            ->where('is_active', false)
+            ->whereBetween('updated_at', [now()->subMonths(2), now()->subMonth()])
+            ->count();
+        
+        $churnChangeRate = $previousMonthChurn > 0
+            ? (($lastMonthChurn - $previousMonthChurn) / $previousMonthChurn)
+            : -0.05; // Default 5% reduction if no historical data
+        
         return [
-            'next_month' => 0,
-            'next_quarter' => 0,
+            'predicted_revenue' => round($avgMonthlyRevenue * (1 + $growthRate), 2),
+            'predicted_new_customers' => round($lastMonthCustomers * (1 + $customerGrowthRate)),
+            'predicted_churn' => round($lastMonthChurn * (1 + $churnChangeRate)),
         ];
     }
 
