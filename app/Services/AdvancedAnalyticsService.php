@@ -154,15 +154,25 @@ class AdvancedAnalyticsService
             ->groupBy('service_packages.id', 'service_packages.name', 'service_packages.price')
             ->get();
 
-        // Service performance
+        // Service performance with ARPU calculation
         $servicePerformance = [];
+        $totalCustomers = $packageDistribution->sum('customer_count');
+        
         foreach ($packageDistribution as $package) {
+            $customerCount = (int) $package->customer_count;
+            $monthlyRevenue = (float) $package->total_monthly_revenue;
+            
             $servicePerformance[] = [
                 'package_name' => $package->name,
                 'price' => $package->price,
-                'customer_count' => $package->customer_count,
-                'monthly_revenue' => $package->total_monthly_revenue,
-                'market_share' => round(($package->customer_count / $packageDistribution->sum('customer_count')) * 100, 2),
+                'customer_count' => $customerCount,
+                'monthly_revenue' => $monthlyRevenue,
+                'market_share' => $totalCustomers > 0 
+                    ? round(($customerCount / $totalCustomers) * 100, 2) 
+                    : 0,
+                'arpu' => $customerCount > 0 
+                    ? round($monthlyRevenue / $customerCount, 2) 
+                    : 0,
             ];
         }
 

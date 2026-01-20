@@ -20,6 +20,6 @@
     "dependencies": {
         "@tailwindcss/vite": "^4.1.12",
         "alpinejs": "^3.13.3",
-        "apexcharts": "^3.45.0"
+        "apexcharts": "^3.54.1"
     }
 }

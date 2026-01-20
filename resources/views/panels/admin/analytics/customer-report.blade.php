@@ -152,7 +152,6 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
     const analyticsData = @json($analytics);
     

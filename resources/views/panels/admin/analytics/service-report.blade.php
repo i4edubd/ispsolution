@@ -70,7 +70,7 @@
                                 {{ number_format($package['market_share'], 2) }}%
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                ৳{{ $package['customer_count'] > 0 ? number_format($package['monthly_revenue'] / $package['customer_count'], 2) : '0.00' }}
+                                ৳{{ number_format($package['arpu'], 2) }}
                             </td>
                         </tr>
                         @endforeach
@@ -154,7 +154,6 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
     const analyticsData = @json($analytics);
     

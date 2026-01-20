@@ -226,7 +226,6 @@
 @endpush
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
     // Initialize analytics data from server
     const analyticsData = @json($analytics);

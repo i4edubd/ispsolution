@@ -1,10 +1,14 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
 import AnalyticsManager from './analytics';
+import ApexCharts from 'apexcharts';
 
 // Start Alpine.js
 window.Alpine = Alpine;
 Alpine.start();
+
+// Make ApexCharts available globally
+window.ApexCharts = ApexCharts;
 
 // Initialize Analytics Manager globally
 window.analyticsManager = new AnalyticsManager();
