@@ -182,11 +182,16 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/packages', [AdminController::class, 'packages'])->name('packages');
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
 
-    // Network Device Management
-    Route::get('/mikrotik', [AdminController::class, 'mikrotikRouters'])->name('mikrotik');
+    // Network Device Management - Legacy routes (kept for backward compatibility)
+    // These redirect to the more organized /network/* routes
+    Route::get('/mikrotik', function () {
+        return redirect()->route('panel.admin.network.routers');
+    })->name('mikrotik');
     Route::get('/nas', [AdminController::class, 'nasDevices'])->name('nas');
     Route::get('/cisco', [AdminController::class, 'ciscoDevices'])->name('cisco');
-    Route::get('/olt', [AdminController::class, 'oltDevices'])->name('olt');
+    Route::get('/olt', function () {
+        return redirect()->route('panel.admin.network.olt');
+    })->name('olt');
 
     // Customer Management
     Route::get('/customers', [AdminController::class, 'customers'])->name('customers');

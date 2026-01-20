@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\CiscoDevice;
+use App\Models\DeviceMonitor;
+use App\Models\IpAllocation;
+use App\Models\IpPool;
+use App\Models\MikrotikProfile;
 use App\Models\MikrotikRouter;
 use App\Models\Nas;
 use App\Models\NetworkUser;
@@ -13,6 +17,7 @@ use App\Models\PaymentGateway;
 use App\Models\RadAcct;
 use App\Models\ServicePackage;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class AdminController extends Controller
@@ -85,6 +90,7 @@ class AdminController extends Controller
     /**
      * Display MikroTik routers listing.
      *
+     * @deprecated This is a legacy route. Use routers() method at panel.admin.network.routers instead.
      * Displays paginated list of MikroTik routers for admin users with full management access.
      * Includes 20 items per page with tenant isolation automatically applied via BelongsToTenant trait.
      */
@@ -126,6 +132,11 @@ class AdminController extends Controller
      *
      * Displays paginated list of Optical Line Terminal devices for admin users with full management access.
      * Includes 20 items per page with tenant isolation automatically applied via BelongsToTenant trait.
+     */
+    /**
+     * Display OLT devices listing.
+     *
+     * @deprecated This is a legacy route. Use oltList() method at panel.admin.network.olt instead.
      */
     public function oltDevices(): View
     {
@@ -625,14 +636,29 @@ class AdminController extends Controller
      */
     public function devices(): View
     {
-        $devices = collect(); // Replace with actual query combining multiple device types
+        // Combine all device types for unified view using a UNION query
+        $routerQuery = MikrotikRouter::select('id', 'name', 'host', 'status', 'created_at')
+            ->addSelect(DB::raw("'router' as device_type"));
+
+        $oltQuery = Olt::select('id', 'name', DB::raw('ip_address as host'), 'status', 'created_at')
+            ->addSelect(DB::raw("'olt' as device_type"));
+
+        $ciscoQuery = CiscoDevice::select('id', 'name', DB::raw('ip_address as host'), 'status', 'created_at')
+            ->addSelect(DB::raw("'cisco' as device_type"));
+
+        // Execute a single query using UNION ALL and order results in the database
+        $devices = $routerQuery
+            ->unionAll($oltQuery)
+            ->unionAll($ciscoQuery)
+            ->orderByDesc('created_at')
+            ->get();
 
         $stats = [
-            'total' => 0,
+            'total' => $devices->count(),
             'routers' => MikrotikRouter::count(),
             'olts' => Olt::count(),
-            'switches' => 0,
-            'online' => 0,
+            'switches' => CiscoDevice::count(),
+            'online' => $devices->where('status', 'active')->count(),
         ];
 
         return view('panels.admin.network.devices', compact('devices', 'stats'));
@@ -643,13 +669,27 @@ class AdminController extends Controller
      */
     public function deviceMonitors(): View
     {
+        // Get actual device monitoring data using polymorphic relationships
+        $deviceMonitors = DeviceMonitor::with('monitorable')
+            ->latest()
+            ->limit(50)
+            ->get();
+
+        // Calculate health statistics based on device monitoring data
+        $onlineCount = DeviceMonitor::online()->count();
+        $offlineCount = DeviceMonitor::offline()->count();
+        $degradedCount = DeviceMonitor::degraded()->count();
+        
+        // Total devices from all types
+        $totalDevices = MikrotikRouter::count() + Olt::count() + CiscoDevice::count();
+
         $monitors = [
-            'healthy' => 0,
-            'warning' => 0,
-            'critical' => 0,
-            'offline' => 0,
-            'devices' => collect(),
-            'alerts' => collect(),
+            'healthy' => $onlineCount,
+            'warning' => $degradedCount,
+            'critical' => 0, // Placeholder for future threshold-based critical detection
+            'offline' => $offlineCount,
+            'devices' => $deviceMonitors,
+            'alerts' => collect(), // Placeholder for future alert system implementation
         ];
 
         return view('panels.admin.network.device-monitors', compact('monitors'));
@@ -677,13 +717,13 @@ class AdminController extends Controller
      */
     public function ipv4Pools(): View
     {
-        $pools = collect(); // Replace with: IpPool::where('ip_version', 4)->paginate(20);
+        $pools = IpPool::with('subnets')->latest()->paginate(20);
 
         $stats = [
-            'total' => 0,
-            'available' => 0,
-            'allocated' => 0,
-            'pools' => 0,
+            'total' => IpPool::count(),
+            'available' => 0, // Placeholder for calculating available IPs based on pool capacity minus allocations
+            'allocated' => IpAllocation::count(),
+            'pools' => $pools->total(),
         ];
 
         return view('panels.admin.network.ipv4-pools', compact('pools', 'stats'));
@@ -694,12 +734,13 @@ class AdminController extends Controller
      */
     public function ipv6Pools(): View
     {
-        $pools = collect(); // Replace with: IpPool::where('ip_version', 6)->paginate(20);
+        // Filter IPv6 pools by checking for colon in start_ip (IPv6 format)
+        $pools = IpPool::where('start_ip', 'LIKE', '%:%')->latest()->paginate(20);
 
         $stats = [
-            'pools' => 0,
-            'allocated' => 0,
-            'available' => 0,
+            'pools' => $pools->total(),
+            'allocated' => IpAllocation::count(),
+            'available' => 0, // Placeholder for calculating available IPs based on subnet capacity
         ];
 
         return view('panels.admin.network.ipv6-pools', compact('pools', 'stats'));
@@ -710,12 +751,12 @@ class AdminController extends Controller
      */
     public function pppoeProfiles(): View
     {
-        $profiles = collect(); // Replace with: MikrotikProfile::paginate(20);
+        $profiles = MikrotikProfile::with('router')->latest()->paginate(20);
 
         $stats = [
-            'total' => 0,
-            'active' => 0,
-            'users' => 0,
+            'total' => MikrotikProfile::count(),
+            'active' => MikrotikProfile::count(), // Currently counts all profiles; adjust if a status field is introduced
+            'users' => NetworkUser::count(),
         ];
 
         return view('panels.admin.network.pppoe-profiles', compact('profiles', 'stats'));
