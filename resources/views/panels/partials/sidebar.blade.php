@@ -144,6 +144,16 @@
                     ['label' => 'Activity Log', 'route' => 'panel.admin.logs.activity'],
                 ]
             ],
+            [
+                'label' => 'Analytics',
+                'icon' => 'chart',
+                'children' => [
+                    ['label' => 'Dashboard', 'route' => 'panel.admin.analytics.dashboard'],
+                    ['label' => 'Revenue Report', 'route' => 'panel.admin.analytics.revenue-report'],
+                    ['label' => 'Customer Report', 'route' => 'panel.admin.analytics.customer-report'],
+                    ['label' => 'Service Report', 'route' => 'panel.admin.analytics.service-report'],
+                ]
+            ],
             ['label' => 'Payment Gateways', 'route' => 'panel.admin.payment-gateways', 'icon' => 'credit-card'],
             ['label' => 'Settings', 'route' => 'panel.admin.settings', 'icon' => 'cog'],
         ];

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Panel\AdminController;
+use App\Http\Controllers\Panel\AnalyticsController;
 use App\Http\Controllers\Panel\CableTvController;
 use App\Http\Controllers\Panel\CardDistributorController;
 use App\Http\Controllers\Panel\CustomerController;
@@ -298,6 +299,20 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/logs/activity', [AdminController::class, 'activityLogs'])
         ->name('logs.activity')
         ->middleware('role:developer,super-admin,admin');
+    
+    // Analytics Routes
+    Route::get('/analytics/dashboard', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
+    Route::get('/analytics/revenue-report', [AnalyticsController::class, 'revenueReport'])->name('analytics.revenue-report');
+    Route::get('/analytics/customer-report', [AnalyticsController::class, 'customerReport'])->name('analytics.customer-report');
+    Route::get('/analytics/service-report', [AnalyticsController::class, 'serviceReport'])->name('analytics.service-report');
+    Route::get('/analytics/export', [AnalyticsController::class, 'exportAnalytics'])->name('analytics.export');
+    
+    // Analytics API Endpoints (for AJAX requests)
+    Route::get('/api/analytics/revenue', [AnalyticsController::class, 'revenueAnalytics'])->name('analytics.api.revenue');
+    Route::get('/api/analytics/customers', [AnalyticsController::class, 'customerAnalytics'])->name('analytics.api.customers');
+    Route::get('/api/analytics/services', [AnalyticsController::class, 'serviceAnalytics'])->name('analytics.api.services');
+    Route::get('/api/analytics/growth', [AnalyticsController::class, 'growthMetrics'])->name('analytics.api.growth');
+    Route::get('/api/analytics/performance', [AnalyticsController::class, 'performanceIndicators'])->name('analytics.api.performance');
 
     // Cable TV Management
     Route::prefix('cable-tv')->name('cable-tv.')->group(function () {
