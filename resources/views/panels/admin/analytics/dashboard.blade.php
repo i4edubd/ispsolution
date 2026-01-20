@@ -158,10 +158,10 @@
             </div>
         </div>
 
-        <!-- Customer Growth Chart -->
+        <!-- Customer Metrics Overview -->
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Customer Growth</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Customer Metrics Overview</h3>
                 <div id="customerChart"></div>
             </div>
         </div>
