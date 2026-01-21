@@ -14,12 +14,33 @@ class SubOperatorController extends Controller
     {
         $user = auth()->user();
 
-        // Get sub-operator metrics (only assigned customers)
+        // Get customer IDs for this sub-operator
+        $customerIds = $user->subordinates()
+            ->where('operator_level', 100)
+            ->pluck('id');
+
+        // Calculate pending payments from unpaid invoices
+        $pendingPayments = \App\Models\Invoice::whereIn('user_id', $customerIds)
+            ->whereIn('status', ['pending', 'overdue'])
+            ->sum('total_amount');
+
+        // Calculate today's collection from payments
+        $todayCollection = \App\Models\Payment::whereIn('user_id', $customerIds)
+            ->where('status', 'completed')
+            ->whereDate('paid_at', today())
+            ->sum('amount');
+
+        // Get sub-operator metrics (only assigned customers) - optimized to avoid N+1
+        $subordinateStats = $user->subordinates()
+            ->where('operator_level', 100)
+            ->selectRaw('COUNT(*) as assigned_customers, SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_customers')
+            ->first();
+
         $stats = [
-            'assigned_customers' => $user->subordinates()->where('operator_level', 100)->count(),
-            'active_customers' => $user->subordinates()->where('operator_level', 100)->where('is_active', true)->count(),
-            'pending_payments' => 0, // TODO: Calculate from invoices
-            'today_collection' => 0, // TODO: Calculate from payments
+            'assigned_customers' => (int) ($subordinateStats->assigned_customers ?? 0),
+            'active_customers' => (int) ($subordinateStats->active_customers ?? 0),
+            'pending_payments' => $pendingPayments,
+            'today_collection' => $todayCollection,
         ];
 
         return view('panels.sub-operator.dashboard', compact('stats'));
@@ -81,12 +102,33 @@ class SubOperatorController extends Controller
     {
         $user = auth()->user();
 
+        // Get customer IDs for this sub-operator
+        $customerIds = $user->subordinates()
+            ->where('operator_level', 100)
+            ->pluck('id');
+
+        // Calculate collections for different periods
+        $collectionsToday = \App\Models\Payment::whereIn('user_id', $customerIds)
+            ->where('status', 'completed')
+            ->whereDate('paid_at', today())
+            ->sum('amount');
+
+        $collectionsWeek = \App\Models\Payment::whereIn('user_id', $customerIds)
+            ->where('status', 'completed')
+            ->whereBetween('paid_at', [now()->startOfWeek(), now()->endOfWeek()])
+            ->sum('amount');
+
+        $collectionsMonth = \App\Models\Payment::whereIn('user_id', $customerIds)
+            ->where('status', 'completed')
+            ->whereBetween('paid_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->sum('amount');
+
         // Generate basic sub-operator reports
         $reports = [
             'assigned_customers' => $user->subordinates()->where('operator_level', 100)->count(),
-            'collections_today' => 0, // TODO: Calculate
-            'collections_week' => 0, // TODO: Calculate
-            'collections_month' => 0, // TODO: Calculate
+            'collections_today' => $collectionsToday,
+            'collections_week' => $collectionsWeek,
+            'collections_month' => $collectionsMonth,
         ];
 
         return view('panels.sub-operator.reports.index', compact('reports'));

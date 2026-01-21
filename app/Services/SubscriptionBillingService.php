@@ -190,11 +190,30 @@ class SubscriptionBillingService
 
         // Send reminder if expiring in 7 days or less
         if ($daysUntilExpiry > 0 && $daysUntilExpiry <= 7) {
-            // TODO: Implement notification sending
-            Log::info('Renewal reminder needed', [
-                'subscription_id' => $subscription->id,
-                'days_until_expiry' => $daysUntilExpiry,
-            ]);
+            try {
+                // Get the tenant owner (subscriptions belong to tenants, not users)
+                $tenant = $subscription->tenant;
+                $user = $tenant?->owner;
+                
+                if ($user && $user->email) {
+                    // Send email directly using Mail facade
+                    \Illuminate\Support\Facades\Mail::to($user->email)->send(
+                        new \App\Mail\SubscriptionRenewalReminder($subscription, $daysUntilExpiry)
+                    );
+                    
+                    Log::info('Renewal reminder sent', [
+                        'subscription_id' => $subscription->id,
+                        'tenant_id' => $subscription->tenant_id,
+                        'user_id' => $user->id,
+                        'days_until_expiry' => $daysUntilExpiry,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send renewal reminder', [
+                    'subscription_id' => $subscription->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
     }
 

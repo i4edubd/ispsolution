@@ -35,22 +35,45 @@ class SendBulkSmsJob implements ShouldQueue
                 'recipient_count' => count($this->phoneNumbers),
             ]);
 
-            // TODO: Implement actual SMS gateway integration
-            // - Connect to SMS gateway
-            // - Send messages in batches
-            // - Log delivery status
+            // Use SmsService to send messages
+            $smsService = app(\App\Services\SmsService::class);
+            $successCount = 0;
+            $failureCount = 0;
 
             foreach ($this->phoneNumbers as $phoneNumber) {
-                // Simulate SMS sending
-                Log::debug('SMS sent', [
-                    'phone' => $phoneNumber,
-                    'message' => substr($this->message, 0, 50),
-                ]);
+                try {
+                    $sent = $smsService->sendSms(
+                        $phoneNumber,
+                        $this->message,
+                        null, // Use default gateway
+                        null, // No specific user
+                        $this->tenantId
+                    );
+
+                    if ($sent) {
+                        $successCount++;
+                    } else {
+                        $failureCount++;
+                    }
+                } catch (\Exception $e) {
+                    $failureCount++;
+                    Log::warning('Failed to send SMS to recipient', [
+                        'phone' => $phoneNumber,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
+                // Add configurable delay to avoid rate limiting
+                $delayMicroseconds = (int) config('sms.rate_limit_delay_microseconds', 100000);
+                if ($delayMicroseconds > 0) {
+                    usleep($delayMicroseconds);
+                }
             }
 
-            Log::info('Bulk SMS sent successfully', [
+            Log::info('Bulk SMS sent', [
                 'tenant_id' => $this->tenantId,
-                'sent_count' => count($this->phoneNumbers),
+                'success_count' => $successCount,
+                'failure_count' => $failureCount,
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to send bulk SMS', [

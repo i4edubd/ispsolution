@@ -47,9 +47,16 @@ class CustomerPolicy
             return true;
         }
 
-        // Check if customer belongs to same zone/area
-        // TODO: Implement zone/area check
-        // For now, deny access by default to prevent bypassing zone restrictions
+        // Check if customer is in user's management hierarchy
+        if ($this->isInHierarchy($user, $customer)) {
+            return true;
+        }
+
+        // Operators and sub-operators can view their own customers
+        if ($user->operator_level <= 40) {
+            return $this->isInHierarchy($user, $customer);
+        }
+
         return false;
     }
 
@@ -91,9 +98,37 @@ class CustomerPolicy
             return true;
         }
 
-        // TODO: Implement zone/area-based access control
-        // For now, deny access by default to prevent unauthorized access
+        // Check if customer is in user's management hierarchy
+        return $this->isInHierarchy($user, $customer);
+    }
+
+    /**
+     * Check if customer is in user's zone or area.
+     * 
+     * Note: Zone/area-based restrictions are not currently enforced because the
+     * corresponding attributes (zone_id, area_id) are not available on the User model.
+     * Access control is handled by other checks in this policy (tenant, hierarchy,
+     * permissions, etc.).
+     */
+    private function isSameZoneOrArea(User $user, User $customer): bool
+    {
+        // If zone/area fields are added in the future, implement checks here
+        // For now, return false to not grant automatic access
         return false;
+    }
+
+    /**
+     * Check if customer is in user's management hierarchy.
+     */
+    private function isInHierarchy(User $user, User $customer): bool
+    {
+        // Check if user created this customer
+        if (isset($customer->created_by) && $customer->created_by === $user->id) {
+            return true;
+        }
+
+        // Check if customer is in user's subordinates
+        return $user->subordinates()->where('id', $customer->id)->exists();
     }
 
     /**

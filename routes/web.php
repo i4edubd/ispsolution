@@ -500,3 +500,58 @@ Route::prefix('panel/developer')->name('panel.developer.')->middleware(['auth', 
     Route::get('/settings', [DeveloperController::class, 'settings'])->name('settings');
     Route::get('/debug', [DeveloperController::class, 'debug'])->name('debug');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Shared Panel Features Routes
+|--------------------------------------------------------------------------
+*/
+
+use App\Http\Controllers\Panel\AuditLogController;
+use App\Http\Controllers\Panel\TwoFactorAuthController;
+use App\Http\Controllers\Panel\ApiKeyController;
+use App\Http\Controllers\Panel\AnalyticsDashboardController;
+use App\Http\Controllers\Panel\NotificationController;
+
+// Audit Logs (Available to all authenticated users with proper permissions)
+Route::prefix('audit-logs')->name('audit-logs.')->middleware(['auth', 'can:view-audit-logs'])->group(function () {
+    Route::get('/', [AuditLogController::class, 'index'])->name('index');
+    Route::get('/{auditLog}', [AuditLogController::class, 'show'])->name('show');
+});
+
+// Two-Factor Authentication
+Route::prefix('2fa')->name('2fa.')->middleware(['auth'])->group(function () {
+    Route::get('/', [TwoFactorAuthController::class, 'index'])->name('index');
+    Route::get('/enable', [TwoFactorAuthController::class, 'enable'])->name('enable');
+    Route::post('/verify', [TwoFactorAuthController::class, 'verify'])->name('verify');
+    Route::get('/recovery-codes', [TwoFactorAuthController::class, 'recoveryCodes'])->name('recovery-codes');
+    Route::post('/regenerate-codes', [TwoFactorAuthController::class, 'regenerateRecoveryCodes'])->name('regenerate-codes');
+    Route::delete('/disable', [TwoFactorAuthController::class, 'disable'])->name('disable');
+});
+
+// API Key Management
+Route::prefix('api-keys')->name('api-keys.')->middleware(['auth', 'can:manage-api-keys'])->group(function () {
+    Route::get('/', [ApiKeyController::class, 'index'])->name('index');
+    Route::get('/create', [ApiKeyController::class, 'create'])->name('create');
+    Route::post('/', [ApiKeyController::class, 'store'])->name('store');
+    Route::get('/{apiKey}', [ApiKeyController::class, 'show'])->name('show');
+    Route::get('/{apiKey}/edit', [ApiKeyController::class, 'edit'])->name('edit');
+    Route::put('/{apiKey}', [ApiKeyController::class, 'update'])->name('update');
+    Route::delete('/{apiKey}', [ApiKeyController::class, 'destroy'])->name('destroy');
+});
+
+// Analytics Dashboard
+Route::prefix('analytics')->name('analytics.')->middleware(['auth', 'can:view-analytics'])->group(function () {
+    Route::get('/dashboard', [AnalyticsDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/revenue', [AnalyticsDashboardController::class, 'revenue'])->name('revenue');
+    Route::get('/customers', [AnalyticsDashboardController::class, 'customers'])->name('customers');
+});
+
+// Notification Center
+Route::prefix('notifications')->name('notifications.')->middleware(['auth'])->group(function () {
+    Route::get('/', [NotificationController::class, 'index'])->name('index');
+    Route::get('/preferences', [NotificationController::class, 'preferences'])->name('preferences');
+    Route::post('/preferences', [NotificationController::class, 'updatePreferences'])->name('preferences.update');
+    Route::post('/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('mark-read');
+    Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+});
