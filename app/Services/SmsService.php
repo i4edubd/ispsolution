@@ -4,32 +4,102 @@ namespace App\Services;
 
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\SmsGateway;
+use App\Models\SmsLog;
+use App\Models\SmsTemplate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class SmsService
 {
     /**
+     * Log SMS to database
+     */
+    protected function logSms(
+        string $phoneNumber,
+        string $message,
+        string $status,
+        ?int $smsGatewayId = null,
+        ?int $userId = null,
+        ?array $gatewayResponse = null
+    ): SmsLog {
+        return SmsLog::create([
+            'tenant_id' => auth()->user()->tenant_id ?? 1,
+            'sms_gateway_id' => $smsGatewayId,
+            'user_id' => $userId,
+            'phone_number' => $phoneNumber,
+            'message' => $message,
+            'status' => $status,
+            'gateway_response' => $gatewayResponse,
+        ]);
+    }
+
+    /**
+     * Send SMS using template
+     */
+    public function sendFromTemplate(string $templateSlug, string $phoneNumber, array $data, ?int $userId = null): bool
+    {
+        $template = SmsTemplate::active()->bySlug($templateSlug)->first();
+
+        if (!$template) {
+            Log::warning('SMS template not found', ['slug' => $templateSlug]);
+            return false;
+        }
+
+        $message = $template->render($data);
+        return $this->sendSms($phoneNumber, $message, null, $userId);
+    }
+
+    /**
+     * Get SMS gateway by tenant
+     */
+    protected function getActiveGateway(?int $tenantId = null): ?SmsGateway
+    {
+        $tenantId = $tenantId ?? auth()->user()->tenant_id ?? 1;
+        return SmsGateway::where('tenant_id', $tenantId)
+            ->active()
+            ->default()
+            ->first();
+    }
+
+    /**
      * Send SMS via configured gateway
      */
-    public function sendSms(string $phoneNumber, string $message, ?string $gateway = null): bool
+    public function sendSms(string $phoneNumber, string $message, ?string $gateway = null, ?int $userId = null): bool
     {
         $gateway = $gateway ?? config('sms.default_gateway', 'twilio');
+        $smsLog = null;
 
         try {
-            return match ($gateway) {
+            // Create SMS log
+            $smsLog = $this->logSms($phoneNumber, $message, SmsLog::STATUS_PENDING, null, $userId);
+
+            $result = match ($gateway) {
                 'twilio' => $this->sendViaTwilio($phoneNumber, $message),
                 'nexmo' => $this->sendViaNexmo($phoneNumber, $message),
                 'bulksms' => $this->sendViaBulkSms($phoneNumber, $message),
                 'bangladeshi' => $this->sendViaBangladeshiGateway($phoneNumber, $message),
                 default => throw new \Exception("Unsupported SMS gateway: {$gateway}"),
             };
+
+            // Update log status
+            if ($result && $smsLog) {
+                $smsLog->markAsSent();
+            } elseif ($smsLog) {
+                $smsLog->markAsFailed('Gateway returned false');
+            }
+
+            return $result;
         } catch (\Exception $e) {
             Log::error('SMS sending failed', [
                 'phone' => $phoneNumber,
                 'gateway' => $gateway,
                 'error' => $e->getMessage(),
             ]);
+
+            if ($smsLog) {
+                $smsLog->markAsFailed($e->getMessage());
+            }
 
             return false;
         }
