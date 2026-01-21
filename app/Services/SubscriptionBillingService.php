@@ -127,28 +127,43 @@ class SubscriptionBillingService
     protected function calculateBillingPeriod(Subscription $subscription): array
     {
         $plan = $subscription->plan;
-        $today = Carbon::today();
 
-        // For monthly billing
+        // Determine reference date for billing period:
+        // Prefer last_billing_date, then start_date, and finally fall back to today.
+        $referenceDate = $subscription->last_billing_date ?? $subscription->start_date ?? \Carbon\Carbon::today();
+
+        if (!$referenceDate instanceof \Carbon\Carbon) {
+            $referenceDate = \Carbon\Carbon::parse($referenceDate);
+        }
+
+        $periodStart = $referenceDate->copy()->startOfDay();
+
+        // For monthly billing: one month from the reference date
         if ($plan->billing_cycle === 'monthly') {
+            $periodEnd = $periodStart->copy()->addMonthNoOverflow()->subDay()->endOfDay();
+
             return [
-                'start' => $today->copy()->startOfMonth(),
-                'end' => $today->copy()->endOfMonth(),
+                'start' => $periodStart,
+                'end' => $periodEnd,
             ];
         }
 
-        // For yearly billing
+        // For yearly billing: one year from the reference date
         if ($plan->billing_cycle === 'yearly') {
+            $periodEnd = $periodStart->copy()->addYear()->subDay()->endOfDay();
+
             return [
-                'start' => $today->copy()->startOfYear(),
-                'end' => $today->copy()->endOfYear(),
+                'start' => $periodStart,
+                'end' => $periodEnd,
             ];
         }
 
-        // Default to monthly
+        // Default to monthly behavior for unknown cycles
+        $periodEnd = $periodStart->copy()->addMonthNoOverflow()->subDay()->endOfDay();
+
         return [
-            'start' => $today->copy()->startOfMonth(),
-            'end' => $today->copy()->endOfMonth(),
+            'start' => $periodStart,
+            'end' => $periodEnd,
         ];
     }
 
@@ -157,7 +172,7 @@ class SubscriptionBillingService
      */
     protected function calculateTax(float $amount): float
     {
-        $taxRate = config('billing.tax_rate', 0.15); // Default 15%
+        $taxRate = config('billing.tax_rate', 0.0); // Default 0% if not configured
         return round($amount * $taxRate, 2);
     }
 
@@ -214,10 +229,17 @@ class SubscriptionBillingService
     public function calculateProration(Subscription $subscription, SubscriptionPlan $newPlan): float
     {
         $currentPlan = $subscription->plan;
-        $daysRemaining = now()->diffInDays($subscription->end_date, false);
-        $totalDays = now()->startOfMonth()->diffInDays(now()->endOfMonth());
+        $now = now();
+        
+        // Get the billing period for accurate day calculation
+        $billingPeriod = $this->calculateBillingPeriod($subscription);
+        $periodStart = $billingPeriod['start'];
+        $periodEnd = $billingPeriod['end'];
+        
+        $daysRemaining = $now->diffInDays($periodEnd, false);
+        $totalDays = $periodStart->diffInDays($periodEnd);
 
-        if ($daysRemaining <= 0) {
+        if ($daysRemaining <= 0 || $totalDays <= 0) {
             return $newPlan->price;
         }
 

@@ -104,14 +104,15 @@ class SubscriptionBill extends Model
     }
 
     /**
-     * Generate bill number
+     * Generate bill number with better uniqueness guarantee
      */
     public static function generateBillNumber(): string
     {
-        $lastBill = self::latest('id')->first();
-        $nextNumber = $lastBill ? $lastBill->id + 1 : 1;
+        // Use timestamp with microseconds and random suffix for better uniqueness
+        $timestamp = now()->format('YmdHis') . now()->format('u');
+        $random = strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 6));
         
-        return 'BILL-' . date('Ymd') . '-' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+        return 'BILL-' . $timestamp . '-' . $random;
     }
 
     /**

@@ -135,17 +135,22 @@ class LeadService
      */
     public function getLeadStatistics(int $tenantId): array
     {
-        $leads = Lead::where('tenant_id', $tenantId);
+        $statusCounts = Lead::where('tenant_id', $tenantId)
+            ->select('status', DB::raw('COUNT(*) as aggregate'))
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $total = $statusCounts->sum();
 
         return [
-            'total' => $leads->count(),
-            'new' => $leads->clone()->byStatus(Lead::STATUS_NEW)->count(),
-            'contacted' => $leads->clone()->byStatus(Lead::STATUS_CONTACTED)->count(),
-            'qualified' => $leads->clone()->byStatus(Lead::STATUS_QUALIFIED)->count(),
-            'proposal' => $leads->clone()->byStatus(Lead::STATUS_PROPOSAL)->count(),
-            'negotiation' => $leads->clone()->byStatus(Lead::STATUS_NEGOTIATION)->count(),
-            'won' => $leads->clone()->byStatus(Lead::STATUS_WON)->count(),
-            'lost' => $leads->clone()->byStatus(Lead::STATUS_LOST)->count(),
+            'total' => $total,
+            'new' => $statusCounts[Lead::STATUS_NEW] ?? 0,
+            'contacted' => $statusCounts[Lead::STATUS_CONTACTED] ?? 0,
+            'qualified' => $statusCounts[Lead::STATUS_QUALIFIED] ?? 0,
+            'proposal' => $statusCounts[Lead::STATUS_PROPOSAL] ?? 0,
+            'negotiation' => $statusCounts[Lead::STATUS_NEGOTIATION] ?? 0,
+            'won' => $statusCounts[Lead::STATUS_WON] ?? 0,
+            'lost' => $statusCounts[Lead::STATUS_LOST] ?? 0,
             'conversion_rate' => $this->calculateConversionRate($tenantId),
         ];
     }

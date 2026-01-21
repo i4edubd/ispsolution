@@ -47,36 +47,7 @@ class VpnService
         });
     }
 
-    /**
-     * Allocate IP from pool
-     */
-    protected function allocateIpFromPool(VpnPool $pool): string
-    {
-        // Convert IP range to array
-        $startIp = ip2long($pool->start_ip);
-        $endIp = ip2long($pool->end_ip);
 
-        if ($startIp === false || $endIp === false) {
-            throw new \Exception('Invalid IP range in pool');
-        }
-
-        // Get used IPs from this pool
-        $usedIps = MikrotikVpnAccount::where('pool_id', $pool->id)
-            ->whereNotNull('local_address')
-            ->pluck('local_address')
-            ->map(fn($ip) => ip2long($ip))
-            ->filter()
-            ->toArray();
-
-        // Find first available IP
-        for ($ip = $startIp; $ip <= $endIp; $ip++) {
-            if (!in_array($ip, $usedIps)) {
-                return long2ip($ip);
-            }
-        }
-
-        throw new \Exception('No available IP addresses in pool');
-    }
 
     /**
      * Release VPN account
@@ -123,8 +94,12 @@ class VpnService
             'used_ips' => $pool->used_ips,
             'available_ips' => $pool->available_ips,
             'usage_percentage' => $pool->usage_percentage,
-            'active_accounts' => MikrotikVpnAccount::where('enabled', true)->count(),
-            'total_accounts' => MikrotikVpnAccount::count(),
+            'active_accounts' => MikrotikVpnAccount::whereHas('router', function ($query) use ($pool) {
+                $query->where('tenant_id', $pool->tenant_id);
+            })->where('enabled', true)->count(),
+            'total_accounts' => MikrotikVpnAccount::whereHas('router', function ($query) use ($pool) {
+                $query->where('tenant_id', $pool->tenant_id);
+            })->count(),
         ];
     }
 
@@ -133,7 +108,11 @@ class VpnService
      */
     public function getActiveConnections(int $tenantId): \Illuminate\Database\Eloquent\Collection
     {
+        // Note: MikrotikVpnAccount doesn't have tenant_id field, filter by router's tenant
         return MikrotikVpnAccount::where('enabled', true)
+            ->whereHas('router', function ($query) use ($tenantId) {
+                $query->where('tenant_id', $tenantId);
+            })
             ->with(['router'])
             ->get();
     }

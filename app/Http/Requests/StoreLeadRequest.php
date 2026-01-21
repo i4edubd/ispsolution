@@ -36,7 +36,7 @@ class StoreLeadRequest extends FormRequest
             'assigned_to' => ['nullable', 'exists:users,id'],
             'estimated_value' => ['nullable', 'numeric', 'min:0'],
             'probability' => ['nullable', 'integer', 'min:0', 'max:100'],
-            'expected_close_date' => ['nullable', 'date', 'after:today'],
+            'expected_close_date' => ['nullable', 'date', 'after_or_equal:today'],
             'notes' => ['nullable', 'string'],
             'next_follow_up_date' => ['nullable', 'date', 'after_or_equal:today'],
         ];
@@ -54,7 +54,7 @@ class StoreLeadRequest extends FormRequest
             'status.in' => 'Invalid lead status selected.',
             'probability.min' => 'Probability must be at least 0%.',
             'probability.max' => 'Probability cannot exceed 100%.',
-            'expected_close_date.after' => 'Expected close date must be a future date.',
+            'expected_close_date.after_or_equal' => 'Expected close date must be today or later.',
         ];
     }
 }

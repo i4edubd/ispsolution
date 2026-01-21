@@ -55,8 +55,15 @@ class PdfService
     /**
      * Generate customer statement PDF
      */
-    public function generateCustomerStatementPdf(int $userId, string $startDate, string $endDate): \Barryvdh\DomPDF\PDF
+    public function generateCustomerStatementPdf(int $userId, string $startDate, string $endDate, ?int $tenantId = null): \Barryvdh\DomPDF\PDF
     {
+        $user = \App\Models\User::findOrFail($userId);
+        
+        // Tenant isolation check
+        if ($tenantId !== null && $user->tenant_id !== $tenantId) {
+            throw new \Exception('Unauthorized access to user data from different tenant');
+        }
+
         $invoices = Invoice::where('user_id', $userId)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->with(['items'])
@@ -69,7 +76,7 @@ class PdfService
             ->get();
 
         $data = [
-            'user' => \App\Models\User::findOrFail($userId),
+            'user' => $user,
             'invoices' => $invoices,
             'payments' => $payments,
             'startDate' => $startDate,
@@ -85,8 +92,13 @@ class PdfService
     /**
      * Generate monthly report PDF
      */
-    public function generateMonthlyReportPdf(int $tenantId, int $year, int $month): \Barryvdh\DomPDF\PDF
+    public function generateMonthlyReportPdf(int $tenantId, int $year, int $month, ?int $requestingTenantId = null): \Barryvdh\DomPDF\PDF
     {
+        // Tenant isolation check
+        if ($requestingTenantId !== null && $tenantId !== $requestingTenantId) {
+            throw new \Exception('Unauthorized access to tenant data');
+        }
+
         $startDate = date('Y-m-d', strtotime("$year-$month-01"));
         $endDate = date('Y-m-t', strtotime($startDate));
 

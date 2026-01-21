@@ -30,6 +30,11 @@ class SendLeadFollowUpReminders extends Command
                 ? [$this->option('tenant-id')] 
                 : \App\Models\Tenant::pluck('id')->toArray();
 
+            if (empty($tenantIds)) {
+                $this->warn('No tenants found. Skipping follow-up reminder processing.');
+                return Command::SUCCESS;
+            }
+
             $totalOverdue = 0;
             $totalToday = 0;
 
