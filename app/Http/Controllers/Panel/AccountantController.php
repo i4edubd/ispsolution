@@ -63,8 +63,11 @@ class AccountantController extends Controller
         // Combine data
         $transactions = collect();
         for ($month = 1; $month <= 12; $month++) {
-            $income = $incomeData->firstWhere('month', $month)->total ?? 0;
-            $expense = $expenseData->firstWhere('month', $month)->total ?? 0;
+            $incomeRecord = $incomeData->firstWhere('month', $month);
+            $expenseRecord = $expenseData->firstWhere('month', $month);
+            
+            $income = $incomeRecord ? $incomeRecord->total : 0;
+            $expense = $expenseRecord ? $expenseRecord->total : 0;
             
             $transactions->push([
                 'month' => now()->month($month)->format('F'),

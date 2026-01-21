@@ -37,9 +37,14 @@ class Subscription extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * Note: Subscriptions belong to tenants, not individual users.
+     * This relationship is added for compatibility with some controllers
+     * that expect a user relationship, but it actually maps to the tenant.
+     */
     public function user()
     {
-        return $this->belongsTo(User::class, 'tenant_id'); // Subscriptions are associated with tenants, not individual users
+        return $this->tenant();
     }
 
     public function plan()

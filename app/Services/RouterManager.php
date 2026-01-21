@@ -105,9 +105,13 @@ class RouterManager
             return [];
         }
 
-        // For MikroTik, use health monitoring
+        // For MikroTik, return basic health status
+        // Full health monitoring would require additional API implementation
         if ($this->mikrotikService->connectRouter($routerId)) {
-            return $this->mikrotikService->monitorRouterHealth($routerId);
+            return [
+                'status' => 'connected',
+                'router_id' => $routerId,
+            ];
         }
 
         return [];
@@ -156,7 +160,8 @@ class RouterManager
         Log::info("RouterManager: Disconnecting session {$sessionId} on router {$routerId}");
 
         if ($this->mikrotikService->connectRouter($routerId)) {
-            return $this->mikrotikService->disconnectSession($routerId, $sessionId);
+            // MikrotikService::disconnectSession only needs sessionId
+            return $this->mikrotikService->disconnectSession($sessionId);
         }
 
         return false;
