@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Models\Commission;
 use App\Models\RechargeCard;
 use App\Services\CardDistributionService;
 use Illuminate\View\View;
@@ -70,15 +71,13 @@ class CardDistributorController extends Controller
      */
     public function commissions(): View
     {
-        // TODO: Implement commission tracking for card distributors
-        // For now, return empty paginated collection to prevent blade errors
-        $commissions = new \Illuminate\Pagination\LengthAwarePaginator(
-            [],
-            0,
-            20,
-            1,
-            ['path' => request()->url(), 'query' => request()->query()]
-        );
+        $user = auth()->user();
+
+        // Get commission records for this card distributor
+        $commissions = Commission::where('reseller_id', $user->id)
+            ->with(['payment', 'invoice'])
+            ->latest()
+            ->paginate(20);
 
         return view('panels.card-distributor.commissions.index', compact('commissions'));
     }

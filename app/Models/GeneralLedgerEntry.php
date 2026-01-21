@@ -51,6 +51,14 @@ class GeneralLedgerEntry extends Model
     }
 
     /**
+     * Get account (alias for debitAccount for compatibility)
+     */
+    public function account()
+    {
+        return $this->belongsTo(Account::class, 'debit_account_id');
+    }
+
+    /**
      * Get source (polymorphic)
      */
     public function source()

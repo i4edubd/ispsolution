@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\View\View;
 
@@ -22,7 +24,7 @@ class SalesManagerController extends Controller
 
         // Get sales statistics
         $stats = [
-            'total_leads' => 0, // TODO: Implement leads tracking
+            'total_leads' => 0, // Leads feature not yet implemented
             'active_leads' => 0,
             'converted_leads' => 0,
             'total_admins' => User::where('operator_level', 20)
@@ -32,10 +34,16 @@ class SalesManagerController extends Controller
                 ->where('tenant_id', $user->tenant_id)
                 ->where('is_active', true)
                 ->count(),
-            'pending_subscriptions' => 0, // TODO: Implement subscription tracking
-            'total_revenue' => 0, // TODO: Implement revenue tracking
-            'monthly_target' => 0, // TODO: Implement target tracking
         ];
+
+        $subscriptionData = Subscription::where('tenant_id', $user->tenant_id)
+            ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as pending_subscriptions', ['pending'])
+            ->selectRaw('SUM(CASE WHEN status = ? THEN amount ELSE 0 END) as total_revenue', ['active'])
+            ->first();
+
+        $stats['pending_subscriptions'] = $subscriptionData->pending_subscriptions ?? 0;
+        $stats['total_revenue'] = $subscriptionData->total_revenue ?? 0;
+        $stats['monthly_target'] = 100000; // This could be configurable per tenant
 
         return view('panels.sales-manager.dashboard', compact('stats'));
     }
@@ -66,8 +74,15 @@ class SalesManagerController extends Controller
      */
     public function affiliateLeads(): View
     {
-        // TODO: Implement affiliate leads tracking
-        $leads = collect([]); // Placeholder
+        // Leads feature not yet fully implemented
+        // Return empty collection for now to prevent blade errors
+        $leads = new \Illuminate\Pagination\LengthAwarePaginator(
+            [],
+            0,
+            20,
+            1,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('panels.sales-manager.leads.affiliate', compact('leads'));
     }
@@ -85,8 +100,15 @@ class SalesManagerController extends Controller
      */
     public function salesComments(): View
     {
-        // TODO: Implement sales comments tracking
-        $comments = collect([]); // Placeholder
+        // Sales comments feature not yet fully implemented
+        // Return empty collection for now to prevent blade errors
+        $comments = new \Illuminate\Pagination\LengthAwarePaginator(
+            [],
+            0,
+            20,
+            1,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('panels.sales-manager.sales-comments.index', compact('comments'));
     }
@@ -98,8 +120,11 @@ class SalesManagerController extends Controller
     {
         $user = auth()->user();
 
-        // Get subscription bills for admins in this tenant
-        $bills = collect([]); // TODO: Implement subscription billing
+        // Get active subscriptions with their billing information
+        $bills = Subscription::where('tenant_id', $user->tenant_id)
+            ->with(['user', 'plan'])
+            ->latest()
+            ->paginate(20);
 
         return view('panels.sales-manager.subscriptions.bills', compact('bills'));
     }
@@ -117,7 +142,14 @@ class SalesManagerController extends Controller
      */
     public function pendingSubscriptionPayments(): View
     {
-        $pendingPayments = collect([]); // TODO: Implement payment tracking
+        $user = auth()->user();
+
+        // Get pending payments for subscriptions
+        $pendingPayments = Payment::where('tenant_id', $user->tenant_id)
+            ->where('status', 'pending')
+            ->with(['user', 'invoice'])
+            ->latest()
+            ->paginate(20);
 
         return view('panels.sales-manager.subscriptions.pending-payments', compact('pendingPayments'));
     }

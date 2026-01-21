@@ -37,6 +37,17 @@ class Subscription extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * Note: Subscriptions belong to tenants, not individual users.
+     * Attempting to access a user relationship is a logical error.
+     * 
+     * @throws \LogicException
+     */
+    public function user()
+    {
+        throw new \LogicException('Subscriptions belong to tenants, not users. Use tenant() instead.');
+    }
+
     public function plan()
     {
         return $this->belongsTo(SubscriptionPlan::class, 'plan_id');

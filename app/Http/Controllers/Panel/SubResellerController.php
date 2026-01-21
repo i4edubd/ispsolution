@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Models\Commission;
 use App\Models\ServicePackage;
 use App\Models\User;
 use Illuminate\View\View;
@@ -53,21 +54,26 @@ class SubResellerController extends Controller
      */
     public function commission(): View
     {
-        // TODO: Implement commission tracking for sub-resellers
-        // For now, return empty paginated collection to prevent blade errors
-        $transactions = new \Illuminate\Pagination\LengthAwarePaginator(
-            [],
-            0,
-            20,
-            1,
-            ['path' => request()->url(), 'query' => request()->query()]
-        );
+        $user = auth()->user();
+
+        // Get commission transactions for this sub-reseller
+        $transactions = Commission::where('reseller_id', $user->id)
+            ->with(['payment', 'invoice'])
+            ->latest()
+            ->paginate(20);
+
+        $summary = Commission::where('reseller_id', $user->id)
+            ->selectRaw('SUM(commission_amount) as total_earnings')
+            ->selectRaw('SUM(CASE WHEN MONTH(created_at) = ? AND YEAR(created_at) = ? THEN commission_amount ELSE 0 END) as this_month', [now()->month, now()->year])
+            ->selectRaw('SUM(CASE WHEN status = ? THEN commission_amount ELSE 0 END) as pending', ['pending'])
+            ->selectRaw('SUM(CASE WHEN status = ? THEN commission_amount ELSE 0 END) as paid', ['paid'])
+            ->first();
 
         $summary = [
-            'total_earnings' => 0,
-            'this_month' => 0,
-            'pending' => 0,
-            'paid' => 0,
+            'total_earnings' => $summary->total_earnings ?? 0,
+            'this_month' => $summary->this_month ?? 0,
+            'pending' => $summary->pending ?? 0,
+            'paid' => $summary->paid ?? 0,
         ];
 
         return view('panels.sub-reseller.commission', compact('transactions', 'summary'));
