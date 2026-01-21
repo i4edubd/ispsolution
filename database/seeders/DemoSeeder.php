@@ -94,7 +94,6 @@ class DemoSeeder extends Seeder
                     'billing_day' => 1,
                 ],
                 'status' => 'active',
-                'is_active' => true,
             ]
         );
 
@@ -279,7 +278,6 @@ class DemoSeeder extends Seeder
                 'price' => 500.00,
                 'billing_cycle' => 'monthly',
                 'is_active' => true,
-                'tenant_id' => $tenant->id,
             ],
             [
                 'name' => 'Demo Standard 10Mbps',
@@ -289,7 +287,6 @@ class DemoSeeder extends Seeder
                 'price' => 800.00,
                 'billing_cycle' => 'monthly',
                 'is_active' => true,
-                'tenant_id' => $tenant->id,
             ],
             [
                 'name' => 'Demo Premium 20Mbps',
@@ -299,7 +296,6 @@ class DemoSeeder extends Seeder
                 'price' => 1200.00,
                 'billing_cycle' => 'monthly',
                 'is_active' => true,
-                'tenant_id' => $tenant->id,
             ],
         ];
 
@@ -406,15 +402,18 @@ class DemoSeeder extends Seeder
             ['ip_address' => '192.168.1.20'],
             [
                 'name' => 'Demo OLT Device',
-                'port' => 23,
-                'management_protocol' => 'telnet',
-                'username' => 'admin',
-                'password' => 'demo-password',
-                'snmp_community' => 'public',
-                'snmp_version' => 'v2c',
+                'ip_address' => '192.168.1.20',
+                'vendor' => 'huawei',
                 'model' => 'Generic OLT',
-                'location' => 'Demo Location',
+                'telnet_username' => 'admin',
+                'telnet_password' => 'demo-password',
+                'snmp_community' => 'public',
+                'telnet_port' => 23,
+                'snmp_port' => 161,
+                'max_onts' => 128,
+                'description' => 'Demo OLT for testing',
                 'status' => 'active',
+                'tenant_id' => $tenant->id,
             ]
         );
         $this->command->info("✓ Demo OLT created: {$olt->name}");
