@@ -420,7 +420,7 @@ class DemoSeeder extends Seeder
 
         // Create demo IP pool
         $ipPool = IpPool::firstOrCreate(
-            ['name' => 'demo-pool'],
+            ['name' => 'demo-pool', 'tenant_id' => $tenant->id],
             [
                 'description' => 'Demo IP pool for testing',
                 'start_ip' => '10.10.0.1',
@@ -429,6 +429,7 @@ class DemoSeeder extends Seeder
                 'dns_servers' => '8.8.8.8,8.8.4.4',
                 'vlan_id' => 100,
                 'status' => 'active',
+                'tenant_id' => $tenant->id,
             ]
         );
         $this->command->info("✓ Demo IP pool created: {$ipPool->name}");
