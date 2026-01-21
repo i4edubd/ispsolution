@@ -12,16 +12,19 @@ class IpPool extends Model
     protected $fillable = [
         'name',
         'description',
+        'pool_type',
         'start_ip',
         'end_ip',
         'gateway',
         'dns_servers',
         'vlan_id',
+        'is_active',
         'status',
     ];
 
     protected $casts = [
         'vlan_id' => 'integer',
+        'is_active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
