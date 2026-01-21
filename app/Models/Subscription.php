@@ -37,6 +37,11 @@ class Subscription extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'tenant_id'); // Subscriptions are associated with tenants, not individual users
+    }
+
     public function plan()
     {
         return $this->belongsTo(SubscriptionPlan::class, 'plan_id');
