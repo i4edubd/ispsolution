@@ -12,6 +12,7 @@ class IpPool extends Model
     protected $fillable = [
         'name',
         'description',
+        'pool_type',
         'start_ip',
         'end_ip',
         'gateway',
