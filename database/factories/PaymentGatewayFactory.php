@@ -21,7 +21,7 @@ class PaymentGatewayFactory extends Factory
     public function definition(): array
     {
         $gateways = ['bkash', 'nagad', 'sslcommerz', 'stripe'];
-        $slug = fake()->randomElement($gateways);
+        $slug = $this->faker->randomElement($gateways);
 
         return [
             'tenant_id' => Tenant::factory(),
@@ -29,9 +29,9 @@ class PaymentGatewayFactory extends Factory
             'slug' => $slug,
             'is_active' => true,
             'configuration' => [
-                'app_key' => fake()->uuid(),
-                'app_secret' => fake()->uuid(),
-                'merchant_id' => fake()->numerify('########'),
+                'app_key' => $this->faker->uuid(),
+                'app_secret' => $this->faker->uuid(),
+                'merchant_id' => $this->faker->numerify('########'),
             ],
             'test_mode' => true,
         ];

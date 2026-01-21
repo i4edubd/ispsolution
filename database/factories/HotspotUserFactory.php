@@ -19,10 +19,10 @@ class HotspotUserFactory extends Factory
     {
         return [
             'tenant_id' => Tenant::factory(),
-            'username' => 'hs_' . fake()->unique()->numerify('########'),
+            'username' => 'hs_' . $this->faker->unique()->numerify('########'),
             'password' => Hash::make('password'),
-            'mobile' => '017' . fake()->unique()->numerify('########'),
-            'email' => fake()->optional()->safeEmail(),
+            'mobile' => '017' . $this->faker->unique()->numerify('########'),
+            'email' => $this->faker->optional()->safeEmail(),
             'package_id' => Package::factory(),
             'status' => 'active',
             'expired_at' => now()->addDays(30),

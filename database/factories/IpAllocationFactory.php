@@ -16,7 +16,7 @@ class IpAllocationFactory extends Factory
 
     public function definition(): array
     {
-        $lastOctet = fake()->numberBetween(2, 254);
+        $lastOctet = $this->faker->numberBetween(2, 254);
 
         return [
             'ip_subnet_id' => IpSubnet::factory(),

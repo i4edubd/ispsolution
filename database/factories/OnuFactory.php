@@ -19,13 +19,13 @@ class OnuFactory extends Factory
     {
         return [
             'olt_id' => Olt::factory(),
-            'pon_port' => '0/' . fake()->numberBetween(1, 16) . '/' . fake()->numberBetween(1, 16),
-            'onu_id' => fake()->numberBetween(1, 128),
-            'serial_number' => strtoupper(fake()->bothify('HWTC########')),
-            'mac_address' => fake()->macAddress(),
+            'pon_port' => '0/' . $this->faker->numberBetween(1, 16) . '/' . $this->faker->numberBetween(1, 16),
+            'onu_id' => $this->faker->numberBetween(1, 128),
+            'serial_number' => strtoupper($this->faker->bothify('HWTC########')),
+            'mac_address' => $this->faker->macAddress(),
             'network_user_id' => null,
-            'name' => fake()->optional()->words(2, true),
-            'description' => fake()->optional()->sentence(),
+            'name' => $this->faker->optional()->words(2, true),
+            'description' => $this->faker->optional()->sentence(),
             'status' => 'unknown',
             'signal_rx' => null,
             'signal_tx' => null,
@@ -41,10 +41,10 @@ class OnuFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'online',
-            'signal_rx' => fake()->randomFloat(2, -30, -15),
-            'signal_tx' => fake()->randomFloat(2, 0, 5),
-            'distance' => fake()->numberBetween(100, 20000),
-            'ipaddress' => fake()->localIpv4(),
+            'signal_rx' => $this->faker->randomFloat(2, -30, -15),
+            'signal_tx' => $this->faker->randomFloat(2, 0, 5),
+            'distance' => $this->faker->numberBetween(100, 20000),
+            'ipaddress' => $this->faker->localIpv4(),
             'last_seen_at' => now(),
             'last_sync_at' => now(),
         ]);
@@ -54,7 +54,7 @@ class OnuFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'offline',
-            'last_seen_at' => now()->subHours(fake()->numberBetween(1, 48)),
+            'last_seen_at' => now()->subHours($this->faker->numberBetween(1, 48)),
         ]);
     }
 

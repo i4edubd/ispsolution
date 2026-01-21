@@ -23,10 +23,10 @@ class DeviceMonitorFactory extends Factory
         return [
             'monitorable_type' => 'App\\Models\\MikrotikRouter',
             'monitorable_id' => MikrotikRouter::factory(),
-            'status' => fake()->randomElement(['online', 'offline', 'degraded', 'unknown']),
-            'cpu_usage' => fake()->randomFloat(2, 0, 100),
-            'memory_usage' => fake()->randomFloat(2, 0, 100),
-            'uptime' => fake()->numberBetween(0, 2592000), // 0 to 30 days in seconds
+            'status' => $this->faker->randomElement(['online', 'offline', 'degraded', 'unknown']),
+            'cpu_usage' => $this->faker->randomFloat(2, 0, 100),
+            'memory_usage' => $this->faker->randomFloat(2, 0, 100),
+            'uptime' => $this->faker->numberBetween(0, 2592000), // 0 to 30 days in seconds
             'last_check_at' => now(),
             'tenant_id' => null,
         ];
@@ -36,9 +36,9 @@ class DeviceMonitorFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'online',
-            'cpu_usage' => fake()->randomFloat(2, 0, 80),
-            'memory_usage' => fake()->randomFloat(2, 0, 80),
-            'uptime' => fake()->numberBetween(3600, 2592000),
+            'cpu_usage' => $this->faker->randomFloat(2, 0, 80),
+            'memory_usage' => $this->faker->randomFloat(2, 0, 80),
+            'uptime' => $this->faker->numberBetween(3600, 2592000),
         ]);
     }
 
@@ -56,8 +56,8 @@ class DeviceMonitorFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'degraded',
-            'cpu_usage' => fake()->randomFloat(2, 80, 100),
-            'memory_usage' => fake()->randomFloat(2, 80, 100),
+            'cpu_usage' => $this->faker->randomFloat(2, 80, 100),
+            'memory_usage' => $this->faker->randomFloat(2, 80, 100),
         ]);
     }
 

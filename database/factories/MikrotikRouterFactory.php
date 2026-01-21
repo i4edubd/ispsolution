@@ -18,8 +18,8 @@ class MikrotikRouterFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => 'Router-' . fake()->city(),
-            'ip_address' => fake()->localIpv4(),
+            'name' => 'Router-' . $this->faker->city(),
+            'ip_address' => $this->faker->localIpv4(),
             'api_port' => 8728,
             'username' => 'admin',
             'password' => 'password123',

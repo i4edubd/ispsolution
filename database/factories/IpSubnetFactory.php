@@ -15,15 +15,15 @@ class IpSubnetFactory extends Factory
 
     public function definition(): array
     {
-        $thirdOctet = fake()->numberBetween(1, 254);
+        $thirdOctet = $this->faker->numberBetween(1, 254);
 
         return [
             'pool_id' => IpPool::factory(),
             'network' => "192.168.{$thirdOctet}.0",
             'prefix_length' => 24,
             'gateway' => "192.168.{$thirdOctet}.1",
-            'vlan_id' => fake()->optional()->numberBetween(1, 4094),
-            'description' => fake()->optional()->sentence(),
+            'vlan_id' => $this->faker->optional()->numberBetween(1, 4094),
+            'description' => $this->faker->optional()->sentence(),
             'status' => 'active',
         ];
     }

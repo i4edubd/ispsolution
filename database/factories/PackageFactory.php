@@ -17,14 +17,14 @@ class PackageFactory extends Factory
     {
         return [
             'tenant_id' => Tenant::factory(),
-            'name' => fake()->unique()->words(2, true) . ' Package',
-            'description' => fake()->sentence(),
-            'billing_type' => fake()->randomElement(['monthly', 'daily', 'prepaid']),
-            'price' => fake()->randomFloat(2, 100, 5000),
-            'validity_days' => fake()->randomElement([1, 7, 15, 30, 90, 365]),
-            'bandwidth_up' => fake()->randomElement([512, 1024, 2048, 5120, 10240]),
-            'bandwidth_down' => fake()->randomElement([1024, 2048, 5120, 10240, 20480]),
-            'data_limit' => fake()->optional()->randomElement([5, 10, 25, 50, 100]), // in GB
+            'name' => $this->faker->unique()->words(2, true) . ' Package',
+            'description' => $this->faker->sentence(),
+            'billing_type' => $this->faker->randomElement(['monthly', 'daily', 'prepaid']),
+            'price' => $this->faker->randomFloat(2, 100, 5000),
+            'validity_days' => $this->faker->randomElement([1, 7, 15, 30, 90, 365]),
+            'bandwidth_up' => $this->faker->randomElement([512, 1024, 2048, 5120, 10240]),
+            'bandwidth_down' => $this->faker->randomElement([1024, 2048, 5120, 10240, 20480]),
+            'data_limit' => $this->faker->optional()->randomElement([5, 10, 25, 50, 100]), // in GB
             'is_active' => true,
         ];
     }
