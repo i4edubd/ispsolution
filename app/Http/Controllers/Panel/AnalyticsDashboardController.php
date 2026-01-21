@@ -30,6 +30,8 @@ class AnalyticsDashboardController extends Controller
             ? Carbon::parse($request->input('end_date')) 
             : now();
 
+        $tenantId = auth()->user()->tenant_id;
+
         try {
             $analytics = $this->analyticsService->getDashboardAnalytics($startDate, $endDate);
         } catch (\Exception $e) {

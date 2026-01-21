@@ -103,7 +103,7 @@ class ApiKeyController extends Controller
             'permissions' => 'nullable|array',
             'permissions.*' => 'string',
             'rate_limit' => 'nullable|integer|min:1|max:1000',
-            'expires_at' => 'nullable|date',
+            'expires_at' => 'nullable|date|after:today',
             'is_active' => 'boolean',
         ]);
 

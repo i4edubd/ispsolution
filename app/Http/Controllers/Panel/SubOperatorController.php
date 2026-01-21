@@ -30,10 +30,15 @@ class SubOperatorController extends Controller
             ->whereDate('paid_at', today())
             ->sum('amount');
 
-        // Get sub-operator metrics (only assigned customers)
+        // Get sub-operator metrics (only assigned customers) - optimized to avoid N+1
+        $subordinateStats = $user->subordinates()
+            ->where('operator_level', 100)
+            ->selectRaw('COUNT(*) as assigned_customers, SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_customers')
+            ->first();
+
         $stats = [
-            'assigned_customers' => $user->subordinates()->where('operator_level', 100)->count(),
-            'active_customers' => $user->subordinates()->where('operator_level', 100)->where('is_active', true)->count(),
+            'assigned_customers' => (int) ($subordinateStats->assigned_customers ?? 0),
+            'active_customers' => (int) ($subordinateStats->active_customers ?? 0),
             'pending_payments' => $pendingPayments,
             'today_collection' => $todayCollection,
         ];

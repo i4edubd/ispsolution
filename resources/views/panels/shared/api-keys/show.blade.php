@@ -88,9 +88,31 @@
 <script>
 function copyKey() {
     const input = document.getElementById('apiKeyValue');
-    input.select();
-    document.execCommand('copy');
-    alert('API key copied to clipboard!');
+    const value = input ? input.value : '';
+
+    if (!value) {
+        return;
+    }
+
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(value)
+            .then(function () {
+                alert('API key copied to clipboard!');
+            })
+            .catch(function () {
+                // Fallback for browsers where Clipboard API fails
+                input.select();
+                if (document.execCommand && document.execCommand('copy')) {
+                    alert('API key copied to clipboard!');
+                }
+            });
+    } else {
+        // Fallback for older browsers without Clipboard API support
+        input.select();
+        if (document.execCommand && document.execCommand('copy')) {
+            alert('API key copied to clipboard!');
+        }
+    }
 }
 </script>
 @endsection
