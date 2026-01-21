@@ -35,13 +35,13 @@ class ProcessPaymentJob implements ShouldQueue
 
             // Process payment logic
             if ($this->payment->status === 'pending') {
-                // If payment has a gateway_transaction_id, verify with gateway
-                if ($this->payment->gateway_transaction_id && $this->payment->payment_method) {
+                // If payment has a transaction_id, verify with gateway
+                if ($this->payment->transaction_id && $this->payment->payment_method) {
                     $paymentGatewayService = app(\App\Services\PaymentGatewayService::class);
                     
                     try {
                         $verificationResult = $paymentGatewayService->verifyPayment(
-                            $this->payment->gateway_transaction_id,
+                            $this->payment->transaction_id,
                             $this->payment->payment_method,
                             $this->payment->tenant_id
                         );
@@ -50,25 +50,28 @@ class ProcessPaymentJob implements ShouldQueue
                             $this->payment->update([
                                 'status' => 'completed',
                                 'paid_at' => now(),
-                                'gateway_response' => $verificationResult,
+                                'payment_data' => $verificationResult,
                             ]);
                         } else {
+                            // Mark payment as failed to require manual review
                             $this->payment->update([
                                 'status' => 'failed',
-                                'gateway_response' => $verificationResult,
+                                'payment_data' => $verificationResult,
                             ]);
                         }
                     } catch (\Exception $e) {
-                        Log::warning('Payment gateway verification failed', [
+                        Log::error('Payment gateway verification failed', [
                             'payment_id' => $this->payment->id,
                             'error' => $e->getMessage(),
                         ]);
                         
-                        // Fall back to manual payment processing
+                        // Mark payment as failed to require manual review instead of auto-completing
                         $this->payment->update([
-                            'status' => 'completed',
-                            'paid_at' => now(),
+                            'status' => 'failed',
+                            'payment_data' => ['error' => $e->getMessage()],
                         ]);
+                        
+                        throw $e;
                     }
                 } else {
                     // Manual payment without gateway verification
@@ -81,7 +84,7 @@ class ProcessPaymentJob implements ShouldQueue
                 // Update related invoice
                 /** @var \App\Models\Invoice|null $invoice */
                 $invoice = $this->payment->invoice;
-                if ($invoice) {
+                if ($invoice && $this->payment->status === 'completed') {
                     $totalPaid = Payment::where('invoice_id', $invoice->id)
                         ->where('status', 'completed')
                         ->sum('amount');
@@ -92,9 +95,16 @@ class ProcessPaymentJob implements ShouldQueue
                             'paid_at' => now(),
                         ]);
                         
-                        // Unlock user account if it was locked due to non-payment
+                        // Unlock user account only if there are no remaining overdue/unpaid invoices
                         if ($invoice->user && !$invoice->user->is_active) {
-                            $invoice->user->update(['is_active' => true]);
+                            $hasOutstandingInvoices = \App\Models\Invoice::where('user_id', $invoice->user_id)
+                                ->whereIn('status', ['overdue', 'pending'])
+                                ->where('id', '!=', $invoice->id)
+                                ->exists();
+
+                            if (! $hasOutstandingInvoices) {
+                                $invoice->user->update(['is_active' => true]);
+                            }
                         }
                     }
                 }
@@ -102,6 +112,7 @@ class ProcessPaymentJob implements ShouldQueue
                 Log::info('Payment processed successfully', [
                     'payment_id' => $this->payment->id,
                     'amount' => $this->payment->amount,
+                    'status' => $this->payment->status,
                 ]);
             }
 

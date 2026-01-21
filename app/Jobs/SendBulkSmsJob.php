@@ -63,8 +63,11 @@ class SendBulkSmsJob implements ShouldQueue
                     ]);
                 }
 
-                // Add small delay to avoid rate limiting
-                usleep(100000); // 0.1 second
+                // Add configurable delay to avoid rate limiting
+                $delayMicroseconds = (int) config('sms.rate_limit_delay_microseconds', 100000);
+                if ($delayMicroseconds > 0) {
+                    usleep($delayMicroseconds);
+                }
             }
 
             Log::info('Bulk SMS sent', [

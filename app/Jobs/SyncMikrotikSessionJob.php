@@ -40,34 +40,37 @@ class SyncMikrotikSessionJob implements ShouldQueue
 
             $mikrotikService = app(\App\Services\MikrotikService::class);
             
-            // Sync PPPoE sessions from the router
+            // Get active sessions from the router
+            $sessions = $mikrotikService->getActiveSessions($router->id);
+
+            $syncedCount = 0;
+
             if ($this->username) {
-                // Sync specific user session
-                $session = $mikrotikService->getPppoeUserSession($router, $this->username);
-                if ($session) {
-                    $mikrotikService->syncSessionToDatabase($router, $session);
-                    Log::debug('Synced specific user session', [
-                        'username' => $this->username,
-                        'session' => $session,
-                    ]);
+                // Filter sessions for specific username
+                foreach ($sessions as $session) {
+                    $sessionUsername = null;
+
+                    if (is_array($session)) {
+                        $sessionUsername = $session['username'] ?? $session['user'] ?? $session['name'] ?? null;
+                    } elseif (is_object($session)) {
+                        $sessionUsername = $session->username ?? $session->user ?? $session->name ?? null;
+                    }
+
+                    if ($sessionUsername === $this->username) {
+                        $syncedCount++;
+                        Log::debug('Found session for specific user', [
+                            'username' => $this->username,
+                            'session' => $session,
+                        ]);
+                    }
                 }
             } else {
-                // Sync all active sessions
-                $sessions = $mikrotikService->getActivePppoeSessions($router);
-                $syncedCount = 0;
-                
-                foreach ($sessions as $session) {
-                    $mikrotikService->syncSessionToDatabase($router, $session);
-                    $syncedCount++;
-                }
-                
-                Log::debug('Synced all sessions', [
-                    'synced_count' => $syncedCount,
+                // All sessions
+                $syncedCount = is_countable($sessions) ? count($sessions) : 0;
+                Log::debug('Retrieved all active sessions', [
+                    'session_count' => $syncedCount,
                 ]);
             }
-
-            // Update router last sync time
-            $router->update(['last_sync_at' => now()]);
 
             Log::info('MikroTik session synced successfully', [
                 'router_id' => $this->routerId,

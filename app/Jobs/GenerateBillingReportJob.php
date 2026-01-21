@@ -39,19 +39,28 @@ class GenerateBillingReportJob implements ShouldQueue
             $financialReportService = app(\App\Services\FinancialReportService::class);
             
             $reportData = match ($this->reportType) {
-                'monthly_revenue' => $financialReportService->generateMonthlyRevenue(
+                'monthly_revenue' => $financialReportService->generateRevenueByServiceReport(
                     $this->parameters['start_date'] ?? now()->startOfMonth(),
                     $this->parameters['end_date'] ?? now()->endOfMonth()
                 ),
-                'customer_billing' => $financialReportService->generateCustomerBillingReport(
+                'income_statement' => $financialReportService->generateIncomeStatement(
                     $this->parameters['start_date'] ?? now()->startOfMonth(),
                     $this->parameters['end_date'] ?? now()->endOfMonth()
                 ),
-                'payment_collection' => $financialReportService->generatePaymentCollectionReport(
+                'balance_sheet' => $financialReportService->generateBalanceSheet(
+                    $this->parameters['date'] ?? now()
+                ),
+                'cash_flow' => $financialReportService->generateCashFlowStatement(
                     $this->parameters['start_date'] ?? now()->startOfMonth(),
                     $this->parameters['end_date'] ?? now()->endOfMonth()
                 ),
-                'outstanding_invoices' => $financialReportService->generateOutstandingInvoicesReport(),
+                'vat_report' => $financialReportService->generateVATReport(
+                    $this->parameters['start_date'] ?? now()->startOfMonth(),
+                    $this->parameters['end_date'] ?? now()->endOfMonth()
+                ),
+                'ar_aging' => $financialReportService->generateARAgingReport(
+                    $this->parameters['date'] ?? now()
+                ),
                 default => throw new \Exception("Unknown report type: {$this->reportType}")
             };
 

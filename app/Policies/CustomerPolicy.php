@@ -47,8 +47,8 @@ class CustomerPolicy
             return true;
         }
 
-        // Check if customer belongs to same zone/area
-        if ($this->isSameZoneOrArea($user, $customer)) {
+        // Check if customer is in user's management hierarchy
+        if ($this->isInHierarchy($user, $customer)) {
             return true;
         }
 
@@ -98,31 +98,23 @@ class CustomerPolicy
             return true;
         }
 
-        // Check zone/area-based access control
-        if ($this->isSameZoneOrArea($user, $customer)) {
-            return $this->isInHierarchy($user, $customer);
-        }
-
-        return false;
+        // Check if customer is in user's management hierarchy
+        return $this->isInHierarchy($user, $customer);
     }
 
     /**
-     * Check if customer is in the user's zone or area.
+     * Check if customer is in user's zone or area.
+     * 
+     * Note: Zone/area-based restrictions are not currently enforced because the
+     * corresponding attributes (zone_id, area_id) are not available on the User model.
+     * Access control is handled by other checks in this policy (tenant, hierarchy,
+     * permissions, etc.).
      */
     private function isSameZoneOrArea(User $user, User $customer): bool
     {
-        // If user has zone_id set, check if customer is in same zone
-        if (isset($user->zone_id) && isset($customer->zone_id)) {
-            return $user->zone_id === $customer->zone_id;
-        }
-
-        // If user has area_id set, check if customer is in same area
-        if (isset($user->area_id) && isset($customer->area_id)) {
-            return $user->area_id === $customer->area_id;
-        }
-
-        // If no zone/area restrictions, allow based on other checks
-        return true;
+        // If zone/area fields are added in the future, implement checks here
+        // For now, return false to not grant automatic access
+        return false;
     }
 
     /**
