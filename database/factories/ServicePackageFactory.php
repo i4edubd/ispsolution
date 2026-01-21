@@ -15,12 +15,12 @@ class ServicePackageFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->unique()->words(2, true) . ' Package',
-            'description' => fake()->sentence(),
-            'bandwidth_up' => fake()->randomElement([512, 1024, 2048, 5120, 10240]),
-            'bandwidth_down' => fake()->randomElement([1024, 2048, 5120, 10240, 20480]),
-            'price' => fake()->randomFloat(2, 10, 200),
-            'billing_cycle' => fake()->randomElement(['monthly', 'quarterly', 'yearly']),
+            'name' => $this->faker->unique()->words(2, true) . ' Package',
+            'description' => $this->faker->sentence(),
+            'bandwidth_up' => $this->faker->randomElement([512, 1024, 2048, 5120, 10240]),
+            'bandwidth_down' => $this->faker->randomElement([1024, 2048, 5120, 10240, 20480]),
+            'price' => $this->faker->randomFloat(2, 10, 200),
+            'billing_cycle' => $this->faker->randomElement(['monthly', 'quarterly', 'yearly']),
             'is_active' => true,
         ];
     }

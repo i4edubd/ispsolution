@@ -16,16 +16,16 @@ class OltFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => 'OLT-' . fake()->city(),
-            'ip_address' => fake()->localIpv4(),
+            'name' => 'OLT-' . $this->faker->city(),
+            'ip_address' => $this->faker->localIpv4(),
             'port' => 23,
-            'management_protocol' => fake()->randomElement(['ssh', 'telnet', 'snmp']),
+            'management_protocol' => $this->faker->randomElement(['ssh', 'telnet', 'snmp']),
             'username' => 'admin',
             'password' => 'password123',
-            'snmp_community' => fake()->optional()->randomElement(['public', 'private']),
-            'snmp_version' => fake()->optional()->randomElement(['v1', 'v2c', 'v3']),
-            'model' => fake()->randomElement(['Huawei MA5608T', 'ZTE C320', 'Huawei MA5800', 'ZTE C600']),
-            'location' => fake()->address(),
+            'snmp_community' => $this->faker->optional()->randomElement(['public', 'private']),
+            'snmp_version' => $this->faker->optional()->randomElement(['v1', 'v2c', 'v3']),
+            'model' => $this->faker->randomElement(['Huawei MA5608T', 'ZTE C320', 'Huawei MA5800', 'ZTE C600']),
+            'location' => $this->faker->address(),
             'status' => 'active',
             'health_status' => 'unknown',
             'last_backup_at' => null,

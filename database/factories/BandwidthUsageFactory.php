@@ -21,8 +21,8 @@ class BandwidthUsageFactory extends Factory
 
     public function definition(): array
     {
-        $uploadBytes = fake()->numberBetween(1048576, 10485760); // 1MB to 10MB
-        $downloadBytes = fake()->numberBetween(2097152, 20971520); // 2MB to 20MB
+        $uploadBytes = $this->faker->numberBetween(1048576, 10485760); // 1MB to 10MB
+        $downloadBytes = $this->faker->numberBetween(2097152, 20971520); // 2MB to 20MB
 
         return [
             'monitorable_type' => 'App\\Models\\MikrotikRouter',

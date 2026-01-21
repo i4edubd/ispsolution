@@ -15,9 +15,9 @@ class IpPoolFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->unique()->words(2, true) . ' Pool',
-            'description' => fake()->sentence(),
-            'pool_type' => fake()->randomElement(['public', 'private']),
+            'name' => $this->faker->unique()->words(2, true) . ' Pool',
+            'description' => $this->faker->sentence(),
+            'pool_type' => $this->faker->randomElement(['public', 'private']),
             'status' => 'active',
         ];
     }

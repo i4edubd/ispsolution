@@ -17,9 +17,9 @@ class NetworkUserFactory extends Factory
     public function definition(): array
     {
         return [
-            'username' => fake()->unique()->userName(),
-            'password' => fake()->password(),
-            'service_type' => fake()->randomElement(['pppoe', 'hotspot', 'static']),
+            'username' => $this->faker->unique()->userName(),
+            'password' => $this->faker->password(),
+            'service_type' => $this->faker->randomElement(['pppoe', 'hotspot', 'static']),
             'package_id' => null,
             'status' => 'active',
             'user_id' => null,
