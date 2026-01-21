@@ -48,8 +48,15 @@ class CustomerPolicy
         }
 
         // Check if customer belongs to same zone/area
-        // TODO: Implement zone/area check
-        // For now, deny access by default to prevent bypassing zone restrictions
+        if ($this->isSameZoneOrArea($user, $customer)) {
+            return true;
+        }
+
+        // Operators and sub-operators can view their own customers
+        if ($user->operator_level <= 40) {
+            return $this->isInHierarchy($user, $customer);
+        }
+
         return false;
     }
 
@@ -91,9 +98,45 @@ class CustomerPolicy
             return true;
         }
 
-        // TODO: Implement zone/area-based access control
-        // For now, deny access by default to prevent unauthorized access
+        // Check zone/area-based access control
+        if ($this->isSameZoneOrArea($user, $customer)) {
+            return $this->isInHierarchy($user, $customer);
+        }
+
         return false;
+    }
+
+    /**
+     * Check if customer is in the user's zone or area.
+     */
+    private function isSameZoneOrArea(User $user, User $customer): bool
+    {
+        // If user has zone_id set, check if customer is in same zone
+        if (isset($user->zone_id) && isset($customer->zone_id)) {
+            return $user->zone_id === $customer->zone_id;
+        }
+
+        // If user has area_id set, check if customer is in same area
+        if (isset($user->area_id) && isset($customer->area_id)) {
+            return $user->area_id === $customer->area_id;
+        }
+
+        // If no zone/area restrictions, allow based on other checks
+        return true;
+    }
+
+    /**
+     * Check if customer is in user's management hierarchy.
+     */
+    private function isInHierarchy(User $user, User $customer): bool
+    {
+        // Check if user created this customer
+        if (isset($customer->created_by) && $customer->created_by === $user->id) {
+            return true;
+        }
+
+        // Check if customer is in user's subordinates
+        return $user->subordinates()->where('id', $customer->id)->exists();
     }
 
     /**

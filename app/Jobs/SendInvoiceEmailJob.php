@@ -41,17 +41,12 @@ class SendInvoiceEmailJob implements ShouldQueue
                 return;
             }
 
-            // Send email based on type
-            $mailData = [
-                'invoice' => $this->invoice,
-                'user' => $user,
-                'type' => $this->emailType,
-            ];
+            // Send email using InvoiceMail Mailable
+            Mail::to($user->email)->send(
+                new \App\Mail\InvoiceMail($this->invoice, $user, $this->emailType)
+            );
 
-            // TODO: Implement actual mail sending with Mailable class
-            // Mail::to($user->email)->send(new InvoiceMail($mailData));
-
-            Log::info('Invoice email queued successfully', [
+            Log::info('Invoice email sent successfully', [
                 'invoice_id' => $this->invoice->id,
                 'email' => $user->email,
                 'type' => $this->emailType,

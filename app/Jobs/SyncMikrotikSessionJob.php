@@ -38,11 +38,36 @@ class SyncMikrotikSessionJob implements ShouldQueue
                 'username' => $this->username,
             ]);
 
-            // TODO: Implement actual MikroTik API sync logic
-            // - Connect to MikroTik router via API
-            // - Sync PPPoE sessions
-            // - Update bandwidth queues
-            // - Store session data in database
+            $mikrotikService = app(\App\Services\MikrotikService::class);
+            
+            // Sync PPPoE sessions from the router
+            if ($this->username) {
+                // Sync specific user session
+                $session = $mikrotikService->getPppoeUserSession($router, $this->username);
+                if ($session) {
+                    $mikrotikService->syncSessionToDatabase($router, $session);
+                    Log::debug('Synced specific user session', [
+                        'username' => $this->username,
+                        'session' => $session,
+                    ]);
+                }
+            } else {
+                // Sync all active sessions
+                $sessions = $mikrotikService->getActivePppoeSessions($router);
+                $syncedCount = 0;
+                
+                foreach ($sessions as $session) {
+                    $mikrotikService->syncSessionToDatabase($router, $session);
+                    $syncedCount++;
+                }
+                
+                Log::debug('Synced all sessions', [
+                    'synced_count' => $syncedCount,
+                ]);
+            }
+
+            // Update router last sync time
+            $router->update(['last_sync_at' => now()]);
 
             Log::info('MikroTik session synced successfully', [
                 'router_id' => $this->routerId,

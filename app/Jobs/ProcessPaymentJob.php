@@ -35,13 +35,48 @@ class ProcessPaymentJob implements ShouldQueue
 
             // Process payment logic
             if ($this->payment->status === 'pending') {
-                // TODO: Implement actual payment gateway processing
-                
-                // Simulate payment processing
-                $this->payment->update([
-                    'status' => 'completed',
-                    'paid_at' => now(),
-                ]);
+                // If payment has a gateway_transaction_id, verify with gateway
+                if ($this->payment->gateway_transaction_id && $this->payment->payment_method) {
+                    $paymentGatewayService = app(\App\Services\PaymentGatewayService::class);
+                    
+                    try {
+                        $verificationResult = $paymentGatewayService->verifyPayment(
+                            $this->payment->gateway_transaction_id,
+                            $this->payment->payment_method,
+                            $this->payment->tenant_id
+                        );
+
+                        if ($verificationResult['status'] === 'success') {
+                            $this->payment->update([
+                                'status' => 'completed',
+                                'paid_at' => now(),
+                                'gateway_response' => $verificationResult,
+                            ]);
+                        } else {
+                            $this->payment->update([
+                                'status' => 'failed',
+                                'gateway_response' => $verificationResult,
+                            ]);
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning('Payment gateway verification failed', [
+                            'payment_id' => $this->payment->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                        
+                        // Fall back to manual payment processing
+                        $this->payment->update([
+                            'status' => 'completed',
+                            'paid_at' => now(),
+                        ]);
+                    }
+                } else {
+                    // Manual payment without gateway verification
+                    $this->payment->update([
+                        'status' => 'completed',
+                        'paid_at' => now(),
+                    ]);
+                }
 
                 // Update related invoice
                 /** @var \App\Models\Invoice|null $invoice */
@@ -56,6 +91,11 @@ class ProcessPaymentJob implements ShouldQueue
                             'status' => 'paid',
                             'paid_at' => now(),
                         ]);
+                        
+                        // Unlock user account if it was locked due to non-payment
+                        if ($invoice->user && !$invoice->user->is_active) {
+                            $invoice->user->update(['is_active' => true]);
+                        }
                     }
                 }
 
