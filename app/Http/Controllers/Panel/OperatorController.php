@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\RechargeCard;
 use Illuminate\View\View;
 
 class OperatorController extends Controller
@@ -17,22 +20,21 @@ class OperatorController extends Controller
         // Get customer IDs for this operator
         $customerIds = $user->subordinates()->where('operator_level', 100)->pluck('id');
 
-        // Get operator metrics
+        // Get operator metrics with optimized queries
+        $invoiceData = Invoice::whereIn('user_id', $customerIds)
+            ->selectRaw('SUM(CASE WHEN status != ? THEN total_amount ELSE 0 END) as pending_payments', ['paid'])
+            ->first();
+
+        $paymentData = Payment::whereIn('user_id', $customerIds)
+            ->where('status', 'completed')
+            ->selectRaw('SUM(CASE WHEN MONTH(paid_at) = ? AND YEAR(paid_at) = ? THEN amount ELSE 0 END) as monthly_collection', [now()->month, now()->year])
+            ->first();
+
         $stats = [
             'total_customers' => $customerIds->count(),
             'active_customers' => $user->subordinates()->where('operator_level', 100)->where('is_active', true)->count(),
-            'pending_payments' => $customerIds->isNotEmpty() 
-                ? \App\Models\Invoice::whereIn('user_id', $customerIds)
-                    ->where('status', '!=', 'paid')
-                    ->sum('total_amount')
-                : 0,
-            'monthly_collection' => $customerIds->isNotEmpty()
-                ? \App\Models\Payment::whereIn('user_id', $customerIds)
-                    ->where('status', 'completed')
-                    ->whereMonth('paid_at', now()->month)
-                    ->whereYear('paid_at', now()->year)
-                    ->sum('amount')
-                : 0,
+            'pending_payments' => $invoiceData->pending_payments ?? 0,
+            'monthly_collection' => $paymentData->monthly_collection ?? 0,
         ];
 
         return view('panels.operator.dashboard', compact('stats'));
@@ -80,11 +82,11 @@ class OperatorController extends Controller
 
         // Check if there are any customers before querying invoices
         if ($customerIds->isEmpty()) {
-            $bills = \App\Models\Invoice::whereRaw('1 = 0')
+            $bills = Invoice::whereRaw('1 = 0')
                 ->latest()
                 ->paginate(20);
         } else {
-            $bills = \App\Models\Invoice::whereIn('user_id', $customerIds)
+            $bills = Invoice::whereIn('user_id', $customerIds)
                 ->latest()
                 ->paginate(20);
         }
@@ -141,22 +143,17 @@ class OperatorController extends Controller
         // Get customer IDs for this operator
         $customerIds = $user->subordinates()->where('operator_level', 100)->pluck('id');
 
-        // Generate operator reports
+        // Generate operator reports with optimized queries
+        $paymentData = Payment::whereIn('user_id', $customerIds)
+            ->where('status', 'completed')
+            ->selectRaw('SUM(CASE WHEN DATE(paid_at) = ? THEN amount ELSE 0 END) as collections_today', [now()->toDateString()])
+            ->selectRaw('SUM(CASE WHEN MONTH(paid_at) = ? AND YEAR(paid_at) = ? THEN amount ELSE 0 END) as collections_month', [now()->month, now()->year])
+            ->first();
+
         $reports = [
             'total_customers' => $customerIds->count(),
-            'collections_today' => $customerIds->isNotEmpty()
-                ? \App\Models\Payment::whereIn('user_id', $customerIds)
-                    ->where('status', 'completed')
-                    ->whereDate('paid_at', now()->toDateString())
-                    ->sum('amount')
-                : 0,
-            'collections_month' => $customerIds->isNotEmpty()
-                ? \App\Models\Payment::whereIn('user_id', $customerIds)
-                    ->where('status', 'completed')
-                    ->whereMonth('paid_at', now()->month)
-                    ->whereYear('paid_at', now()->year)
-                    ->sum('amount')
-                : 0,
+            'collections_today' => $paymentData->collections_today ?? 0,
+            'collections_month' => $paymentData->collections_month ?? 0,
         ];
 
         return view('panels.operator.reports.index', compact('reports'));

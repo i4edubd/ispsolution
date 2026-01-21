@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Models\NetworkUserSession;
 use App\Models\PaymentGateway;
 use App\Models\Tenant;
 use App\Models\User;
@@ -232,8 +233,8 @@ class DeveloperController extends Controller
 
         $onlineCount = \App\Models\NetworkUserSession::where('status', 'active')
             ->whereNull('end_time')
-            ->distinct('user_id')
-            ->count('user_id');
+            ->selectRaw('COUNT(DISTINCT user_id) as count')
+            ->value('count') ?? 0;
 
         $stats = [
             'total' => (int) ($statsData->total ?? 0),
@@ -265,8 +266,8 @@ class DeveloperController extends Controller
 
         $onlineCount = \App\Models\NetworkUserSession::where('status', 'active')
             ->whereNull('end_time')
-            ->distinct('user_id')
-            ->count('user_id');
+            ->selectRaw('COUNT(DISTINCT user_id) as count')
+            ->value('count') ?? 0;
 
         $stats = [
             'total' => (int) ($statsData->total ?? 0),

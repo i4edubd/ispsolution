@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Models\Commission;
 use App\Models\ServicePackage;
 use App\Models\User;
 use Illuminate\View\View;
@@ -56,26 +57,25 @@ class SubResellerController extends Controller
         $user = auth()->user();
 
         // Get commission transactions for this sub-reseller
-        $transactions = \App\Models\Commission::where('reseller_id', $user->id)
+        $transactions = Commission::where('reseller_id', $user->id)
             ->with(['payment', 'invoice'])
             ->latest()
             ->paginate(20);
 
+        $summary = Commission::where('reseller_id', $user->id)
+            ->selectRaw('SUM(commission_amount) as total_earnings')
+            ->selectRaw('SUM(CASE WHEN MONTH(created_at) = ? AND YEAR(created_at) = ? THEN commission_amount ELSE 0 END) as this_month', [now()->month, now()->year])
+            ->selectRaw('SUM(CASE WHEN status = ? THEN commission_amount ELSE 0 END) as pending', ['pending'])
+            ->selectRaw('SUM(CASE WHEN status = ? THEN commission_amount ELSE 0 END) as paid', ['paid'])
+            ->first();
+
         $summary = [
-            'total_earnings' => \App\Models\Commission::where('reseller_id', $user->id)
-                ->sum('commission_amount'),
-            'this_month' => \App\Models\Commission::where('reseller_id', $user->id)
-                ->whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
-                ->sum('commission_amount'),
-            'pending' => \App\Models\Commission::where('reseller_id', $user->id)
-                ->where('status', 'pending')
-                ->sum('commission_amount'),
-            'paid' => \App\Models\Commission::where('reseller_id', $user->id)
-                ->where('status', 'paid')
-                ->sum('commission_amount'),
+            'total_earnings' => $summary->total_earnings ?? 0,
+            'this_month' => $summary->this_month ?? 0,
+            'pending' => $summary->pending ?? 0,
+            'paid' => $summary->paid ?? 0,
         ];
 
-        return view('panels.sub-reseller.commission.index', compact('transactions', 'summary'));
+        return view('panels.sub-reseller.commission', compact('transactions', 'summary'));
     }
 }

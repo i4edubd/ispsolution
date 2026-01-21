@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Models\Commission;
 use App\Models\RechargeCard;
 use App\Services\CardDistributionService;
 use Illuminate\View\View;
@@ -73,7 +74,7 @@ class CardDistributorController extends Controller
         $user = auth()->user();
 
         // Get commission records for this card distributor
-        $commissions = \App\Models\Commission::where('reseller_id', $user->id)
+        $commissions = Commission::where('reseller_id', $user->id)
             ->with(['payment', 'invoice'])
             ->latest()
             ->paginate(20);

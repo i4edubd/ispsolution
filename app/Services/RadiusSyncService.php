@@ -23,28 +23,22 @@ class RadiusSyncService
     /**
      * Sync user to RADIUS database.
      * 
-     * Note: This method currently uses the hashed password which won't work for RADIUS.
+     * This method is not implemented as it requires cleartext passwords.
      * In production, you need to either:
      * 1. Store cleartext passwords separately (security risk)
      * 2. Generate temporary passwords and notify users
      * 3. Use a different authentication method (CHAP, etc.)
+     * 
+     * @throws \Exception
      */
     public function syncUser(User $user): bool
     {
-        Log::info("RadiusSyncService: Syncing user {$user->id} to RADIUS");
-
-        // Prepare user attributes
-        $attributes = [];
-        
-        // Add service package attributes if available
-        if ($user->servicePackage) {
-            $attributes['Mikrotik-Rate-Limit'] = $user->servicePackage->rate_limit ?? '';
-        }
-
-        // WARNING: User::password is hashed and won't work for RADIUS authentication
-        // This is a placeholder - actual implementation needs cleartext password
         Log::warning("RadiusSyncService: Cannot sync hashed password to RADIUS for user {$user->id}");
-        return false;
+        
+        throw new \Exception(
+            "RADIUS user sync not implemented. User passwords are hashed and cannot be used for RADIUS authentication. " .
+            "Please implement alternative authentication or password handling."
+        );
     }
 
     /**
@@ -178,6 +172,10 @@ class RadiusSyncService
                     SUM(acctinputoctets + acctoutputoctets) as total_usage
                 ')
                 ->first();
+
+            if (!$result) {
+                return ['upload' => 0, 'download' => 0, 'total' => 0];
+            }
 
             return [
                 'upload' => $result->total_input ?? 0,

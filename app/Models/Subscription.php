@@ -39,12 +39,13 @@ class Subscription extends Model
 
     /**
      * Note: Subscriptions belong to tenants, not individual users.
-     * This relationship is added for compatibility with some controllers
-     * that expect a user relationship, but it actually maps to the tenant.
+     * Attempting to access a user relationship is a logical error.
+     * 
+     * @throws \LogicException
      */
     public function user()
     {
-        return $this->tenant();
+        throw new \LogicException('Subscriptions belong to tenants, not users. Use tenant() instead.');
     }
 
     public function plan()

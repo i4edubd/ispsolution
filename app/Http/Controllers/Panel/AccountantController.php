@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Models\GeneralLedgerEntry;
+use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\User;
 use Illuminate\View\View;
 
 class AccountantController extends Controller
@@ -14,22 +18,23 @@ class AccountantController extends Controller
     {
         $tenantId = auth()->user()->tenant_id;
 
-        // Get financial overview
+        // Get financial overview with optimized queries
+        $paymentData = Payment::where('tenant_id', $tenantId)
+            ->where('status', 'completed')
+            ->selectRaw('SUM(amount) as total_revenue')
+            ->selectRaw('SUM(CASE WHEN MONTH(paid_at) = ? AND YEAR(paid_at) = ? THEN amount ELSE 0 END) as monthly_income', [now()->month, now()->year])
+            ->first();
+
+        $invoiceData = Invoice::where('tenant_id', $tenantId)
+            ->selectRaw('SUM(CASE WHEN status != ? THEN total_amount ELSE 0 END) as outstanding_balance', ['paid'])
+            ->selectRaw('SUM(CASE WHEN status = ? THEN tax_amount ELSE 0 END) as vat_collected', ['paid'])
+            ->first();
+
         $stats = [
-            'total_revenue' => \App\Models\Payment::where('tenant_id', $tenantId)
-                ->where('status', 'completed')
-                ->sum('amount'),
-            'outstanding_balance' => \App\Models\Invoice::where('tenant_id', $tenantId)
-                ->where('status', '!=', 'paid')
-                ->sum('total_amount'),
-            'vat_collected' => \App\Models\Invoice::where('tenant_id', $tenantId)
-                ->where('status', 'paid')
-                ->sum('tax_amount'),
-            'monthly_income' => \App\Models\Payment::where('tenant_id', $tenantId)
-                ->where('status', 'completed')
-                ->whereMonth('paid_at', now()->month)
-                ->whereYear('paid_at', now()->year)
-                ->sum('amount'),
+            'total_revenue' => $paymentData->total_revenue ?? 0,
+            'outstanding_balance' => $invoiceData->outstanding_balance ?? 0,
+            'vat_collected' => $invoiceData->vat_collected ?? 0,
+            'monthly_income' => $paymentData->monthly_income ?? 0,
         ];
 
         return view('panels.accountant.dashboard', compact('stats'));
@@ -43,7 +48,7 @@ class AccountantController extends Controller
         $tenantId = auth()->user()->tenant_id;
 
         // Get income data from payments
-        $incomeData = \App\Models\Payment::where('tenant_id', $tenantId)
+        $incomeData = Payment::where('tenant_id', $tenantId)
             ->where('status', 'completed')
             ->whereYear('paid_at', now()->year)
             ->selectRaw('MONTH(paid_at) as month, SUM(amount) as total')
@@ -52,7 +57,7 @@ class AccountantController extends Controller
             ->get();
 
         // Get expense data from general ledger if available
-        $expenseData = \App\Models\GeneralLedgerEntry::where('tenant_id', $tenantId)
+        $expenseData = GeneralLedgerEntry::where('tenant_id', $tenantId)
             ->where('entry_type', 'expense')
             ->whereYear('transaction_date', now()->year)
             ->selectRaw('MONTH(transaction_date) as month, SUM(amount) as total')
@@ -66,11 +71,11 @@ class AccountantController extends Controller
             $incomeRecord = $incomeData->firstWhere('month', $month);
             $expenseRecord = $expenseData->firstWhere('month', $month);
             
-            $income = $incomeRecord ? $incomeRecord->total : 0;
-            $expense = $expenseRecord ? $expenseRecord->total : 0;
+            $income = $incomeRecord ? ($incomeRecord->total ?? 0) : 0;
+            $expense = $expenseRecord ? ($expenseRecord->total ?? 0) : 0;
             
             $transactions->push([
-                'month' => now()->month($month)->format('F'),
+                'month' => \Carbon\Carbon::create(null, $month)->format('F'),
                 'month_num' => $month,
                 'income' => $income,
                 'expense' => $expense,
@@ -88,7 +93,7 @@ class AccountantController extends Controller
     {
         $tenantId = auth()->user()->tenant_id;
 
-        $payments = \App\Models\Payment::where('tenant_id', $tenantId)
+        $payments = Payment::where('tenant_id', $tenantId)
             ->latest()
             ->paginate(50);
 
@@ -103,7 +108,7 @@ class AccountantController extends Controller
         $tenantId = auth()->user()->tenant_id;
 
         // Get customers with their statement data
-        $customers = \App\Models\User::where('tenant_id', $tenantId)
+        $customers = User::where('tenant_id', $tenantId)
             ->where('operator_level', 100)
             ->paginate(20);
 
@@ -118,7 +123,7 @@ class AccountantController extends Controller
         $tenantId = auth()->user()->tenant_id;
 
         // Get transactions from general ledger entries
-        $transactions = \App\Models\GeneralLedgerEntry::where('tenant_id', $tenantId)
+        $transactions = GeneralLedgerEntry::where('tenant_id', $tenantId)
             ->with('account')
             ->latest('transaction_date')
             ->paginate(50);
@@ -134,7 +139,7 @@ class AccountantController extends Controller
         $tenantId = auth()->user()->tenant_id;
 
         // Get expense entries from general ledger
-        $expenses = \App\Models\GeneralLedgerEntry::where('tenant_id', $tenantId)
+        $expenses = GeneralLedgerEntry::where('tenant_id', $tenantId)
             ->where('entry_type', 'expense')
             ->with('account')
             ->latest('transaction_date')
@@ -151,7 +156,7 @@ class AccountantController extends Controller
         $tenantId = auth()->user()->tenant_id;
 
         // Get VAT data from paid invoices
-        $vatRecords = \App\Models\Invoice::where('tenant_id', $tenantId)
+        $vatRecords = Invoice::where('tenant_id', $tenantId)
             ->where('status', 'paid')
             ->where('tax_amount', '>', 0)
             ->with('user')
@@ -169,7 +174,7 @@ class AccountantController extends Controller
     {
         $tenantId = auth()->user()->tenant_id;
 
-        $payments = \App\Models\Payment::where('tenant_id', $tenantId)
+        $payments = Payment::where('tenant_id', $tenantId)
             ->with('user')
             ->latest()
             ->paginate(50);
@@ -180,7 +185,7 @@ class AccountantController extends Controller
     /**
      * Display customer statement for a specific customer.
      */
-    public function customerStatement(\App\Models\User $customer): View
+    public function customerStatement(User $customer): View
     {
         // Ensure the customer belongs to the same tenant
         if ($customer->tenant_id !== auth()->user()->tenant_id) {

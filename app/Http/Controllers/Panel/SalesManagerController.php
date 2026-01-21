@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\View\View;
 
@@ -32,14 +34,16 @@ class SalesManagerController extends Controller
                 ->where('tenant_id', $user->tenant_id)
                 ->where('is_active', true)
                 ->count(),
-            'pending_subscriptions' => \App\Models\Subscription::where('tenant_id', $user->tenant_id)
-                ->where('status', 'pending')
-                ->count(),
-            'total_revenue' => \App\Models\Subscription::where('tenant_id', $user->tenant_id)
-                ->where('status', 'active')
-                ->sum('amount'),
-            'monthly_target' => 100000, // This could be configurable per tenant
         ];
+
+        $subscriptionData = Subscription::where('tenant_id', $user->tenant_id)
+            ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as pending_subscriptions', ['pending'])
+            ->selectRaw('SUM(CASE WHEN status = ? THEN amount ELSE 0 END) as total_revenue', ['active'])
+            ->first();
+
+        $stats['pending_subscriptions'] = $subscriptionData->pending_subscriptions ?? 0;
+        $stats['total_revenue'] = $subscriptionData->total_revenue ?? 0;
+        $stats['monthly_target'] = 100000; // This could be configurable per tenant
 
         return view('panels.sales-manager.dashboard', compact('stats'));
     }
@@ -117,7 +121,7 @@ class SalesManagerController extends Controller
         $user = auth()->user();
 
         // Get active subscriptions with their billing information
-        $bills = \App\Models\Subscription::where('tenant_id', $user->tenant_id)
+        $bills = Subscription::where('tenant_id', $user->tenant_id)
             ->with(['user', 'plan'])
             ->latest()
             ->paginate(20);
@@ -141,7 +145,7 @@ class SalesManagerController extends Controller
         $user = auth()->user();
 
         // Get pending payments for subscriptions
-        $pendingPayments = \App\Models\Payment::where('tenant_id', $user->tenant_id)
+        $pendingPayments = Payment::where('tenant_id', $user->tenant_id)
             ->where('status', 'pending')
             ->with(['user', 'invoice'])
             ->latest()
