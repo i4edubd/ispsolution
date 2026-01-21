@@ -161,36 +161,37 @@ class DeveloperController extends Controller
         ]);
 
         \DB::transaction(function () use ($validated, &$tenant, &$superAdmin) {
-            // Create the tenancy
+            // Automatically provision Super Admin account first
+            // Note: We create Super Admin first, then assign as tenant creator
+            $superAdmin = User::create([
+                'name' => $validated['super_admin_name'],
+                'email' => $validated['super_admin_email'],
+                'password' => bcrypt($validated['super_admin_password']),
+                'tenant_id' => null, // Will be set after tenant creation
+                'operator_level' => 10, // Super Admin level
+                'is_active' => true,
+                'activated_at' => now(),
+                'created_by' => auth()->id(), // Developer who initiated creation
+            ]);
+
+            // Create the tenancy with Super Admin as creator
             $tenant = Tenant::create([
                 'name' => $validated['name'],
                 'domain' => $validated['domain'] ?? null,
                 'subdomain' => $validated['subdomain'] ?? null,
                 'database' => $validated['database'] ?? null,
                 'status' => $validated['status'],
-                'created_by' => auth()->id(), // Developer who created it
+                'created_by' => $superAdmin->id, // Super Admin is the tenant owner
             ]);
 
-            // Automatically provision Super Admin account
-            $superAdmin = User::create([
-                'name' => $validated['super_admin_name'],
-                'email' => $validated['super_admin_email'],
-                'password' => bcrypt($validated['super_admin_password']),
-                'tenant_id' => $tenant->id,
-                'operator_level' => 10, // Super Admin level
-                'is_active' => true,
-                'activated_at' => now(),
-                'created_by' => auth()->id(),
-            ]);
+            // Update Super Admin to reference the tenant
+            $superAdmin->update(['tenant_id' => $tenant->id]);
 
             // Assign Super Admin role
             $superAdminRole = \App\Models\Role::where('slug', 'super-admin')->first();
             if ($superAdminRole) {
                 $superAdmin->roles()->attach($superAdminRole->id, ['tenant_id' => $tenant->id]);
             }
-
-            // Update tenant to reference the Super Admin
-            $tenant->update(['created_by' => $superAdmin->id]);
         });
 
         return redirect()->route('panel.developer.tenancies.index')

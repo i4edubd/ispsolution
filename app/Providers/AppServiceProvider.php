@@ -47,21 +47,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Define gates for network device management
         Gate::define('manage-network-devices', function ($user) {
-            // Only Admin can manage network devices by default
-            // Staff/Manager can manage if they have explicit permission
-            return $user->isAdmin() 
-                || $user->isDeveloper() 
-                || $user->isSuperAdmin()
-                || $user->hasSpecialPermission('network.manage');
+            return $this->canManageResource($user, 'network.manage');
         });
 
         Gate::define('manage-packages', function ($user) {
-            // Only Admin can manage packages by default
-            // Staff/Manager can manage if they have explicit permission
-            return $user->isAdmin() 
-                || $user->isDeveloper() 
-                || $user->isSuperAdmin()
-                || $user->hasSpecialPermission('packages.manage');
+            return $this->canManageResource($user, 'packages.manage');
         });
 
         Gate::define('set-suboperator-pricing', function ($user) {
@@ -71,5 +61,17 @@ class AppServiceProvider extends ServiceProvider
                 || $user->isDeveloper() 
                 || $user->isSuperAdmin();
         });
+    }
+
+    /**
+     * Helper method to check if user can manage a resource.
+     * Only Admin can manage by default. Staff/Manager can manage if they have explicit permission.
+     */
+    private function canManageResource($user, string $permission): bool
+    {
+        return $user->isAdmin() 
+            || $user->isDeveloper() 
+            || $user->isSuperAdmin()
+            || $user->hasSpecialPermission($permission);
     }
 }

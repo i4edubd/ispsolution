@@ -99,10 +99,10 @@ class SuperAdminController extends Controller
             'admin_password' => 'required|string|min:8|confirmed',
         ]);
 
-        \DB::transaction(function () use ($validated, &$tenant, &$admin) {
-            // Create the ISP tenant (using current Super Admin's tenant as parent context)
+        $result = \DB::transaction(function () use ($validated) {
             $superAdmin = auth()->user();
             
+            // Create the ISP tenant (using current Super Admin as creator)
             $tenant = Tenant::create([
                 'name' => $validated['name'],
                 'domain' => $validated['domain'] ?? null,
@@ -129,6 +129,8 @@ class SuperAdminController extends Controller
             if ($adminRole) {
                 $admin->roles()->attach($adminRole->id, ['tenant_id' => $tenant->id]);
             }
+
+            return ['tenant' => $tenant, 'admin' => $admin];
         });
 
         return redirect()->route('panel.super-admin.isp.index')
