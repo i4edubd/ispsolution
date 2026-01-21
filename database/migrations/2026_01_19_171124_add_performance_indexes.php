@@ -12,9 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         // Users table indexes
+        // Note: Only adding indexes for columns that exist in the users table
         Schema::table('users', function (Blueprint $table) {
             $table->index('email', 'idx_users_email');
-            $table->index('username', 'idx_users_username');
+            // username column does not exist in users table - removed
             $table->index('tenant_id', 'idx_users_tenant_id');
             $table->index(['tenant_id', 'is_active'], 'idx_users_tenant_active');
         });
@@ -100,7 +101,7 @@ return new class extends Migration
         // Users table indexes
         Schema::table('users', function (Blueprint $table) {
             $table->dropIndex('idx_users_email');
-            $table->dropIndex('idx_users_username');
+            // username index was not created - removed
             $table->dropIndex('idx_users_tenant_id');
             $table->dropIndex('idx_users_tenant_active');
         });
