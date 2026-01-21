@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('nas', function (Blueprint $table) {
-            // Increase size for encrypted fields (Laravel's encrypted cast creates ~200+ char JSON strings)
-            $table->string('secret', 255)->change();
-            $table->string('community', 255)->nullable()->change();
+            // Use TEXT for encrypted fields to avoid truncation (Laravel's encrypted cast creates ~200+ char JSON strings)
+            $table->text('secret')->change();
+            $table->text('community')->nullable()->change();
         });
     }
 
@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('nas', function (Blueprint $table) {
-            // Revert to original sizes
+            // Revert to original string type
             $table->string('secret', 100)->change();
             $table->string('community', 100)->nullable()->change();
         });
