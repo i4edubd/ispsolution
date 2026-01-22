@@ -54,12 +54,26 @@ Route::post('webhooks/payment/{gateway}', [PaymentController::class, 'webhook'])
 */
 
 use App\Http\Controllers\HotspotController;
+use App\Http\Controllers\HotspotSelfSignupController;
 
-// Public hotspot self-signup routes
-Route::prefix('hotspot')->name('hotspot.')->group(function () {
-    Route::get('signup', [HotspotController::class, 'signupForm'])->name('signup');
-    Route::post('request-otp', [HotspotController::class, 'requestOtp'])->name('request-otp');
-    Route::post('verify-otp', [HotspotController::class, 'verifyOtp'])->name('verify-otp');
+// Public hotspot self-signup routes (no authentication required)
+Route::prefix('hotspot/signup')->name('hotspot.signup.')->group(function () {
+    Route::get('/', [HotspotSelfSignupController::class, 'showRegistrationForm'])->name('');
+    Route::post('/request-otp', [HotspotSelfSignupController::class, 'requestOtp'])->name('request-otp');
+    
+    Route::get('/verify-otp', [HotspotSelfSignupController::class, 'showVerifyOtp'])->name('verify-otp');
+    Route::post('/verify-otp', [HotspotSelfSignupController::class, 'verifyOtp'])->name('verify-otp.post');
+    Route::post('/resend-otp', [HotspotSelfSignupController::class, 'resendOtp'])->name('resend-otp');
+    
+    Route::get('/complete', [HotspotSelfSignupController::class, 'showCompleteProfile'])->name('complete');
+    Route::post('/complete', [HotspotSelfSignupController::class, 'completeRegistration'])->name('complete.post');
+    
+    Route::get('/payment/{user}', [HotspotSelfSignupController::class, 'showPaymentPage'])->name('payment');
+    Route::post('/payment/{user}', [HotspotSelfSignupController::class, 'processPayment'])->name('payment.post');
+    Route::get('/payment/callback', [HotspotSelfSignupController::class, 'paymentCallback'])->name('payment.callback');
+    
+    Route::get('/success', [HotspotSelfSignupController::class, 'showSuccess'])->name('success');
+    Route::get('/error', [HotspotSelfSignupController::class, 'showError'])->name('error');
 });
 
 // Admin hotspot management routes
