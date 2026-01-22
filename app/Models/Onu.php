@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property int $id
  * @property int|null $tenant_id
- * @property int $olt_id
+ * @property int|null $olt_id
  * @property string $pon_port
  * @property int $onu_id
  * @property string $serial_number
@@ -138,8 +138,8 @@ class Onu extends Model
      */
     public function getFullPonPath(): string
     {
-        // Reload the relationship to ensure we get the current state
-        if (! $this->relationLoaded('olt')) {
+        // Only try to load the relationship if the olt_id is set and not already loaded
+        if ($this->olt_id && ! $this->relationLoaded('olt')) {
             $this->load('olt');
         }
 

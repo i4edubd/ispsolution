@@ -100,7 +100,7 @@ class CommissionService
      */
     public function getResellerCommissionSummary(User $reseller): array
     {
-        $commissions = Commission::where('reseller_id', $reseller->id);
+        $commissions = Commission::where('reseller_id', $reseller->id)->get();
 
         return [
             'total_earned' => $commissions->sum('commission_amount'),
