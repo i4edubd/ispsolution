@@ -56,12 +56,6 @@ class NetworkUserController extends Controller
         $password = $data['password'];
         unset($data['password']); // Don't store plain password in network_users
 
-        // Map form fields to database columns if needed
-        if (isset($data['connection_type'])) {
-            $data['service_type'] = $data['connection_type'];
-            unset($data['connection_type']);
-        }
-
         $user = NetworkUser::create($data);
 
         // Sync to RADIUS

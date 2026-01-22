@@ -1208,8 +1208,7 @@ class AdminController extends Controller
         $pdf = $pdfService->generateMonthlyReportPdf(
             $user->tenant_id,
             $year,
-            $month,
-            $user->tenant_id
+            $month
         );
 
         return $pdf->download("monthly-report-{$year}-{$month}.pdf");
