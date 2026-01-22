@@ -25,17 +25,7 @@ class RoleSeeder extends Seeder
                 'slug' => 'super-admin',
                 'description' => 'Manages Admins within their own tenants only. Represents the overarching tenant context. Cannot access other tenants.',
                 'level' => 100,
-                'permissions' => [
-                    'tenants.manage.own',
-                    'admins.create',
-                    'admins.manage',
-                    'billing.configure',
-                    'payment-gateway.manage',
-                    'sms-gateway.manage',
-                    'subscriptions.manage',
-                    'logs.view',
-                    'settings.manage',
-                ],
+                'permissions' => ['*'], // Wildcard = all permissions
             ],
             [
                 'name' => 'Admin',

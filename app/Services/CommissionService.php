@@ -11,17 +11,23 @@ class CommissionService
 {
     /**
      * Calculate and create commission for a payment
-     * Note: Uses "reseller" and "sub-reseller" roles per system requirements
-     *
-     * IMPORTANT: The database column 'reseller_id' stores the reseller/sub-reseller ID.
+     * Supports both "reseller"/"sub-reseller" and "operator"/"sub-operator" role names
      */
     public function calculateCommission(Payment $payment): ?Commission
     {
-        // Get the reseller who created this customer
+        // Get the reseller/operator who created this customer
         $customer = $payment->user;
         $reseller = $customer->createdBy; // User who created this customer
 
-        if (! $reseller || ! $reseller->hasRole('reseller') && ! $reseller->hasRole('sub-reseller')) {
+        if (! $reseller) {
+            return null;
+        }
+
+        // Check for reseller/operator roles (support both naming conventions)
+        $hasResellerRole = $reseller->hasRole('reseller') || $reseller->hasRole('operator');
+        $hasSubResellerRole = $reseller->hasRole('sub-reseller') || $reseller->hasRole('sub-operator');
+
+        if (! $hasResellerRole && ! $hasSubResellerRole) {
             return null;
         }
 
@@ -43,22 +49,24 @@ class CommissionService
     }
 
     /**
-     * Get commission rate for a reseller
-     * Note: Uses "reseller" and "sub-reseller" roles
+     * Get commission rate for a reseller/operator
+     * Supports both "reseller"/"sub-reseller" and "operator"/"sub-operator" role names
      */
     protected function getCommissionRate(User $reseller): float
     {
         // Default commission rates by role
         $defaultRates = [
             'reseller' => 10.0, // 10%
+            'operator' => 10.0, // 10% (legacy name)
             'sub-reseller' => 5.0, // 5%
+            'sub-operator' => 5.0, // 5% (legacy name)
         ];
 
-        if ($reseller->hasRole('reseller')) {
+        if ($reseller->hasRole('reseller') || $reseller->hasRole('operator')) {
             return $defaultRates['reseller'];
         }
 
-        if ($reseller->hasRole('sub-reseller')) {
+        if ($reseller->hasRole('sub-reseller') || $reseller->hasRole('sub-operator')) {
             return $defaultRates['sub-reseller'];
         }
 
@@ -95,35 +103,45 @@ class CommissionService
 
     /**
      * Calculate multi-level commission (reseller + sub-reseller)
-     * Note: Uses "reseller" and "sub-reseller" roles
+     * Supports both "reseller"/"sub-reseller" and "operator"/"sub-operator" role names
      */
     public function calculateMultiLevelCommission(Payment $payment): array
     {
         $commissions = [];
         $customer = $payment->user;
 
-        // Direct reseller commission
+        // Direct reseller/operator commission
         $directReseller = $customer->createdBy;
-        if ($directReseller && ($directReseller->hasRole('reseller') || $directReseller->hasRole('sub-reseller'))) {
+        if (! $directReseller) {
+            return [];
+        }
+
+        $hasResellerRole = $directReseller->hasRole('reseller') || $directReseller->hasRole('operator');
+        $hasSubResellerRole = $directReseller->hasRole('sub-reseller') || $directReseller->hasRole('sub-operator');
+
+        if ($hasResellerRole || $hasSubResellerRole) {
             $commissions[] = $this->calculateCommission($payment);
 
             // Check if direct reseller has a parent reseller
-            if ($directReseller->hasRole('sub-reseller')) {
+            if ($hasSubResellerRole) {
                 $parentReseller = $directReseller->createdBy;
-                if ($parentReseller && $parentReseller->hasRole('reseller')) {
-                    // Calculate parent reseller commission (smaller percentage)
-                    $parentRate = 3.0; // 3% for parent reseller
-                    $parentAmount = $payment->amount * ($parentRate / 100);
+                if ($parentReseller) {
+                    $parentHasResellerRole = $parentReseller->hasRole('reseller') || $parentReseller->hasRole('operator');
+                    if ($parentHasResellerRole) {
+                        // Calculate parent reseller commission (smaller percentage)
+                        $parentRate = 3.0; // 3% for parent reseller
+                        $parentAmount = $payment->amount * ($parentRate / 100);
 
-                    $commissions[] = Commission::create([
-                        'tenant_id' => $payment->tenant_id,
-                        'reseller_id' => $parentReseller->id,
-                        'payment_id' => $payment->id,
-                        'invoice_id' => $payment->invoice_id,
-                        'commission_amount' => $parentAmount,
-                        'commission_percentage' => $parentRate,
-                        'status' => 'pending',
-                    ]);
+                        $commissions[] = Commission::create([
+                            'tenant_id' => $payment->tenant_id,
+                            'reseller_id' => $parentReseller->id,
+                            'payment_id' => $payment->id,
+                            'invoice_id' => $payment->invoice_id,
+                            'commission_amount' => $parentAmount,
+                            'commission_percentage' => $parentRate,
+                            'status' => 'pending',
+                        ]);
+                    }
                 }
             }
         }

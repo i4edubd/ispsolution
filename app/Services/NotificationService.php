@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
-    protected SmsService $smsService;
+    protected ?SmsService $smsService;
 
-    public function __construct(SmsService $smsService)
+    public function __construct(?SmsService $smsService = null)
     {
         $this->smsService = $smsService;
     }
@@ -56,7 +56,7 @@ class NotificationService
         }
 
         // Send SMS if enabled
-        if (config('sms.enabled', false)) {
+        if (config('sms.enabled', false) && $this->smsService) {
             $smsSent = $this->smsService->sendInvoiceGeneratedSms($invoice);
         }
 
@@ -110,7 +110,7 @@ class NotificationService
         }
 
         // Send SMS if enabled
-        if (config('sms.enabled', false)) {
+        if (config('sms.enabled', false) && $this->smsService) {
             // Create a mock payment for SMS
             $payment = new Payment(['amount' => $amount]);
             $payment->invoice = $invoice;
@@ -148,7 +148,7 @@ class NotificationService
         }
 
         // Send SMS if enabled
-        if (config('sms.enabled', false)) {
+        if (config('sms.enabled', false) && $this->smsService) {
             $smsSent = $this->smsService->sendInvoiceOverdueSms($invoice);
         }
 
@@ -184,7 +184,7 @@ class NotificationService
         }
 
         // Send SMS if enabled
-        if (config('sms.enabled', false)) {
+        if (config('sms.enabled', false) && $this->smsService) {
             $smsSent = $this->smsService->sendInvoiceExpiringSoonSms($invoice, $daysUntilExpiry);
         }
 
