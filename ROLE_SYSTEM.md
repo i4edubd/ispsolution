@@ -319,11 +319,12 @@ This will create:
 If migrating from an older version that used Group Admin, Reseller, or Sub-Reseller:
 
 1. **Code Updates:** All references have been updated to use Admin, Operator, and Sub-Operator
-2. **Database:** Existing data remains compatible; role slugs have been updated
+2. **Database:** New installations use the updated role slugs, but existing databases are **not** migrated automatically. You must manually update any legacy `roles.slug` values and related `role_user` assignments from `group-admin` / `reseller` / `sub-reseller` to the new slugs to match your environment.
 3. **UI:** All views and forms have been updated with new terminology
 4. **Configuration:** Menu and permission configs have been updated
+5. **Backward Compatibility:** Legacy `operator_type` values like `group_admin` are still supported with automatic mapping
 
-### Future Enhancements (v2.0)
+### Future Enhancements
 
 Planned for future versions:
 

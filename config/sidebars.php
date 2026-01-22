@@ -527,4 +527,7 @@ return [
             ],
         ],
     ],
+
+    // Backward compatibility: group_admin uses admin menu
+    'group_admin' => null, // Will be resolved to 'admin' menu in menu helper
 ];

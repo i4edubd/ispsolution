@@ -123,7 +123,7 @@ Update any links to deprecated files:
 <!-- New -->
 [Role System](ROLE_SYSTEM.md)
 [Quick Reference](ROLE_SYSTEM.md#role-hierarchy)
-[Data Isolation](ROLE_SYSTEM.md#resource--billing-responsibilities)
+[Data Isolation](DATA_ISOLATION.md)
 ```
 
 ### For Code Comments

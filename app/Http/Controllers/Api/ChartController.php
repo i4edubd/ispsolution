@@ -191,7 +191,27 @@ class ChartController extends Controller
      */
     public function getCommissionChart(Request $request): JsonResponse
     {
-        $operatorId = $request->get('reseller_id', auth()->id()); // TODO: Rename parameter to operator_id
+        $user = auth()->user();
+        $requestedOperatorId = $request->get('reseller_id'); // TODO: Rename parameter to operator_id
+        
+        // Authorization: Only allow viewing own commissions unless user is Admin or higher
+        if ($requestedOperatorId && $requestedOperatorId != $user->id) {
+            // Check if user has permission to view others' commissions (Admin level 20 or higher)
+            if ($user->operator_level > 20) {
+                return response()->json(['error' => 'Unauthorized to view other operators commissions'], 403);
+            }
+            // For Admin and above, verify same tenant (except Developer)
+            if (!$user->isDeveloper()) {
+                $targetOperator = \App\Models\User::find($requestedOperatorId);
+                if (!$targetOperator || $targetOperator->tenant_id !== $user->tenant_id) {
+                    return response()->json(['error' => 'Unauthorized to view this operator data'], 403);
+                }
+            }
+            $operatorId = $requestedOperatorId;
+        } else {
+            $operatorId = $user->id;
+        }
+        
         $months = $request->get('months', 12);
 
         $data = [];

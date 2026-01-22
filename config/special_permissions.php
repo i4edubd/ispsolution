@@ -82,4 +82,11 @@ return [
         'description' => 'Can create and manage operator accounts',
         'default' => false,
     ],
+
+    // Backward compatibility alias
+    'manage_resellers' => [
+        'label' => 'Manage Operators',
+        'description' => 'Can create and manage operator accounts (legacy alias)',
+        'default' => false,
+    ],
 ];

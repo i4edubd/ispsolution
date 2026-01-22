@@ -76,11 +76,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 The following terms are **deprecated** and should not be used in new code:
 
-| ❌ Deprecated     | ✅ Use Instead   | Status                          |
-|-------------------|------------------|---------------------------------|
-| Group Admin       | Admin            | Removed from all code           |
-| Reseller          | Operator         | Removed from all code           |
-| Sub-Reseller      | Sub-Operator     | Removed from all code           |
+| ❌ Deprecated     | ✅ Use Instead   | Status                                       |
+|-------------------|------------------|----------------------------------------------|
+| Group Admin       | Admin            | Removed from runtime role terminology and UI |
+| Reseller          | Operator         | Removed from runtime role terminology and UI |
+| Sub-Reseller      | Sub-Operator     | Removed from runtime role terminology and UI |
 
 ### 🔄 Backward Compatibility
 
@@ -89,7 +89,7 @@ The following database columns are retained for backward compatibility:
 - **`reseller_id`** in `commissions` table → Refers to `operator_id`
 - **`operator_type`** values: `group_admin` changed to `admin` in seeders
 
-**Note:** A future version (v2.0) will include migrations to rename these columns properly.
+**Note:** A future release will include migrations to rename these columns properly.
 
 ### 📊 Role Hierarchy Summary
 
