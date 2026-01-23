@@ -192,7 +192,7 @@ class HotspotController extends Controller
         ]);
 
         try {
-            $this->hotspotService->renewSubscription($hotspotUser, $validated['package_id']);
+            $this->hotspotService->renewSubscription($hotspotUser->id, $validated['package_id']);
 
             return back()->with('success', 'Subscription renewed successfully.');
         } catch (\Exception $e) {
