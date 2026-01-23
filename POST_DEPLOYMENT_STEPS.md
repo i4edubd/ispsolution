@@ -177,19 +177,22 @@ Check your .env file has correct tenant configuration:
 TENANCY_ENABLED=true
 ```
 
-## Step 8: Optional Enhancements
+## Step 8: Run Database Migrations (RECOMMENDED)
 
-These migrations add extra columns but are NOT required for the fixes to work:
+These migrations add extra columns that are used by various services in the application:
 
 ```bash
-# Only run if you want the additional columns
+# RECOMMENDED: Run migrations to add missing columns used by other services
 php artisan migrate
 
 # This will run:
-# - add payment_date to payments table (optional, code uses paid_at)
-# - add is_active to network_users table (optional, code uses status)
-# - add host to mikrotik_routers table (optional, code uses ip_address)
+# - add payment_date to payments table (required by CableTvBillingService, FinancialReportService, GeneralLedgerService, BulkOperationsService)
+# - add is_active to network_users table (optional, this PR uses status='active' instead)
+# - add host to mikrotik_routers table (optional, this PR uses ip_address instead)
+# - add collected_by to payments table (required for YearlyReportController operator income reports)
 ```
+
+**Important**: While this PR fixes the main analytics queries to work without these migrations, several other services still rely on the `payment_date` column. Running migrations is recommended unless you plan to refactor all services to use `paid_at` consistently.
 
 ## Verification Checklist
 
@@ -233,26 +236,26 @@ If you encounter issues after following these steps:
 
 ## What Was Fixed
 
-This deployment fixes these specific errors:
+This deployment fixes these specific SQL query errors in analytics and reporting:
 
-1. ✅ Payment queries using wrong column name (payment_date → paid_at)
-2. ✅ Network user queries using wrong column name (is_active → status)
-3. ✅ Device queries using wrong column name (host → ip_address)
+1. ✅ Analytics payment queries (AdvancedAnalyticsService, YearlyReportController) - Changed from `payment_date` to `paid_at`
+2. ✅ Analytics network user queries (AdvancedAnalyticsService, ZoneController) - Changed from `is_active` to `status = 'active'`
+3. ✅ Device union query (AdminController) - Changed from `host` to `ip_address`
 4. ✅ Template view Blade syntax error
-5. ✅ MikrotikRouter missing relationship method
-6. ✅ Verified export routes exist and are correctly named
-7. ✅ Verified customer import/bulk update views exist
-8. ✅ Verified SMS Gateway feature is fully implemented
-9. ✅ Verified Package Mapping feature is fully implemented
+5. ✅ MikrotikRouter relationship alias added with clarifying comments
+
+**Scope Note**: This PR specifically fixes analytics and core reporting queries. Other services (CableTvBillingService, FinancialReportService, GeneralLedgerService, BulkOperationsService) still use `payment_date` and will require running migrations or separate refactoring.
 
 ## What Needs Additional Configuration
 
-These items require configuration or infrastructure fixes:
+These items require configuration, migrations, or infrastructure fixes:
 
 1. ⚠️ RADIUS database service (external service, not running)
 2. ⚠️ Some buttons not working (may be JavaScript/CSRF issues)
 3. ⚠️ Tenant isolation (verify TenancyService configuration)
 4. ⚠️ Demo data placement (verify seeder configuration)
+5. ⚠️ Other services using `payment_date` - Run `php artisan migrate` to add this column, or refactor those services to use `paid_at`
+6. ⚠️ Operator income reports - Requires migration to add `collected_by` column to payments table
 
 Refer to `TROUBLESHOOTING_GUIDE.md` for detailed steps to address these items.
 

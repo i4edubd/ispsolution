@@ -223,15 +223,17 @@ class YearlyReportController extends Controller
 
         $operatorIds = $operators->pluck('id');
 
-        // Single query for all payment collections
+        // Note: collected_by column requires migration to add to payments table
+        // For now, we'll use user_id as a fallback since operators collect their own customers' payments
+        // TODO: Run migration to add collected_by column for accurate operator payment tracking
         $paymentsData = Payment::whereYear('paid_at', $year)
-            ->whereIn('collected_by', $operatorIds)
+            ->whereIn('user_id', $operatorIds)
             ->select(
-                'collected_by as operator_id',
+                'user_id as operator_id',
                 DB::raw('MONTH(paid_at) as month'),
                 DB::raw('SUM(amount) as total_amount')
             )
-            ->groupBy('collected_by', DB::raw('MONTH(paid_at)'))
+            ->groupBy('user_id', DB::raw('MONTH(paid_at)'))
             ->get();
 
         // Single query for all commissions

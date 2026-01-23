@@ -96,7 +96,7 @@ class AdvancedAnalyticsService
         // Total customers
         $totalCustomers = NetworkUser::where('tenant_id', $tenantId)->count();
         $activeCustomers = NetworkUser::where('tenant_id', $tenantId)
-            ->where('is_active', true)
+            ->where('status', 'active')
             ->count();
 
         // New customers in period
@@ -106,7 +106,7 @@ class AdvancedAnalyticsService
 
         // Churned customers (became inactive)
         $churnedCustomers = NetworkUser::where('tenant_id', $tenantId)
-            ->where('is_active', false)
+            ->where('status', 'inactive')
             ->whereBetween('updated_at', [$startDate, $endDate])
             ->count();
 
@@ -342,7 +342,7 @@ class AdvancedAnalyticsService
     private function getActiveServicePercentage(int $tenantId): float
     {
         $total = NetworkUser::where('tenant_id', $tenantId)->count();
-        $active = NetworkUser::where('tenant_id', $tenantId)->where('is_active', true)->count();
+        $active = NetworkUser::where('tenant_id', $tenantId)->where('status', 'active')->count();
 
         return $total > 0 ? round(($active / $total) * 100, 2) : 0;
     }
@@ -435,12 +435,12 @@ class AdvancedAnalyticsService
 
         // Calculate churn from actual data
         $lastMonthChurn = NetworkUser::where('tenant_id', $tenantId)
-            ->where('is_active', false)
+            ->where('status', 'inactive')
             ->whereBetween('updated_at', [now()->subMonth(), now()])
             ->count();
 
         $previousMonthChurn = NetworkUser::where('tenant_id', $tenantId)
-            ->where('is_active', false)
+            ->where('status', 'inactive')
             ->whereBetween('updated_at', [now()->subMonths(2), now()->subMonth()])
             ->count();
 

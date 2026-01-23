@@ -11,12 +11,19 @@ This document summarizes the fixes applied to resolve the multiple errors report
 **Root Cause**: Code was using `payment_date` column which doesn't exist in the base payments table migration.
 
 **Fix Applied**:
-- Updated all queries in `AdvancedAnalyticsService.php` to use `paid_at` instead of `payment_date`
+- Updated analytics queries in `AdvancedAnalyticsService.php` to use `paid_at` instead of `payment_date`
 - Updated `YearlyReportController.php` to use `paid_at` instead of `payment_date`
+- **Note**: Changed `collected_by` to `user_id` in operator income report as `collected_by` column doesn't exist in base schema
 
 **Files Modified**:
 - `app/Services/AdvancedAnalyticsService.php` (8 occurrences)
-- `app/Http/Controllers/Panel/YearlyReportController.php` (2 occurrences)
+- `app/Http/Controllers/Panel/YearlyReportController.php` (3 occurrences - includes collected_by fix)
+
+**Services Still Using payment_date** (require migration or refactoring):
+- `app/Services/CableTvBillingService.php`
+- `app/Services/FinancialReportService.php`
+- `app/Services/GeneralLedgerService.php`
+- `app/Services/BulkOperationsService.php`
 
 ### 2. Network Users is_active Column Error
 **Error**: `SQLSTATE[42S22]: Column not found: 1054 Unknown column 'is_active'`
@@ -24,12 +31,12 @@ This document summarizes the fixes applied to resolve the multiple errors report
 **Root Cause**: Code was using `is_active` column which doesn't exist in the base network_users table migration.
 
 **Fix Applied**:
-- Changed queries to use `status = 'active'` instead of `is_active = true`
+- Changed analytics queries to use `status = 'active'` instead of `is_active = true`
 - The base migration has a `status` enum column with values: 'active', 'inactive', 'suspended'
 
 **Files Modified**:
-- `app/Services/AdvancedAnalyticsService.php`
-- `app/Http/Controllers/Panel/ZoneController.php`
+- `app/Services/AdvancedAnalyticsService.php` (5 occurrences - lines 99, 109, 345, 438, 443)
+- `app/Http/Controllers/Panel/ZoneController.php` (1 occurrence)
 
 ### 3. MikrotikRouter host Column Error
 **Error**: `SQLSTATE[42S22]: Column not found: 1054 Unknown column 'host'`
@@ -71,9 +78,13 @@ This document summarizes the fixes applied to resolve the multiple errors report
 
 **Fix Applied**:
 - Added `networkUsers()` method as an alias to `pppoeUsers()` for backward compatibility
+- Added clarifying comments that this returns `MikrotikPppoeUser` models, not `NetworkUser` models
+- Documented that `NetworkUser` relationship is indirect through `PackageProfileMapping`
 
 **Files Modified**:
 - `app/Models/MikrotikRouter.php`
+
+**Note**: The relationship returns PPPoE-specific users, not general NetworkUser models. The relationship name may be misleading.
 
 ## Routing Issues - VERIFIED ✅
 
@@ -198,15 +209,38 @@ All reported missing views were found to exist:
 
 ## Migration Recommendations
 
-While the code now works with base migrations, you may want to run these optional migrations for enhanced functionality:
+While this PR fixes core analytics queries to work with base migrations, several other services still depend on additional columns:
 
 ```bash
+# RECOMMENDED: Run migrations to support all services
 php artisan migrate
 ```
 
-Optional migrations that exist but aren't required:
-- `2026_01_23_042741_add_missing_columns_to_payments_table.php` (adds payment_date)
-- `2026_01_23_042742_add_missing_columns_to_network_users_table.php` (adds is_active, tenant_id)
+**Required for full functionality**:
+- `2026_01_23_042741_add_missing_columns_to_payments_table.php` (adds `payment_date` - required by CableTvBillingService, FinancialReportService, GeneralLedgerService, BulkOperationsService)
+- Migration to add `collected_by` column to payments table (required for YearlyReportController operator income reports)
+
+**Optional enhancements**:
+- `2026_01_23_042742_add_missing_columns_to_network_users_table.php` (adds `is_active`, `tenant_id` - this PR uses `status` instead)
+- `2026_01_23_042743_add_missing_columns_to_mikrotik_routers_table.php` (adds `host`, `tenant_id` - this PR uses `ip_address` instead)
+
+## Scope of This PR
+
+**What This PR Fixes**:
+- ✅ Analytics dashboard queries (AdvancedAnalyticsService)
+- ✅ Revenue/customer/service report queries
+- ✅ Network device listing queries
+- ✅ OLT template view syntax
+- ✅ MikrotikRouter relationship compatibility
+
+**What Still Needs Attention**:
+- ⚠️ CableTvBillingService - uses `payment_date` (requires migration or refactoring)
+- ⚠️ FinancialReportService - uses `payment_date` (requires migration or refactoring)
+- ⚠️ GeneralLedgerService - uses `payment_date` (requires migration or refactoring)
+- ⚠️ BulkOperationsService - uses `payment_date` (requires migration or refactoring)
+- ⚠️ YearlyReportController operator income - needs `collected_by` column (requires migration)
+
+This focused approach allows the main analytics features to work immediately while other services can be addressed through migrations or future refactoring.
 - `2026_01_23_042743_add_missing_columns_to_mikrotik_routers_table.php` (adds host, tenant_id)
 
 ## Deployment Checklist
