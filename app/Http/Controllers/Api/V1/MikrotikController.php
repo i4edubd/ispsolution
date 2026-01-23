@@ -294,9 +294,6 @@ class MikrotikController extends Controller
     /**
      * Create a PPPoE profile
      */
-    /**
-     * Create a new PPP profile
-     */
     public function createProfile(Request $request): JsonResponse
     {
         $this->authorize('create', \App\Models\MikrotikRouter::class);

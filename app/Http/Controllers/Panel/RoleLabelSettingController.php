@@ -62,6 +62,11 @@ class RoleLabelSettingController extends Controller
      */
     public function destroy(string $roleSlug): RedirectResponse
     {
+        // Validate role slug
+        if (!in_array($roleSlug, ['operator', 'sub-operator'])) {
+            return redirect()->back()->with('error', 'Invalid role specified.');
+        }
+
         $user = Auth::user();
         $tenantId = $user->tenant_id;
         

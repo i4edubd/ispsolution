@@ -87,16 +87,16 @@
 
                             <div class="mt-6 flex items-center justify-end space-x-3">
                                 @if ($customLabel)
-                                    <form action="{{ route('panel.admin.settings.role-labels.destroy', $role->slug) }}" method="POST" style="display: inline;">
+                                    <button 
+                                        type="button"
+                                        onclick="event.preventDefault(); document.getElementById('reset-form-{{ $role->slug }}').submit();"
+                                        class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest hover:bg-gray-300 dark:hover:bg-gray-600 focus:bg-gray-300 dark:focus:bg-gray-600 active:bg-gray-400 dark:active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                    >
+                                        Reset to Default
+                                    </button>
+                                    <form id="reset-form-{{ $role->slug }}" action="{{ route('panel.admin.settings.role-labels.destroy', $role->slug) }}" method="POST" class="hidden">
                                         @csrf
                                         @method('DELETE')
-                                        <button 
-                                            type="submit" 
-                                            class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest hover:bg-gray-300 dark:hover:bg-gray-600 focus:bg-gray-300 dark:focus:bg-gray-600 active:bg-gray-400 dark:active:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
-                                            onclick="return confirm('Are you sure you want to reset to the default label?')"
-                                        >
-                                            Reset to Default
-                                        </button>
                                     </form>
                                 @endif
                                 <button 
