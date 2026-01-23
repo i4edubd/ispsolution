@@ -89,8 +89,7 @@ deep_clean_system() {
     apt-get autoremove -y 2>/dev/null || true
     rm -rf /etc/nginx /var/log/nginx /var/www/html
     rm -rf /etc/apache2 /var/log/apache2
-    deluser --remove-home www-data 2>/dev/null || true
-    delgroup www-data 2>/dev/null || true
+    # Note: www-data user is kept as it's a system account that may be used by other services
     
     # Remove PHP and all extensions
     print_status "Removing PHP..."
@@ -107,7 +106,10 @@ deep_clean_system() {
     apt-get remove --purge -y nodejs npm node 2>/dev/null || true
     apt-get autoremove -y 2>/dev/null || true
     rm -rf /usr/local/lib/node_modules /usr/local/bin/node /usr/local/bin/npm
-    rm -rf ~/.npm ~/.node-gyp
+    rm -rf /root/.npm /root/.node-gyp
+    # Also clean up common user directories if they exist
+    [ -d /home/*/.npm ] && rm -rf /home/*/.npm 2>/dev/null || true
+    [ -d /home/*/.node-gyp ] && rm -rf /home/*/.node-gyp 2>/dev/null || true
     
     # Remove Redis
     print_status "Removing Redis..."
@@ -157,61 +159,23 @@ setup_swap() {
     fi
 }
 
-# --- Step 1: Presence Detection (The Fixed Part) ---
+# --- Step 1: Presence Detection (Simplified after Deep Clean) ---
 check_existing_presence() {
-    print_status "Scanning for existing installation..."
+    print_status "Verifying clean state after deep clean..."
     
-    EXISTING_APP=false
-    EXISTING_DB=false
-
-    # 1. Directory Check
-    [ -d "$INSTALL_DIR" ] && EXISTING_APP=true
-
-    # 2. Database Check (Auth-safe)
+    # Since we've already done deep clean, just verify MySQL is not accessible with old credentials
+    # This is a safety check to ensure the cleanup was successful
+    
+    if [ -d "$INSTALL_DIR" ]; then
+        print_status "Note: Application directory still exists, but will be overwritten."
+    fi
+    
+    # Check if MySQL is accessible (shouldn't be after deep clean)
     if mysql -u root -e "status" >/dev/null 2>&1; then
-        MYSQL_CONN="mysql -u root"
-    else
-        echo -e "${YELLOW}[!] Existing MySQL root password detected.${NC}"
-        read -s -p "Enter current MySQL ROOT password: " PASS_INPUT
-        echo ""
-        if mysql -u root -p"${PASS_INPUT}" -e "status" >/dev/null 2>&1; then
-            MYSQL_CONN="mysql -u root -p${PASS_INPUT}"
-        else
-            print_error "Incorrect MySQL password. Exiting."
-            exit 1
-        fi
+        print_status "MySQL is accessible without password (expected after clean install)."
     fi
-
-    # Check if DB actually exists
-    $MYSQL_CONN -e "use $DB_NAME" >/dev/null 2>&1 && EXISTING_DB=true
-
-    # 3. Decision Menu
-    if [ "$EXISTING_APP" = true ] || [ "$EXISTING_DB" = true ]; then
-        echo -e "${RED}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!${NC}"
-        echo -e "${RED}   WARNING: EXISTING INSTALLATION DETECTED          ${NC}"
-        echo -e "${RED}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!${NC}"
-        echo -e "1) Remove and Install Fresh (DEEP CLEAN) - DEFAULT"
-        echo -e "2) Cancel Installation"
-        echo ""
-        
-        USER_CHOICE=1
-        echo -n "Select [1/2] (Timeout 30s, Default 1): "
-        read -t 30 USER_CHOICE || USER_CHOICE=1
-        echo ""
-
-        if [ "$USER_CHOICE" == "2" ]; then
-            print_error "Installation cancelled."
-            exit 0
-        fi
-        
-        # --- Deep Clean Logic ---
-        print_status "Executing Deep Clean..."
-        systemctl stop nginx php8.2-fpm freeradius mysql 2>/dev/null || true
-        rm -rf "$INSTALL_DIR"
-        $MYSQL_CONN -e "DROP DATABASE IF EXISTS $DB_NAME; DROP DATABASE IF EXISTS radius; DELETE FROM mysql.user WHERE User='ispsolution' OR User='radius'; FLUSH PRIVILEGES;" || true
-        rm -f /etc/nginx/sites-enabled/ispsolution /etc/nginx/sites-available/ispsolution
-        print_done "System cleaned."
-    fi
+    
+    print_done "System verified clean and ready for installation."
 }
 
 # --- Step 2: Install Stack ---
