@@ -20,10 +20,9 @@
 # Usage: sudo bash install.sh
 ################################################################################
 
-
 ################################################################################
-# ISP Solution - Full Production Installer v3.0
-# Features: Deep Clean, Presence Detection, SSL, RADIUS, Cron, & Sanity Check
+# ISP Solution - Ultimate Production Installer v4.0
+# Features: Auth-Aware Deep Clean, Presence Detection, SSL, RADIUS, & Cron
 ################################################################################
 
 set -e 
@@ -54,48 +53,61 @@ check_root() {
     fi
 }
 
-# --- Step 0: Deep Clean (Remove Leftovers) ---
-deep_clean() {
-    echo -e "${YELLOW}Proceeding with Deep Clean...${NC}"
-
-    # 1. Stop services to unlock files
-    print_status "Stopping active services..."
-    systemctl stop nginx php8.2-fpm freeradius mysql redis-server 2>/dev/null || true
-
-    # 2. Wipe Application Files
-    if [ -d "$INSTALL_DIR" ]; then
-        print_status "Removing leftover application files at $INSTALL_DIR..."
-        rm -rf "$INSTALL_DIR"
+# --- Step 0: MySQL Auth Verification (Prevents Crashes) ---
+verify_mysql_access() {
+    print_status "Verifying MySQL Access..."
+    if mysql -u root -e "status" >/dev/null 2>&1; then
+        MYSQL_CONN="mysql -u root"
+    else
+        echo -e "${YELLOW}[!] MySQL root password is required to handle existing data.${NC}"
+        read -s -p "Enter current MySQL ROOT password: " EXISTING_PASS
+        echo ""
+        if mysql -u root -p"${EXISTING_PASS}" -e "status" >/dev/null 2>&1; then
+            MYSQL_CONN="mysql -u root -p${EXISTING_PASS}"
+        else
+            print_error "MySQL Access Denied. Cannot proceed."
+            exit 1
+        fi
     fi
-
-    # 3. Wipe Databases and Users
-    print_status "Dropping old databases and users..."
-    mysql -u root -e "DROP DATABASE IF EXISTS $DB_NAME; DROP DATABASE IF EXISTS radius; DELETE FROM mysql.user WHERE User='ispsolution' OR User='radius'; FLUSH PRIVILEGES;" 2>/dev/null || true
-
-    # 4. Cleanup Configs
-    print_status "Removing leftover configurations..."
-    rm -f /etc/nginx/sites-enabled/ispsolution /etc/nginx/sites-available/ispsolution
-    rm -f /etc/freeradius/3.0/mods-enabled/sql /etc/freeradius/3.0/mods-enabled/sqlcounter
-    
-    print_done "Deep Clean complete. System is ready for fresh install."
 }
 
-# --- Step 1: Presence Detection ---
+# --- Step 1: Deep Clean (Remove Leftovers) ---
+deep_clean() {
+    echo -e "${YELLOW}Proceeding with Deep Clean...${NC}"
+    systemctl stop nginx php8.2-fpm freeradius mysql 2>/dev/null || true
+
+    print_status "Wiping application files..."
+    [ -d "$INSTALL_DIR" ] && rm -rf "$INSTALL_DIR"
+
+    print_status "Dropping old databases and users..."
+    $MYSQL_CONN -e "DROP DATABASE IF EXISTS $DB_NAME; DROP DATABASE IF EXISTS radius; DELETE FROM mysql.user WHERE User='ispsolution' OR User='radius'; FLUSH PRIVILEGES;" || true
+
+    print_status "Cleaning configs..."
+    rm -f /etc/nginx/sites-enabled/ispsolution /etc/nginx/sites-available/ispsolution
+    rm -f /etc/freeradius/3.0/mods-enabled/sql
+    
+    print_done "System is now a blank slate."
+}
+
+# --- Step 2: Presence Detection with Timeout ---
 check_existing() {
-    if [ -d "$INSTALL_DIR" ] || mysql -u root -e "use $DB_NAME" 2>/dev/null; then
+    # Detect directory OR existing database
+    if [ -d "$INSTALL_DIR" ] || $MYSQL_CONN -e "use $DB_NAME" >/dev/null 2>&1; then
         echo -e "${RED}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!${NC}"
         echo -e "${RED}   WARNING: EXISTING INSTALLATION DETECTED          ${NC}"
         echo -e "${RED}!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!${NC}"
+        echo -e "An existing installation of ISP Solution was found."
+        echo ""
         echo -e "1) Remove and Install Fresh (DEEP CLEAN) - DEFAULT"
         echo -e "2) Cancel Installation"
         echo ""
         
-        CHOICE=1
-        echo -n "Select [1/2] (Timeout 30s, Default 1): "
-        read -t 30 CHOICE || CHOICE=1
+        USER_CHOICE=1
+        echo -n "Select [1/2] (Auto-proceed Choice 1 in 30s): "
+        read -t 30 USER_CHOICE || USER_CHOICE=1
         echo ""
 
-        if [ "$CHOICE" == "2" ]; then
+        if [ "$USER_CHOICE" == "2" ]; then
             print_error "Installation cancelled."
             exit 0
         fi
@@ -103,88 +115,99 @@ check_existing() {
     fi
 }
 
-# --- Step 2: Credential Generation ---
-generate_creds() {
-    print_status "Generating secure credentials..."
-    DB_ROOT_PASSWORD=$(openssl rand -base64 12 | tr -d '=+/')
-    DB_PASSWORD=$(openssl rand -base64 12 | tr -d '=+/')
-    RADIUS_DB_PASSWORD=$(openssl rand -base64 15 | tr -d '=+/')
-    
-    {
-        echo "MYSQL_ROOT_PASS: $DB_ROOT_PASSWORD"
-        echo "APP_DB_PASS:     $DB_PASSWORD"
-        echo "RADIUS_DB_PASS:  $RADIUS_DB_PASSWORD"
-    } > "$CRED_FILE"
-    chmod 600 "$CRED_FILE"
-}
-
-# --- Step 3: Install Stack ---
+# --- Step 3: Install Core Stack ---
 install_stack() {
-    print_status "Installing PHP, Nginx, and MySQL..."
+    print_status "Installing LEMP Stack and Dependencies..."
     apt-get update -y
-    apt-get install -y software-properties-common curl git unzip openssl ufw mysql-server certbot python3-certbot-nginx
+    apt-get install -y software-properties-common curl git unzip openssl ufw mysql-server certbot python3-certbot-nginx bc
     add-apt-repository ppa:ondrej/php -y && apt-get update -y
     apt-get install -y php8.2-fpm php8.2-cli php8.2-mysql php8.2-mbstring php8.2-curl php8.2-xml php8.2-bcmath php8.2-intl nginx
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 }
 
-# --- Step 4: Configure DB & RADIUS ---
-setup_db_radius() {
-    print_status "Configuring MySQL and FreeRADIUS..."
-    mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_ROOT_PASSWORD}';"
+# --- Step 4: Credential Generation ---
+setup_creds_and_db() {
+    print_status "Generating new secure credentials..."
+    NEW_ROOT_PASS=$(openssl rand -base64 12 | tr -d '=+/')
+    NEW_APP_PASS=$(openssl rand -base64 12 | tr -d '=+/')
+    NEW_RAD_PASS=$(openssl rand -base64 15 | tr -d '=+/')
+
+    # Update MySQL Root Password
+    $MYSQL_CONN -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${NEW_ROOT_PASS}';"
     
-    # DB Setup
-    mysql -u root -p"${DB_ROOT_PASSWORD}" -e "CREATE DATABASE $DB_NAME; CREATE USER 'ispsolution'@'localhost' IDENTIFIED BY '$DB_PASSWORD'; GRANT ALL PRIVILEGES ON $DB_NAME.* TO 'ispsolution'@'localhost';"
-    mysql -u root -p"${DB_ROOT_PASSWORD}" -e "CREATE DATABASE radius; CREATE USER 'radius'@'localhost' IDENTIFIED BY '$RADIUS_DB_PASSWORD'; GRANT ALL PRIVILEGES ON radius.* TO 'radius'@'localhost'; FLUSH PRIVILEGES;"
+    # Define connection for new credentials
+    NEW_CONN="mysql -u root -p${NEW_ROOT_PASS}"
+
+    # Create DBs
+    $NEW_CONN -e "CREATE DATABASE $DB_NAME; CREATE USER 'ispsolution'@'localhost' IDENTIFIED BY '$NEW_APP_PASS'; GRANT ALL PRIVILEGES ON $DB_NAME.* TO 'ispsolution'@'localhost';"
+    $NEW_CONN -e "CREATE DATABASE radius; CREATE USER 'radius'@'localhost' IDENTIFIED BY '$NEW_RAD_PASS'; GRANT ALL PRIVILEGES ON radius.* TO 'radius'@'localhost'; FLUSH PRIVILEGES;"
+
+    # Save to file
+    {
+        echo "MYSQL_ROOT_PASS: $NEW_ROOT_PASS"
+        echo "APP_DB_PASS:     $NEW_APP_PASS"
+        echo "RADIUS_DB_PASS:  $NEW_RAD_PASS"
+    } > "$CRED_FILE"
+    chmod 600 "$CRED_FILE"
     
-    # RADIUS Setup
+    # Store locally for script use
+    RAD_DB_PASS_LOCAL="$NEW_RAD_PASS"
+    APP_DB_PASS_LOCAL="$NEW_APP_PASS"
+    ROOT_DB_PASS_LOCAL="$NEW_ROOT_PASS"
+}
+
+# --- Step 5: RADIUS Setup ---
+setup_radius() {
+    print_status "Configuring FreeRADIUS..."
     apt-get install -y freeradius freeradius-mysql
     ln -sf /etc/freeradius/3.0/mods-available/sql /etc/freeradius/3.0/mods-enabled/
+    
     SQL_MOD="/etc/freeradius/3.0/mods-enabled/sql"
     sed -i 's/driver = "rlm_sql_null"/driver = "rlm_sql_mysql"/' "$SQL_MOD"
     sed -i "s/^[[:space:]]*#[[:space:]]*login = .*/login = \"radius\"/" "$SQL_MOD"
-    sed -i "s/^[[:space:]]*#[[:space:]]*password = .*/password = \"$RADIUS_DB_PASSWORD\"/" "$SQL_MOD"
+    sed -i "s/^[[:space:]]*#[[:space:]]*password = .*/password = \"$RAD_DB_PASS_LOCAL\"/" "$SQL_MOD"
     sed -i "s/^[[:space:]]*#[[:space:]]*radius_db = .*/radius_db = \"radius\"/" "$SQL_MOD"
-    
-    # Import Schema
-    mysql -u root -p"${DB_ROOT_PASSWORD}" radius < /etc/freeradius/3.0/mods-config/sql/main/mysql/schema.sql
+
+    mysql -u root -p"${ROOT_DB_PASS_LOCAL}" radius < /etc/freeradius/3.0/mods-config/sql/main/mysql/schema.sql
     systemctl restart freeradius
 }
 
-# --- Step 5: Laravel Setup ---
+# --- Step 6: Laravel Deployment ---
 setup_laravel() {
-    print_status "Cloning Laravel and running seeders..."
+    print_status "Cloning application and setting up environment..."
     git clone https://github.com/i4edubd/ispsolution.git "$INSTALL_DIR"
     cd "$INSTALL_DIR"
     cp .env.example .env
-    
+
     # Sync .env
     sed -i "s|DB_DATABASE=.*|DB_DATABASE=$DB_NAME|" .env
     sed -i "s|DB_USERNAME=.*|DB_USERNAME=ispsolution|" .env
-    sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|" .env
+    sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$APP_DB_PASS_LOCAL|" .env
     
+    # Add Radius Keys
     for K in RADIUS_DB_DATABASE RADIUS_DB_USERNAME RADIUS_DB_PASSWORD RADIUS_DB_HOST; do
         grep -q "$K" .env || echo "$K=" >> .env
     done
     sed -i "s|RADIUS_DB_HOST=.*|RADIUS_DB_HOST=127.0.0.1|" .env
     sed -i "s|RADIUS_DB_DATABASE=.*|RADIUS_DB_DATABASE=radius|" .env
     sed -i "s|RADIUS_DB_USERNAME=.*|RADIUS_DB_USERNAME=radius|" .env
-    sed -i "s|RADIUS_DB_PASSWORD=.*|RADIUS_DB_PASSWORD=$RADIUS_DB_PASSWORD|" .env
+    sed -i "s|RADIUS_DB_PASSWORD=.*|RADIUS_DB_PASSWORD=$RAD_DB_PASS_LOCAL|" .env
 
     composer install --no-dev --optimize-autoloader
     php artisan key:generate
     php artisan migrate --force
     php artisan db:seed --force
     
-    # Laravel Cron
-    (crontab -l 2>/dev/null | grep -v "schedule:run" ; echo "* * * * * cd $INSTALL_DIR && php artisan schedule:run >> /dev/null 2>&1") | crontab -
-    
+    # Set Permissions
     chown -R www-data:www-data "$INSTALL_DIR"
     chmod -R 775 storage bootstrap/cache
+
+    # Add Cron
+    (crontab -l 2>/dev/null | grep -v "schedule:run" ; echo "* * * * * cd $INSTALL_DIR && php artisan schedule:run >> /dev/null 2>&1") | crontab -
 }
 
-# --- Step 6: Nginx & SSL ---
-setup_web() {
+# --- Step 7: Web & SSL ---
+setup_web_ssl() {
     print_status "Configuring Nginx and SSL..."
     cat > /etc/nginx/sites-available/ispsolution <<EOF
 server {
@@ -199,33 +222,33 @@ EOF
     ln -sf /etc/nginx/sites-available/ispsolution /etc/nginx/sites-enabled/
     rm -f /etc/nginx/sites-enabled/default
     systemctl restart nginx
-    
-    # Certbot (Make sure DNS points to this IP)
-    certbot --nginx -d "$DOMAIN_NAME" --non-interactive --agree-tos -m "$EMAIL" --redirect || print_error "SSL Failed. Check DNS."
+
+    # SSL (Optional: Fail gracefully if DNS is not set)
+    certbot --nginx -d "$DOMAIN_NAME" --non-interactive --agree-tos -m "$EMAIL" --redirect || echo "SSL skipped (Check DNS A record)."
 }
 
-# --- Step 7: Sanity Check ---
+# --- Step 8: Final Verification ---
 run_sanity_check() {
-    echo -e "\n${YELLOW}=== FINAL SANITY CHECK ===${NC}"
+    echo -e "\n${YELLOW}=== FINAL SYSTEM CHECK ===${NC}"
     cd "$INSTALL_DIR"
-    php artisan tinker --execute="DB::connection()->getPdo(); print('Main DB: OK\n');" 2>/dev/null || print_error "Main DB Connection: FAIL"
-    php artisan tinker --execute="DB::connection('radius')->getPdo(); print('Radius DB: OK\n');" 2>/dev/null || print_error "Radius DB Connection: FAIL"
-    systemctl is-active --quiet freeradius && print_done "RADIUS Service: OK"
-    crontab -l | grep -q "schedule:run" && print_done "Cron Job: OK"
+    php artisan tinker --execute="DB::connection()->getPdo(); print('Main DB: OK\n');" 2>/dev/null || print_error "Main DB: FAIL"
+    php artisan tinker --execute="DB::connection('radius')->getPdo(); print('Radius DB: OK\n');" 2>/dev/null || print_error "Radius DB: FAIL"
+    systemctl is-active --quiet freeradius && print_done "RADIUS: OK"
     echo -e "${YELLOW}==========================${NC}\n"
 }
 
 # --- Execution ---
 main() {
     check_root
+    verify_mysql_access
     check_existing
-    generate_creds
     install_stack
-    setup_db_radius
+    setup_creds_and_db
+    setup_radius
     setup_laravel
-    setup_web
+    setup_web_ssl
     run_sanity_check
-    print_done "Production installation complete! Credentials: $CRED_FILE"
+    print_done "Installation complete! Credentials stored in $CRED_FILE"
 }
 
 main "$@"
