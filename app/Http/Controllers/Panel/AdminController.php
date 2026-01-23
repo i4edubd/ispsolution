@@ -30,6 +30,7 @@ use App\Services\PdfService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -378,7 +379,7 @@ class AdminController extends Controller
                             ['email' => $secret['name'] . '@' . $emailDomain],
                             [
                                 'name' => $secret['name'],
-                                'password' => bcrypt(\Illuminate\Support\Str::random(32)), // Strong random password
+                                'password' => bcrypt(Str::random(32)), // Strong random password
                             ]
                         );
                         $userId = $customer->id;
