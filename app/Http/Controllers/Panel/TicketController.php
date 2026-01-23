@@ -19,6 +19,9 @@ class TicketController extends Controller
         $user = auth()->user();
         $query = Ticket::query()->with(['customer', 'assignedTo', 'resolver']);
 
+        // Cache customerIds for Operators/Sub-Operators to avoid duplicate queries
+        $customerIds = null;
+        
         // Filter tickets based on user role
         if ($user->isCustomer()) {
             $query->where('customer_id', $user->id);
@@ -28,8 +31,8 @@ class TicketController extends Controller
                 $q->where('assigned_to', $user->id)
                   ->orWhereNull('assigned_to');
             });
-        } elseif ($user->isOperator() || $user->isSubOperator()) {
-            // Operators can see tickets from their customers
+        } elseif ($user->isOperatorRole() || $user->isSubOperator()) {
+            // Operators (level 30) and Sub-Operators (level 40) can see tickets from their customers
             $customerIds = $user->subordinates()
                 ->where('operator_level', User::OPERATOR_LEVEL_CUSTOMER)
                 ->pluck('id');
@@ -60,7 +63,7 @@ class TicketController extends Controller
 
         $tickets = $query->latest()->paginate(20);
 
-        // Get statistics (role-based)
+        // Get statistics (role-based) - reuse cached customerIds
         $statsQuery = Ticket::query();
         
         if ($user->isCustomer()) {
@@ -70,10 +73,8 @@ class TicketController extends Controller
                 $q->where('assigned_to', $user->id)
                   ->orWhereNull('assigned_to');
             });
-        } elseif ($user->isOperator() || $user->isSubOperator()) {
-            $customerIds = $user->subordinates()
-                ->where('operator_level', User::OPERATOR_LEVEL_CUSTOMER)
-                ->pluck('id');
+        } elseif ($user->isOperatorRole() || $user->isSubOperator()) {
+            // Reuse cached customerIds from above to avoid duplicate query
             $statsQuery->whereIn('customer_id', $customerIds);
         }
         

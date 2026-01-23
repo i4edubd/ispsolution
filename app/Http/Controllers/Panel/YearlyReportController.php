@@ -417,8 +417,6 @@ class YearlyReportController extends Controller
      * Export yearly report to PDF
      * Note: PDF export functionality requires PDF templates to be created.
      * For now, redirecting to the view page as PDF generation needs proper templates.
-    /**
-     * Export report as PDF
      */
     public function exportPdf(Request $request, string $reportType)
     {
