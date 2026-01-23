@@ -219,6 +219,17 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/customers/pppoe-import', [AdminController::class, 'pppoeCustomerImport'])->name('customers.pppoe-import');
     Route::get('/customers/bulk-update', [AdminController::class, 'bulkUpdateUsers'])->name('customers.bulk-update');
 
+    // Zone Management
+    Route::get('/zones', [\App\Http\Controllers\Panel\ZoneController::class, 'index'])->name('zones.index');
+    Route::get('/zones/create', [\App\Http\Controllers\Panel\ZoneController::class, 'create'])->name('zones.create');
+    Route::post('/zones', [\App\Http\Controllers\Panel\ZoneController::class, 'store'])->name('zones.store');
+    Route::get('/zones/{zone}', [\App\Http\Controllers\Panel\ZoneController::class, 'show'])->name('zones.show');
+    Route::get('/zones/{zone}/edit', [\App\Http\Controllers\Panel\ZoneController::class, 'edit'])->name('zones.edit');
+    Route::put('/zones/{zone}', [\App\Http\Controllers\Panel\ZoneController::class, 'update'])->name('zones.update');
+    Route::delete('/zones/{zone}', [\App\Http\Controllers\Panel\ZoneController::class, 'destroy'])->name('zones.destroy');
+    Route::get('/zones-report', [\App\Http\Controllers\Panel\ZoneController::class, 'report'])->name('zones.report');
+    Route::post('/zones/bulk-assign', [\App\Http\Controllers\Panel\ZoneController::class, 'bulkAssign'])->name('zones.bulk-assign');
+
     // Accounting & Finance
     Route::get('/accounting/transactions', [AdminController::class, 'accountTransactions'])->name('accounting.transactions');
     Route::get('/accounting/payment-gateway-transactions', [AdminController::class, 'paymentGatewayTransactions'])->name('accounting.payment-gateway-transactions');
@@ -379,6 +390,18 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/api/analytics/services', [AnalyticsController::class, 'serviceAnalytics'])->name('analytics.api.services');
     Route::get('/api/analytics/growth', [AnalyticsController::class, 'growthMetrics'])->name('analytics.api.growth');
     Route::get('/api/analytics/performance', [AnalyticsController::class, 'performanceIndicators'])->name('analytics.api.performance');
+
+    // Yearly Reports
+    Route::prefix('yearly-reports')->name('yearly-reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Panel\YearlyReportController::class, 'index'])->name('index');
+        Route::get('/card-distributor-payments', [\App\Http\Controllers\Panel\YearlyReportController::class, 'cardDistributorPayments'])->name('card-distributor-payments');
+        Route::get('/cash-in', [\App\Http\Controllers\Panel\YearlyReportController::class, 'cashIn'])->name('cash-in');
+        Route::get('/cash-out', [\App\Http\Controllers\Panel\YearlyReportController::class, 'cashOut'])->name('cash-out');
+        Route::get('/operator-income', [\App\Http\Controllers\Panel\YearlyReportController::class, 'operatorIncome'])->name('operator-income');
+        Route::get('/expenses', [\App\Http\Controllers\Panel\YearlyReportController::class, 'expenses'])->name('expenses');
+        Route::get('/{reportType}/export-excel', [\App\Http\Controllers\Panel\YearlyReportController::class, 'exportExcel'])->name('export-excel');
+        Route::get('/{reportType}/export-pdf', [\App\Http\Controllers\Panel\YearlyReportController::class, 'exportPdf'])->name('export-pdf');
+    });
 
     // Cable TV Management
     Route::prefix('cable-tv')->name('cable-tv.')->group(function () {
