@@ -25,6 +25,8 @@ return new class extends Migration
     {
         Schema::table('olts', function (Blueprint $table) {
             // Revert username column length to original size
+            // Note: This will fail if any encrypted usernames exceed 100 characters
+            // In that case, decrypt and re-encrypt or truncate data before rollback
             $table->string('username', 100)->nullable()->change();
         });
     }
