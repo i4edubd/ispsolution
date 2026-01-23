@@ -24,6 +24,7 @@ class Payment extends Model
         'payment_method', // gateway, card, cash, bank_transfer
         'payment_data', // JSON field for gateway response
         'paid_at',
+        'payment_date',
         'notes',
     ];
 
@@ -31,6 +32,7 @@ class Payment extends Model
         'amount' => 'decimal:2',
         'payment_data' => 'array',
         'paid_at' => 'datetime',
+        'payment_date' => 'date',
     ];
 
     public function user(): BelongsTo

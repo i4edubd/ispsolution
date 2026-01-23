@@ -19,6 +19,7 @@ class MikrotikRouter extends Model
         'tenant_id',
         'name',
         'ip_address',
+        'host',
         'api_port',
         'username',
         'password',
@@ -69,6 +70,11 @@ class MikrotikRouter extends Model
     public function packageMappings(): HasMany
     {
         return $this->hasMany(PackageProfileMapping::class, 'router_id');
+    }
+
+    public function networkUsers(): HasMany
+    {
+        return $this->hasMany(NetworkUser::class, 'router_id');
     }
 
     // Optimized query scopes
