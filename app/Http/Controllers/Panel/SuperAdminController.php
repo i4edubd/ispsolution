@@ -49,6 +49,96 @@ class SuperAdminController extends Controller
     }
 
     /**
+     * Show the form for creating a new user.
+     */
+    public function usersCreate(): View
+    {
+        $roles = Role::where('slug', '!=', 'developer')->get();
+
+        return view('panels.super-admin.users.create', compact('roles'));
+    }
+
+    /**
+     * Store a newly created user.
+     */
+    public function usersStore(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'role_id' => 'required|exists:roles,id',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+        ]);
+
+        $user->roles()->attach($validated['role_id']);
+
+        return redirect()->route('panel.super-admin.users')
+            ->with('success', 'User created successfully.');
+    }
+
+    /**
+     * Show the form for editing the specified user.
+     */
+    public function usersEdit($id): View
+    {
+        $user = User::with('roles')->findOrFail($id);
+        $roles = Role::where('slug', '!=', 'developer')->get();
+
+        return view('panels.super-admin.users.edit', compact('user', 'roles'));
+    }
+
+    /**
+     * Update the specified user.
+     */
+    public function usersUpdate(Request $request, $id): RedirectResponse
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:8',
+            'role_id' => 'required|exists:roles,id',
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => !empty($validated['password']) ? bcrypt($validated['password']) : $user->password,
+        ]);
+
+        $user->roles()->sync([$validated['role_id']]);
+
+        return redirect()->route('panel.super-admin.users')
+            ->with('success', 'User updated successfully.');
+    }
+
+    /**
+     * Remove the specified user.
+     */
+    public function usersDestroy($id): RedirectResponse
+    {
+        $user = User::findOrFail($id);
+        
+        // Prevent deletion of users with developer role
+        if ($user->hasRole('developer')) {
+            return redirect()->route('panel.super-admin.users')
+                ->with('error', 'Cannot delete developer users.');
+        }
+
+        $user->delete();
+
+        return redirect()->route('panel.super-admin.users')
+            ->with('success', 'User deleted successfully.');
+    }
+
+    /**
      * Display roles listing.
      */
     public function roles(): View
