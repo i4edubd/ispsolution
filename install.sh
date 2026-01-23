@@ -443,8 +443,19 @@ configure_freeradius() {
     sed -i "s/password = \"radpass\"/password = \"${RADIUS_DB_PASSWORD}\"/" /etc/freeradius/3.0/mods-available/sql
     sed -i "s/radius_db = \"radius\"/radius_db = \"${RADIUS_DB_NAME}\"/" /etc/freeradius/3.0/mods-available/sql
     
-    # Import RADIUS schema
-    mysql -u"${RADIUS_DB_USER}" -p"${RADIUS_DB_PASSWORD}" "${RADIUS_DB_NAME}" < /etc/freeradius/3.0/mods-config/sql/main/mysql/schema.sql 2>/dev/null || true
+    # Import RADIUS schema using secure credentials
+    RADIUS_CREDS=$(mktemp)
+    cat > "$RADIUS_CREDS" <<EOF
+[client]
+user=${RADIUS_DB_USER}
+password=${RADIUS_DB_PASSWORD}
+EOF
+    chmod 600 "$RADIUS_CREDS"
+    
+    mysql --defaults-extra-file="$RADIUS_CREDS" "${RADIUS_DB_NAME}" < /etc/freeradius/3.0/mods-config/sql/main/mysql/schema.sql 2>/dev/null || true
+    
+    # Clean up credentials file
+    rm -f "$RADIUS_CREDS"
     
     # Restart FreeRADIUS
     systemctl restart freeradius
