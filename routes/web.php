@@ -215,14 +215,14 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     // Customer Management
     Route::get('/customers', [AdminController::class, 'customers'])->name('customers');
     Route::get('/customers/create', [AdminController::class, 'customersCreate'])->name('customers.create');
+    Route::get('/customers/import-requests', [AdminController::class, 'customerImportRequests'])->name('customers.import-requests');
+    Route::get('/customers/pppoe-import', [AdminController::class, 'pppoeCustomerImport'])->name('customers.pppoe-import');
+    Route::get('/customers/bulk-update', [AdminController::class, 'bulkUpdateUsers'])->name('customers.bulk-update');
     Route::get('/customers/{id}/edit', [AdminController::class, 'customersEdit'])->name('customers.edit');
     Route::get('/customers/{id}', [AdminController::class, 'customersShow'])->name('customers.show');
     Route::get('/customers-deleted', [AdminController::class, 'deletedCustomers'])->name('customers.deleted');
     Route::get('/customers-online', [AdminController::class, 'onlineCustomers'])->name('customers.online');
     Route::get('/customers-offline', [AdminController::class, 'offlineCustomers'])->name('customers.offline');
-    Route::get('/customers/import-requests', [AdminController::class, 'customerImportRequests'])->name('customers.import-requests');
-    Route::get('/customers/pppoe-import', [AdminController::class, 'pppoeCustomerImport'])->name('customers.pppoe-import');
-    Route::get('/customers/bulk-update', [AdminController::class, 'bulkUpdateUsers'])->name('customers.bulk-update');
 
     // Zone Management
     Route::get('/zones', [\App\Http\Controllers\Panel\ZoneController::class, 'index'])->name('zones.index');
