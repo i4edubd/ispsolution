@@ -658,4 +658,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(OperatorWalletTransaction::class, 'operator_id');
     }
+
+    /**
+     * Get operator package rates.
+     */
+    public function packageRates(): HasMany
+    {
+        return $this->hasMany(OperatorPackageRate::class, 'operator_id');
+    }
+
+    /**
+     * Get operator SMS rate.
+     */
+    public function smsRate()
+    {
+        return $this->hasOne(OperatorSmsRate::class, 'operator_id');
+    }
 }

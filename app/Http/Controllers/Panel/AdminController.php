@@ -1706,4 +1706,122 @@ class AdminController extends Controller
 
         return view('panels.admin.operators.wallet-history', compact('operator', 'transactions'));
     }
+
+    /**
+     * Display operator package rates.
+     */
+    public function operatorPackageRates(): View
+    {
+        $operators = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'operator');
+        })->with('packageRates.package')->latest()->paginate(20);
+
+        return view('panels.admin.operators.package-rates', compact('operators'));
+    }
+
+    /**
+     * Show form to assign package rates to operator.
+     */
+    public function assignOperatorPackageRate(User $operator): View
+    {
+        $packages = Package::where('is_global', true)->orWhere('operator_id', $operator->id)->get();
+        $existingRates = \App\Models\OperatorPackageRate::where('operator_id', $operator->id)
+            ->pluck('package_id')
+            ->toArray();
+
+        return view('panels.admin.operators.assign-package-rate', compact('operator', 'packages', 'existingRates'));
+    }
+
+    /**
+     * Store operator package rate assignment.
+     */
+    public function storeOperatorPackageRate(Request $request, User $operator)
+    {
+        $validated = $request->validate([
+            'package_id' => 'required|exists:packages,id',
+            'custom_price' => 'required|numeric|min:0',
+            'commission_percentage' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        $validated['operator_id'] = $operator->id;
+
+        \App\Models\OperatorPackageRate::updateOrCreate(
+            [
+                'operator_id' => $operator->id,
+                'package_id' => $validated['package_id'],
+            ],
+            $validated
+        );
+
+        return redirect()->route('panel.admin.operators.package-rates')
+            ->with('success', 'Package rate assigned successfully.');
+    }
+
+    /**
+     * Delete operator package rate.
+     */
+    public function deleteOperatorPackageRate(User $operator, $packageId)
+    {
+        \App\Models\OperatorPackageRate::where('operator_id', $operator->id)
+            ->where('package_id', $packageId)
+            ->delete();
+
+        return redirect()->route('panel.admin.operators.package-rates')
+            ->with('success', 'Package rate removed successfully.');
+    }
+
+    /**
+     * Display operator SMS rates.
+     */
+    public function operatorSmsRates(): View
+    {
+        $operators = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'operator');
+        })->with('smsRate')->latest()->paginate(20);
+
+        return view('panels.admin.operators.sms-rates', compact('operators'));
+    }
+
+    /**
+     * Show form to assign SMS rate to operator.
+     */
+    public function assignOperatorSmsRate(User $operator): View
+    {
+        $smsRate = \App\Models\OperatorSmsRate::where('operator_id', $operator->id)->first();
+
+        return view('panels.admin.operators.assign-sms-rate', compact('operator', 'smsRate'));
+    }
+
+    /**
+     * Store operator SMS rate assignment.
+     */
+    public function storeOperatorSmsRate(Request $request, User $operator)
+    {
+        $validated = $request->validate([
+            'rate_per_sms' => 'required|numeric|min:0',
+            'bulk_rate_threshold' => 'nullable|integer|min:1',
+            'bulk_rate_per_sms' => 'nullable|numeric|min:0',
+        ]);
+
+        $validated['operator_id'] = $operator->id;
+
+        \App\Models\OperatorSmsRate::updateOrCreate(
+            ['operator_id' => $operator->id],
+            $validated
+        );
+
+        return redirect()->route('panel.admin.operators.sms-rates')
+            ->with('success', 'SMS rate assigned successfully.');
+    }
+
+    /**
+     * Delete operator SMS rate.
+     */
+    public function deleteOperatorSmsRate(User $operator)
+    {
+        \App\Models\OperatorSmsRate::where('operator_id', $operator->id)->delete();
+
+        return redirect()->route('panel.admin.operators.sms-rates')
+            ->with('success', 'SMS rate removed successfully.');
+    }
 }

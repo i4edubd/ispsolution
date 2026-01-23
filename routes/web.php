@@ -259,6 +259,18 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::post('/operators/{operator}/deduct-funds', [AdminController::class, 'processDeductOperatorFunds'])->name('operators.process-deduct-funds');
     Route::get('/operators/{operator}/wallet-history', [AdminController::class, 'operatorWalletHistory'])->name('operators.wallet-history');
 
+    // Operator Package Rates
+    Route::get('/operators/package-rates', [AdminController::class, 'operatorPackageRates'])->name('operators.package-rates');
+    Route::get('/operators/{operator}/assign-package-rate', [AdminController::class, 'assignOperatorPackageRate'])->name('operators.assign-package-rate');
+    Route::post('/operators/{operator}/assign-package-rate', [AdminController::class, 'storeOperatorPackageRate'])->name('operators.store-package-rate');
+    Route::delete('/operators/{operator}/package-rate/{packageId}', [AdminController::class, 'deleteOperatorPackageRate'])->name('operators.delete-package-rate');
+
+    // Operator SMS Rates
+    Route::get('/operators/sms-rates', [AdminController::class, 'operatorSmsRates'])->name('operators.sms-rates');
+    Route::get('/operators/{operator}/assign-sms-rate', [AdminController::class, 'assignOperatorSmsRate'])->name('operators.assign-sms-rate');
+    Route::post('/operators/{operator}/assign-sms-rate', [AdminController::class, 'storeOperatorSmsRate'])->name('operators.store-sms-rate');
+    Route::delete('/operators/{operator}/sms-rate', [AdminController::class, 'deleteOperatorSmsRate'])->name('operators.delete-sms-rate');
+
     // Payment Gateway Management
     Route::get('/payment-gateways', [AdminController::class, 'paymentGateways'])->name('payment-gateways');
     Route::get('/payment-gateways/create', [AdminController::class, 'paymentGatewaysCreate'])->name('payment-gateways.create');
