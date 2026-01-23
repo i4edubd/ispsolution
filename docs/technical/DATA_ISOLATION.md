@@ -16,13 +16,11 @@ The system uses a numeric level system where **lower numbers = higher privileges
 Level 0:   Developer      (Supreme Authority)
 Level 10:  Super Admin    (Tenant Owner)
 Level 20:  Admin          (ISP Owner)
-Level 30:  Operator       (Reseller)
-Level 40:  Sub-Operator   (Sub-Reseller)
+Level 30:  Operator       (Manages Sub-Operators and Customers)
+Level 40:  Sub-Operator   (Manages only own Customers)
 Level 50:  Manager        (Task-specific)
-Level 60:  Card Distributor / Reseller
-Level 65:  Sub-Reseller
-Level 70:  Accountant
-Level 80:  Staff
+Level 70:  Accountant     (Financial reporting)
+Level 80:  Staff          (Support)
 Level 100: Customer       (End User)
 ```
 

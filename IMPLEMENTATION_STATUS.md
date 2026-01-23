@@ -21,13 +21,10 @@ The following role hierarchy has been implemented with correct data isolation ru
 |------|-------|-------------|--------|
 | Developer | 0 | Supreme authority. All tenants | ✅ Complete |
 | Super Admin | 10 | Only OWN tenants | ✅ Complete |
-| Admin (Group Admin) | 20 | Own ISP data within tenancy | ✅ Complete |
+| Admin | 20 | Own ISP data within tenancy | ✅ Complete |
 | Operator | 30 | Own + sub-operator customers | ✅ Complete |
 | Sub-Operator | 40 | Only own customers | ✅ Complete |
 | Manager | 50 | View based on permissions | ✅ Complete |
-| Card Distributor | 60 | Card operations only | ✅ Complete |
-| Reseller | 60 | Customer management & sales | ✅ Complete |
-| Sub-Reseller | 65 | Under main reseller | ✅ Complete |
 | Accountant | 70 | Financial reporting (read-only) | ✅ Complete |
 | Staff | 80 | View based on permissions | ✅ Complete |
 | Customer | 100 | Self-service only | ✅ Complete |
@@ -98,9 +95,6 @@ All panel controllers already exist:
 | SubOperatorController | app/Http/Controllers/Panel/SubOperatorController.php | ✅ Exists |
 | StaffController | app/Http/Controllers/Panel/StaffController.php | ✅ Exists |
 | AccountantController | app/Http/Controllers/Panel/AccountantController.php | ✅ Exists |
-| ResellerController | app/Http/Controllers/Panel/ResellerController.php | ✅ Exists |
-| SubResellerController | app/Http/Controllers/Panel/SubResellerController.php | ✅ Exists |
-| CardDistributorController | app/Http/Controllers/Panel/CardDistributorController.php | ✅ Exists |
 | CustomerController | app/Http/Controllers/Panel/CustomerController.php | ✅ Exists |
 
 ---
@@ -139,9 +133,6 @@ All role-based route groups are configured in `routes/web.php`:
 | /panel/sub-operator/* | sub-operator | ✅ Configured |
 | /panel/staff/* | staff | ✅ Configured |
 | /panel/accountant/* | accountant | ✅ Configured |
-| /panel/reseller/* | reseller | ✅ Configured |
-| /panel/sub-reseller/* | sub-reseller | ✅ Configured |
-| /panel/card-distributor/* | card-distributor | ✅ Configured |
 | /panel/customer/* | customer | ✅ Configured |
 
 ---
@@ -160,9 +151,6 @@ Panel view directories already exist:
 | Sub-Operator | resources/views/panels/sub-operator/ | ✅ Created |
 | Staff | resources/views/panels/staff/ | ✅ Exists |
 | Accountant | resources/views/panels/accountant/ | ✅ Created |
-| Reseller | resources/views/panels/reseller/ | ✅ Exists |
-| Sub-Reseller | resources/views/panels/sub-reseller/ | ✅ Exists |
-| Card Distributor | resources/views/panels/card-distributor/ | ✅ Exists |
 | Customer | resources/views/panels/customer/ | ✅ Exists |
 
 ---

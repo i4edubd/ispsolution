@@ -68,38 +68,38 @@ This PR implements the foundational multi-tenancy infrastructure and role-based 
    - API access, system debugging, logs
 
 2. **Super Admin** (Level 95)
-   - Full access within tenant
+   - Full access within own tenants only
    - Settings management
    - Tenant administrator
 
 3. **Admin** (Level 90)
-   - ISP
+   - ISP administrator
    - User and network management
    - User, role, network, billing, report, settings management
 
-4. **Manager** (Level 70)
+4. **Operator** (Level 70)
+   - Operational staff
+   - Manages Sub-Operators and Customers
+   - Configurable menu access
+
+5. **Sub-Operator** (Level 60)
+   - Limited operational access
+   - Manages only own Customers
+   - Restricted features
+
+6. **Manager** (Level 70)
    - Operational permissions
    - User and network management
    - View billing and reports
-
-5. **Reseller** (Level 60)
-   - Customer management
-   - View packages, billing, reports
-   - Commission access
-
-6. **Sub-Reseller** (Level 55)
-   - Similar to reseller but subordinate
-   - Customer and package management
-   - Commission view
 
 7. **Staff** (Level 50)
    - Limited operational access
    - View users, network, billing
    - Manage tickets
 
-8. **Card Distributor** (Level 40)
-   - Recharge card management
-   - Sell cards and view balance
+8. **Accountant** (Level 40)
+   - Financial reporting (read-only)
+   - View-only access to financial data
 
 9. **Customer** (Level 10)
    - Self-service access

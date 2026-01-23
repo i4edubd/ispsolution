@@ -9,17 +9,14 @@ The system automatically generates appropriate menus based on the logged-in user
 ## Role Hierarchy
 
 1. **Developer (Level 0)** - Technical infrastructure and API management
-2. **Super Admin (Level 10)** - System-wide administrator across all tenants
+2. **Super Admin (Level 10)** - System-wide administrator across own tenants only
 3. **Admin (Level 20)** - Tenant administrator (ISP Admin)
 4. **Operator (Level 30)** - Operational staff with configurable menus
 5. **Sub-Operator (Level 40)** - Limited operator (subset of operator)
 6. **Manager (Level 50)** - Task-specific access
-7. **Card Distributor (Level 60)** - Card operations only (separate portal)
-8. **Reseller (Level 65)** - Customer management and sales
-9. **Accountant (Level 70)** - Financial reporting (read-only)
-10. **Sub-Reseller (Level 75)** - Subordinate to reseller
-11. **Staff (Level 80)** - Support staff
-12. **Customer (Level 100)** - Self-service access
+7. **Accountant (Level 70)** - Financial reporting (read-only)
+8. **Staff (Level 80)** - Support staff
+9. **Customer (Level 100)** - Self-service access
 
 ## Using the Menu Service
 
@@ -185,7 +182,7 @@ Each menu item has the following structure:
 ## Admin Panel Routes
 
 - Dashboard: `panel.admin.dashboard`
-- Resellers & Managers: `panel.admin.operators.*`
+- Operators & Managers: `panel.admin.operators.*`
 - Routers & Packages: `panel.admin.packages.*`, `panel.admin.network.*`
 - Recharge Cards: `panel.admin.cards.*`
 - Customers: `panel.admin.customers.*`
