@@ -25,6 +25,7 @@ use App\Models\Role;
 use App\Models\ServicePackage;
 use App\Models\User;
 use App\Services\ExcelExportService;
+use App\Services\MikrotikService;
 use App\Services\PdfExportService;
 use App\Services\PdfService;
 use Illuminate\Http\Request;
@@ -238,12 +239,31 @@ class AdminController extends Controller
 
         $networkUser = NetworkUser::create($networkUserData);
 
-        // TODO: Push the password to the actual router via MikrotikService
-        // $mikrotikService->createPppoeUser([
-        //     'username' => $validated['username'],
-        //     'password' => $validated['password'],
-        //     ...
-        // ]);
+        // Push the password to the actual router via MikrotikService
+        if ($validated['service_type'] === 'pppoe') {
+            $router = MikrotikRouter::where('status', 'active')->first();
+            
+            if ($router) {
+                try {
+                    $mikrotikService = app(MikrotikService::class);
+                    $package = Package::find($validated['package_id']);
+                    
+                    $mikrotikService->createPppoeUser([
+                        'router_id' => $router->id,
+                        'username' => $validated['username'],
+                        'password' => $validated['password'],
+                        'service' => 'pppoe',
+                        'profile' => $package->pppoe_profile ?? 'default',
+                    ]);
+                } catch (\Exception $e) {
+                    // Log the error but don't fail the user creation
+                    \Log::warning('Failed to sync network user to router', [
+                        'username' => $validated['username'],
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('panel.admin.network-users')
             ->with('success', 'Network user created successfully.');
@@ -301,12 +321,22 @@ class AdminController extends Controller
 
         $networkUser->update($networkUserData);
 
-        // TODO: If password is provided, update it on the router via MikrotikService
-        // if (!empty($validated['password'])) {
-        //     $mikrotikService->updatePppoeUser($validated['username'], [
-        //         'password' => $validated['password'],
-        //     ]);
-        // }
+        // If password is provided, update it on the router via MikrotikService
+        if (!empty($validated['password']) && $validated['service_type'] === 'pppoe') {
+            try {
+                $mikrotikService = app(MikrotikService::class);
+                
+                $mikrotikService->updatePppoeUser($validated['username'], [
+                    'password' => $validated['password'],
+                ]);
+            } catch (\Exception $e) {
+                // Log the error but don't fail the update
+                \Log::warning('Failed to sync password update to router', [
+                    'username' => $validated['username'],
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return redirect()->route('panel.admin.network-users')
             ->with('success', 'Network user updated successfully.');
