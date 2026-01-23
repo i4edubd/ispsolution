@@ -99,6 +99,86 @@ class AdminController extends Controller
     }
 
     /**
+     * Show the form for creating a new package.
+     */
+    public function packagesCreate(): View
+    {
+        return view('panels.admin.packages.create');
+    }
+
+    /**
+     * Store a newly created package.
+     */
+    public function packagesStore(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'service_type' => 'required|in:pppoe,hotspot,static',
+            'speed' => 'nullable|string|max:50',
+            'bandwidth_up' => 'nullable|integer|min:0',
+            'bandwidth_down' => 'nullable|integer|min:0',
+            'price' => 'required|numeric|min:0',
+            'billing_cycle' => 'required|in:monthly,quarterly,half_yearly,yearly',
+            'validity_days' => 'nullable|integer|min:1',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        ServicePackage::create($validated);
+
+        return redirect()->route('panel.admin.packages')
+            ->with('success', 'Package created successfully.');
+    }
+
+    /**
+     * Show the form for editing the specified package.
+     */
+    public function packagesEdit($id): View
+    {
+        $package = ServicePackage::findOrFail($id);
+
+        return view('panels.admin.packages.edit', compact('package'));
+    }
+
+    /**
+     * Update the specified package.
+     */
+    public function packagesUpdate(Request $request, $id)
+    {
+        $package = ServicePackage::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'service_type' => 'required|in:pppoe,hotspot,static',
+            'speed' => 'nullable|string|max:50',
+            'bandwidth_up' => 'nullable|integer|min:0',
+            'bandwidth_down' => 'nullable|integer|min:0',
+            'price' => 'required|numeric|min:0',
+            'billing_cycle' => 'required|in:monthly,quarterly,half_yearly,yearly',
+            'validity_days' => 'nullable|integer|min:1',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $package->update($validated);
+
+        return redirect()->route('panel.admin.packages')
+            ->with('success', 'Package updated successfully.');
+    }
+
+    /**
+     * Remove the specified package.
+     */
+    public function packagesDestroy($id)
+    {
+        $package = ServicePackage::findOrFail($id);
+        $package->delete();
+
+        return redirect()->route('panel.admin.packages')
+            ->with('success', 'Package deleted successfully.');
+    }
+
+    /**
      * Display settings.
      */
     public function settings(): View

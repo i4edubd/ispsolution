@@ -15,12 +15,15 @@ class ServicePackage extends Model
     protected $fillable = [
         'name',
         'description',
+        'service_type',
+        'speed',
         'bandwidth_up',
         'bandwidth_down',
         'price',
         'billing_cycle',
         'billing_type',
         'validity_days',
+        'status',
         'is_active',
     ];
 
