@@ -700,7 +700,9 @@ class AdminController extends Controller
     public function devices(): View
     {
         // Combine all device types for unified view using a UNION query
-        $routerQuery = MikrotikRouter::select('id', 'name', 'host', 'status', 'created_at')
+        // Note: Requires 'host' column migration to be run first
+        // COALESCE provides data-level compatibility (uses ip_address when host is NULL)
+        $routerQuery = MikrotikRouter::select('id', 'name', DB::raw('COALESCE(host, ip_address) as host'), 'status', 'created_at')
             ->addSelect(DB::raw("'router' as device_type"));
 
         $oltQuery = Olt::select('id', 'name', DB::raw('ip_address as host'), 'status', 'created_at')

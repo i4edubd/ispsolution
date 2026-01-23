@@ -63,7 +63,7 @@
     </div>
 
     <!-- Permissions Form -->
-    <form action="#" method="POST">
+    <form action="{{ route('panel.admin.operators.special-permissions.update', $operator->id) }}" method="POST">
         @csrf
         @method('PUT')
 
