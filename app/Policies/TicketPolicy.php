@@ -44,6 +44,7 @@ class TicketPolicy
             $customerIds = $user->subordinates()
                 ->where('operator_level', User::OPERATOR_LEVEL_CUSTOMER)
                 ->pluck('id');
+
             return $customerIds->contains($ticket->customer_id);
         }
 
@@ -84,6 +85,7 @@ class TicketPolicy
             $customerIds = $user->subordinates()
                 ->where('operator_level', User::OPERATOR_LEVEL_CUSTOMER)
                 ->pluck('id');
+
             return $customerIds->contains($ticket->customer_id);
         }
 
