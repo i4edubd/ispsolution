@@ -1,10 +1,22 @@
 #!/bin/bash
 
 ################################################################################
-# ISP Solution - Complete Installation Script for Ubuntu
+# ISP Solution - Complete Auto-Installation Script for Ubuntu VM
 # 
-# This script installs and configures all dependencies required for the ISP
-# Solution on a fresh Ubuntu VM, including:
+# This script performs a COMPLETE CLEAN INSTALLATION on Ubuntu VM including:
+# 
+# CLEANUP PHASE (Automated):
+# - Removes existing MySQL/MariaDB completely
+# - Removes existing FreeRADIUS completely  
+# - Removes all web servers (Nginx/Apache)
+# - Removes PHP and all extensions
+# - Removes Composer, Node.js, NPM
+# - Removes Redis
+# - Performs deep clean of all remnants
+# - Cleans package cache and orphaned packages
+# - Updates system packages
+#
+# INSTALLATION PHASE:
 # - System packages and dependencies
 # - PHP 8.2+ and extensions
 # - Composer
@@ -45,6 +57,90 @@ CRED_FILE="/root/ispsolution-credentials.txt"
 print_status() { echo -e "${BLUE}[INFO]${NC} $1"; }
 print_done() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 print_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+
+# --- Step -1: Deep Clean and Remove Existing Installation ---
+deep_clean_system() {
+    print_status "Starting deep clean of system..."
+    
+    # Stop all related services
+    print_status "Stopping all services..."
+    systemctl stop nginx apache2 php8.2-fpm php8.1-fpm php8.0-fpm php7.4-fpm mysql mariadb freeradius redis-server openvpn 2>/dev/null || true
+    
+    # Remove MySQL/MariaDB completely
+    print_status "Removing MySQL/MariaDB..."
+    apt-get remove --purge -y mysql-server mysql-client mysql-common mysql-server-core-* mysql-client-core-* mariadb-server mariadb-client 2>/dev/null || true
+    apt-get autoremove -y 2>/dev/null || true
+    rm -rf /etc/mysql /var/lib/mysql /var/log/mysql
+    rm -rf /var/lib/mysql-files /var/lib/mysql-keyring
+    deluser --remove-home mysql 2>/dev/null || true
+    delgroup mysql 2>/dev/null || true
+    
+    # Remove RADIUS completely
+    print_status "Removing FreeRADIUS..."
+    apt-get remove --purge -y freeradius freeradius-common freeradius-mysql freeradius-utils 2>/dev/null || true
+    apt-get autoremove -y 2>/dev/null || true
+    rm -rf /etc/freeradius /var/log/freeradius
+    deluser --remove-home freerad 2>/dev/null || true
+    delgroup freerad 2>/dev/null || true
+    
+    # Remove web servers (Nginx and Apache)
+    print_status "Removing web servers..."
+    apt-get remove --purge -y nginx nginx-common nginx-core apache2 apache2-bin apache2-data apache2-utils 2>/dev/null || true
+    apt-get autoremove -y 2>/dev/null || true
+    rm -rf /etc/nginx /var/log/nginx /var/www/html
+    rm -rf /etc/apache2 /var/log/apache2
+    deluser --remove-home www-data 2>/dev/null || true
+    delgroup www-data 2>/dev/null || true
+    
+    # Remove PHP and all extensions
+    print_status "Removing PHP..."
+    apt-get remove --purge -y php* libapache2-mod-php* 2>/dev/null || true
+    apt-get autoremove -y 2>/dev/null || true
+    rm -rf /etc/php /usr/lib/php
+    
+    # Remove Composer
+    print_status "Removing Composer..."
+    rm -f /usr/local/bin/composer /usr/bin/composer
+    
+    # Remove Node.js and NPM
+    print_status "Removing Node.js and NPM..."
+    apt-get remove --purge -y nodejs npm node 2>/dev/null || true
+    apt-get autoremove -y 2>/dev/null || true
+    rm -rf /usr/local/lib/node_modules /usr/local/bin/node /usr/local/bin/npm
+    rm -rf ~/.npm ~/.node-gyp
+    
+    # Remove Redis
+    print_status "Removing Redis..."
+    apt-get remove --purge -y redis-server redis-tools 2>/dev/null || true
+    apt-get autoremove -y 2>/dev/null || true
+    rm -rf /etc/redis /var/lib/redis /var/log/redis
+    deluser --remove-home redis 2>/dev/null || true
+    delgroup redis 2>/dev/null || true
+    
+    # Remove application directory
+    print_status "Removing application directory..."
+    rm -rf "$INSTALL_DIR"
+    
+    # Remove credentials file
+    rm -f "$CRED_FILE"
+    
+    # Clean package cache and orphaned packages
+    print_status "Cleaning package cache..."
+    apt-get autoclean -y
+    apt-get autoremove -y
+    apt-get clean
+    
+    # Remove any leftover configuration files
+    print_status "Removing leftover configuration files..."
+    dpkg -l | grep '^rc' | awk '{print $2}' | xargs dpkg --purge 2>/dev/null || true
+    
+    print_done "Deep clean completed. System is ready for fresh installation."
+    
+    # Update package lists
+    print_status "Updating package lists..."
+    apt-get update -y
+    print_done "Package lists updated."
+}
 
 # --- Step 0: Swap File Creation ---
 setup_swap() {
@@ -177,6 +273,31 @@ setup_app() {
 # --- Main ---
 main() {
     [ "$EUID" -ne 0 ] && echo "Run as root" && exit 1
+    
+    # Prompt user for clean install
+    echo -e "${YELLOW}===============================================${NC}"
+    echo -e "${YELLOW}   ISP Solution Auto-Install Script${NC}"
+    echo -e "${YELLOW}===============================================${NC}"
+    echo ""
+    echo "This script will perform a COMPLETE CLEAN INSTALLATION:"
+    echo "  1. Remove all existing MySQL/MariaDB installations"
+    echo "  2. Remove all existing RADIUS installations"
+    echo "  3. Remove all web servers (Nginx/Apache)"
+    echo "  4. Remove PHP, Composer, Node.js, Redis"
+    echo "  5. Perform deep system clean"
+    echo "  6. Update system packages"
+    echo "  7. Install everything fresh"
+    echo ""
+    echo -e "${RED}WARNING: This will DELETE all existing data!${NC}"
+    echo ""
+    read -p "Do you want to continue? (yes/no): " -r REPLY
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy][Ee][Ss]$ ]]; then
+        print_error "Installation cancelled by user."
+        exit 0
+    fi
+    
+    deep_clean_system
     setup_swap
     check_existing_presence
     install_stack
