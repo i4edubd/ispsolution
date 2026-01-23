@@ -376,6 +376,9 @@ class AdminController extends Controller
 
     /**
      * Store a newly created customer.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function customersStore(Request $request)
     {
@@ -411,6 +414,10 @@ class AdminController extends Controller
 
     /**
      * Update the specified customer.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function customersUpdate(Request $request, $id)
     {
@@ -445,6 +452,9 @@ class AdminController extends Controller
 
     /**
      * Remove the specified customer.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function customersDestroy($id)
     {
