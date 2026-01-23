@@ -29,6 +29,7 @@ use App\Services\PdfExportService;
 use App\Services\PdfService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -306,6 +307,104 @@ class AdminController extends Controller
         $routers = MikrotikRouter::where('status', 'active')->get();
 
         return view('panels.admin.network-users.import', compact('routers'));
+    }
+
+    /**
+     * Process the import of network users from router.
+     */
+    public function networkUsersProcessImport(Request $request)
+    {
+        $validated = $request->validate([
+            'router_id' => 'required|exists:mikrotik_routers,id',
+            'skip_existing' => 'boolean',
+            'auto_create_customers' => 'boolean',
+            'sync_packages' => 'boolean',
+        ]);
+
+        try {
+            $mikrotikService = app(\App\Services\MikrotikService::class);
+            
+            // Import secrets (PPPoE users) from router
+            $secrets = $mikrotikService->importSecrets($validated['router_id']);
+            
+            if (empty($secrets)) {
+                return redirect()->route('panel.admin.network-users.import')
+                    ->with('error', 'No users found on the selected router or unable to connect.');
+            }
+
+            $imported = 0;
+            $skipped = 0;
+            $errors = [];
+
+            foreach ($secrets as $secret) {
+                try {
+                    // Skip if user already exists
+                    if ($validated['skip_existing'] ?? true) {
+                        if (NetworkUser::where('username', $secret['name'])->exists()) {
+                            $skipped++;
+                            continue;
+                        }
+                    }
+
+                    // Find or create customer if auto_create_customers is enabled
+                    $customerId = null;
+                    if ($validated['auto_create_customers'] ?? false) {
+                        $customer = User::firstOrCreate(
+                            ['email' => $secret['name'] . '@imported.local'],
+                            [
+                                'name' => $secret['name'],
+                                'password' => bcrypt($secret['password'] ?? 'password'),
+                            ]
+                        );
+                        $customerId = $customer->id;
+                    }
+
+                    // Find package by profile name if sync_packages is enabled
+                    $packageId = null;
+                    if ($validated['sync_packages'] ?? true) {
+                        $package = ServicePackage::where('name', 'like', '%' . ($secret['profile'] ?? 'default') . '%')->first();
+                        $packageId = $package?->id;
+                    }
+
+                    // Create network user
+                    NetworkUser::create([
+                        'customer_id' => $customerId,
+                        'username' => $secret['name'],
+                        'password' => $secret['password'] ?? '',
+                        'service_type' => $secret['service'] ?? 'pppoe',
+                        'package_id' => $packageId,
+                        'router_id' => $validated['router_id'],
+                        'ip_address' => $secret['remote-address'] ?? null,
+                        'status' => $secret['disabled'] ?? false ? 'inactive' : 'active',
+                    ]);
+
+                    $imported++;
+                } catch (\Exception $e) {
+                    $errors[] = "Failed to import user {$secret['name']}: " . $e->getMessage();
+                }
+            }
+
+            $message = "Successfully imported {$imported} network users.";
+            if ($skipped > 0) {
+                $message .= " Skipped {$skipped} existing users.";
+            }
+            if (!empty($errors)) {
+                $message .= " Encountered " . count($errors) . " errors.";
+            }
+
+            return redirect()->route('panel.admin.network-users')
+                ->with('success', $message)
+                ->with('import_errors', $errors);
+
+        } catch (\Exception $e) {
+            Log::error('Network users import failed', [
+                'router_id' => $validated['router_id'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('panel.admin.network-users.import')
+                ->with('error', 'Import failed: ' . $e->getMessage());
+        }
     }
 
     /**

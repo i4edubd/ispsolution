@@ -47,7 +47,7 @@
     <!-- Import Form -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
-            <form id="importForm" method="POST" action="{{ route('panel.admin.network-users.import') }}">
+            <form id="importForm" method="POST" action="{{ route('panel.admin.network-users.import.process') }}">
                 @csrf
 
                 <div class="space-y-6">

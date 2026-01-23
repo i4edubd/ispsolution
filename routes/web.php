@@ -202,6 +202,7 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/network-users/create', [AdminController::class, 'networkUsersCreate'])->name('network-users.create');
     Route::post('/network-users', [AdminController::class, 'networkUsersStore'])->name('network-users.store');
     Route::get('/network-users/import', [AdminController::class, 'networkUsersImport'])->name('network-users.import');
+    Route::post('/network-users/import', [AdminController::class, 'networkUsersProcessImport'])->name('network-users.import.process');
     Route::get('/network-users/{id}', [AdminController::class, 'networkUsersShow'])->name('network-users.show');
     Route::get('/network-users/{id}/edit', [AdminController::class, 'networkUsersEdit'])->name('network-users.edit');
     Route::put('/network-users/{id}', [AdminController::class, 'networkUsersUpdate'])->name('network-users.update');
