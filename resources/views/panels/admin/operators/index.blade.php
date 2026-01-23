@@ -221,9 +221,11 @@
                                             'sub-operator' => 'bg-yellow-100 text-yellow-800',
                                         ];
                                         $colorClass = $roleColors[$role->slug ?? ''] ?? 'bg-gray-100 text-gray-800';
+                                        // Use custom role label if available
+                                        $displayLabel = $operator->getRoleDisplayLabel();
                                     @endphp
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $colorClass }}">
-                                        {{ $role->name ?? 'No Role' }}
+                                        {{ $displayLabel }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
