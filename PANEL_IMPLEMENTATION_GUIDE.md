@@ -48,8 +48,6 @@ resources/views/panels/
 ├── manager/                    # 7 views
 ├── staff/                      # 7 views
 ├── accountant/                 # 8 views
-├── reseller/                   # 5 views
-├── sub-reseller/               # 4 views
 ├── card-distributor/           # 6 views
 └── customer/                   # 5 views
 ```
