@@ -3,7 +3,7 @@
 @section('title', 'PPPoE Profiles')
 
 @section('content')
-<div class="space-y-6" x-data="{ showCreateModal: false }">
+<div class="space-y-6" x-data="{ showCreateModal: {{ $errors->any() ? 'true' : 'false' }} }">
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
             <div class="flex justify-between items-center">
@@ -158,43 +158,64 @@
                                 <select name="router_id" id="router_id" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                     <option value="">Select Router</option>
                                     @foreach($routers as $router)
-                                        <option value="{{ $router->id }}">{{ $router->name }} ({{ $router->ip_address }})</option>
+                                        <option value="{{ $router->id }}" {{ old('router_id') == $router->id ? 'selected' : '' }}>{{ $router->name }} ({{ $router->ip_address }})</option>
                                     @endforeach
                                 </select>
+                                @error('router_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Profile Name <span class="text-red-500">*</span></label>
-                                <input type="text" name="name" id="name" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <input type="text" name="name" id="name" value="{{ old('name') }}" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                @error('name')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
                                 <label for="local_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Local Address <span class="text-red-500">*</span></label>
-                                <input type="text" name="local_address" id="local_address" placeholder="10.0.0.1" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <input type="text" name="local_address" id="local_address" value="{{ old('local_address') }}" placeholder="10.0.0.1" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                @error('local_address')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
                                 <label for="remote_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Remote Address Pool <span class="text-red-500">*</span></label>
-                                <input type="text" name="remote_address" id="remote_address" placeholder="pool-name or IP range" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <input type="text" name="remote_address" id="remote_address" value="{{ old('remote_address') }}" placeholder="pool-name or IP range" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                @error('remote_address')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div>
                                 <label for="rate_limit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rate Limit</label>
-                                <input type="text" name="rate_limit" id="rate_limit" placeholder="10M/10M" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <input type="text" name="rate_limit" id="rate_limit" value="{{ old('rate_limit') }}" placeholder="10M/10M" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <p class="mt-1 text-xs text-gray-500">Format: upload/download (e.g., 10M/10M)</p>
+                                @error('rate_limit')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label for="session_timeout" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Session Timeout</label>
-                                    <input type="number" name="session_timeout" id="session_timeout" min="0" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <input type="number" name="session_timeout" id="session_timeout" value="{{ old('session_timeout') }}" min="0" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                     <p class="mt-1 text-xs text-gray-500">In seconds</p>
+                                    @error('session_timeout')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
 
                                 <div>
                                     <label for="idle_timeout" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Idle Timeout</label>
-                                    <input type="number" name="idle_timeout" id="idle_timeout" min="0" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <input type="number" name="idle_timeout" id="idle_timeout" value="{{ old('idle_timeout') }}" min="0" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                     <p class="mt-1 text-xs text-gray-500">In seconds</p>
+                                    @error('idle_timeout')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
                         </div>

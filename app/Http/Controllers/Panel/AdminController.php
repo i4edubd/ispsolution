@@ -673,10 +673,11 @@ class AdminController extends Controller
             'sms_cost_per_unit' => $validated['sms_charges_by'] === 'operator' ? ($validated['sms_cost_per_unit'] ?? 0) : 0,
             'allow_sub_operator' => $request->has('allow_sub_operator'),
             'allow_rename_package' => $request->has('allow_rename_package'),
-            'can_manage_customers' => true, // Default to true - operators can always manage their own customers
-            'can_view_financials' => true, // Default to true - operators can always view their own financials
+            'can_manage_customers' => array_key_exists('can_manage_customers', $validated) ? (bool) $validated['can_manage_customers'] : true,
+            'can_view_financials' => array_key_exists('can_view_financials', $validated) ? (bool) $validated['can_view_financials'] : true,
             'is_active' => $request->has('is_active'),
             'operator_level' => User::OPERATOR_LEVEL_OPERATOR,
+            'operator_type' => 'operator',
             'tenant_id' => auth()->user()->tenant_id,
         ]);
 
@@ -1422,7 +1423,15 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'router_id' => 'required|exists:mikrotik_routers,id',
-            'name' => 'required|string|max:255',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                // Ensure name is unique for the selected router
+                \Illuminate\Validation\Rule::unique('mikrotik_profiles')->where(function ($query) use ($request) {
+                    return $query->where('router_id', $request->router_id);
+                }),
+            ],
             'local_address' => 'required|ip',
             'remote_address' => 'required|string|max:255',
             'rate_limit' => 'nullable|string|max:255',
@@ -1441,7 +1450,11 @@ class AdminController extends Controller
      */
     public function pppoeProfilesDestroy($id)
     {
-        $profile = MikrotikProfile::findOrFail($id);
+        // Ensure the profile belongs to a router in the current tenant
+        $profile = MikrotikProfile::where('id', $id)
+            ->whereHas('router')
+            ->firstOrFail();
+        
         $profile->delete();
 
         return redirect()->route('panel.admin.network.pppoe-profiles')

@@ -77,15 +77,14 @@
                 </div>
 
                 <!-- Billing & Payment Configuration -->
-                <!-- Billing & Payment Configuration -->
-                <div class="border-t border-gray-200 dark:border-gray-700 pt-6" x-data="{ paymentType: '{{ old('payment_type', 'postpaid') }}' }">
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-6" x-data="{ paymentType: @js(old('payment_type', 'postpaid')) }">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Billing & Payment Configuration</h3>
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <div>
                             <label for="payment_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment Type <span class="text-red-500">*</span></label>
                             <select name="payment_type" id="payment_type" required class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="paymentType">
-                                <option value="prepaid">Prepaid</option>
-                                <option value="postpaid" selected>Credit (Postpaid)</option>
+                                <option value="prepaid" {{ old('payment_type', 'postpaid') === 'prepaid' ? 'selected' : '' }}>Prepaid</option>
+                                <option value="postpaid" {{ old('payment_type', 'postpaid') === 'postpaid' ? 'selected' : '' }}>Credit (Postpaid)</option>
                             </select>
                             @error('payment_type')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -103,14 +102,14 @@
                 </div>
 
                 <!-- SMS Configuration -->
-                <div class="border-t border-gray-200 dark:border-gray-700 pt-6" x-data="{ smsChargesBy: '{{ old('sms_charges_by', 'admin') }}' }">
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-6" x-data="{ smsChargesBy: @js(old('sms_charges_by', 'admin')) }">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">SMS Configuration</h3>
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <div>
                             <label for="sms_charges_by" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">SMS Charges By</label>
                             <select name="sms_charges_by" id="sms_charges_by" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" x-model="smsChargesBy">
-                                <option value="admin" selected>Admin</option>
-                                <option value="operator">Operator</option>
+                                <option value="admin" {{ old('sms_charges_by', 'admin') === 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="operator" {{ old('sms_charges_by', 'admin') === 'operator' ? 'selected' : '' }}>Operator</option>
                             </select>
                             @error('sms_charges_by')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -146,28 +145,36 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Permissions & Features</h3>
                     <div class="space-y-4">
                         <div class="flex items-center">
-                            <input type="checkbox" name="allow_sub_operator" id="allow_sub_operator" value="1" {{ old('allow_sub_operator', true) ? 'checked' : '' }} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-700 rounded">
+                            <input type="checkbox" name="allow_sub_operator" id="allow_sub_operator" value="1" 
+                                {{ old('allow_sub_operator') !== null ? (old('allow_sub_operator') ? 'checked' : '') : 'checked' }} 
+                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-700 rounded">
                             <label for="allow_sub_operator" class="ml-2 block text-sm text-gray-900 dark:text-gray-100">
                                 Allow Sub-Operator
                             </label>
                         </div>
 
                         <div class="flex items-center">
-                            <input type="checkbox" name="allow_rename_package" id="allow_rename_package" value="1" {{ old('allow_rename_package', false) ? 'checked' : '' }} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-700 rounded">
+                            <input type="checkbox" name="allow_rename_package" id="allow_rename_package" value="1" 
+                                {{ old('allow_rename_package') ? 'checked' : '' }} 
+                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-700 rounded">
                             <label for="allow_rename_package" class="ml-2 block text-sm text-gray-900 dark:text-gray-100">
                                 Allow Rename Package
                             </label>
                         </div>
 
                         <div class="flex items-center">
-                            <input type="checkbox" name="can_manage_customers" id="can_manage_customers" value="1" {{ old('can_manage_customers', true) ? 'checked' : '' }} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-700 rounded">
+                            <input type="checkbox" name="can_manage_customers" id="can_manage_customers" value="1" 
+                                {{ old('can_manage_customers') !== null ? (old('can_manage_customers') ? 'checked' : '') : 'checked' }} 
+                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-700 rounded">
                             <label for="can_manage_customers" class="ml-2 block text-sm text-gray-900 dark:text-gray-100">
                                 Can Create/Manage Own Customers (Default)
                             </label>
                         </div>
 
                         <div class="flex items-center">
-                            <input type="checkbox" name="can_view_financials" id="can_view_financials" value="1" {{ old('can_view_financials', true) ? 'checked' : '' }} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-700 rounded">
+                            <input type="checkbox" name="can_view_financials" id="can_view_financials" value="1" 
+                                {{ old('can_view_financials') !== null ? (old('can_view_financials') ? 'checked' : '') : 'checked' }} 
+                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-700 rounded">
                             <label for="can_view_financials" class="ml-2 block text-sm text-gray-900 dark:text-gray-100">
                                 Can View Own Financial & Reports (Default)
                             </label>
