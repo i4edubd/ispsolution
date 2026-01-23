@@ -60,12 +60,28 @@ class TicketController extends Controller
 
         $tickets = $query->latest()->paginate(20);
 
-        // Get statistics
+        // Get statistics (role-based)
+        $statsQuery = Ticket::query();
+        
+        if ($user->isCustomer()) {
+            $statsQuery->where('customer_id', $user->id);
+        } elseif ($user->isStaff()) {
+            $statsQuery->where(function ($q) use ($user) {
+                $q->where('assigned_to', $user->id)
+                  ->orWhereNull('assigned_to');
+            });
+        } elseif ($user->isOperator() || $user->isSubOperator()) {
+            $customerIds = $user->subordinates()
+                ->where('operator_level', User::OPERATOR_LEVEL_CUSTOMER)
+                ->pluck('id');
+            $statsQuery->whereIn('customer_id', $customerIds);
+        }
+        
         $stats = [
-            'total' => Ticket::count(),
-            'open' => Ticket::where('status', Ticket::STATUS_OPEN)->count(),
-            'in_progress' => Ticket::where('status', Ticket::STATUS_IN_PROGRESS)->count(),
-            'resolved' => Ticket::where('status', Ticket::STATUS_RESOLVED)->count(),
+            'total' => $statsQuery->count(),
+            'open' => (clone $statsQuery)->where('status', Ticket::STATUS_OPEN)->count(),
+            'in_progress' => (clone $statsQuery)->where('status', Ticket::STATUS_IN_PROGRESS)->count(),
+            'resolved' => (clone $statsQuery)->where('status', Ticket::STATUS_RESOLVED)->count(),
         ];
 
         return view('panels.shared.tickets.index', compact('tickets', 'stats'));
@@ -105,7 +121,8 @@ class TicketController extends Controller
             'created_by' => auth()->user()->id,
         ]);
 
-        return redirect()->back()->with('success', 'Ticket created successfully. Ticket #' . $ticket->id);
+        return redirect()->route('panel.tickets.show', $ticket)
+            ->with('success', 'Ticket created successfully. Ticket #' . $ticket->id);
     }
 
     /**
