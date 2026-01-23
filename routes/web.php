@@ -199,6 +199,13 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::put('/users/{id}', [AdminController::class, 'usersUpdate'])->name('users.update');
     Route::delete('/users/{id}', [AdminController::class, 'usersDestroy'])->name('users.destroy');
     Route::get('/network-users', [AdminController::class, 'networkUsers'])->name('network-users');
+    Route::get('/network-users/create', [AdminController::class, 'networkUsersCreate'])->name('network-users.create');
+    Route::post('/network-users', [AdminController::class, 'networkUsersStore'])->name('network-users.store');
+    Route::get('/network-users/import', [AdminController::class, 'networkUsersImport'])->name('network-users.import');
+    Route::get('/network-users/{id}', [AdminController::class, 'networkUsersShow'])->name('network-users.show');
+    Route::get('/network-users/{id}/edit', [AdminController::class, 'networkUsersEdit'])->name('network-users.edit');
+    Route::put('/network-users/{id}', [AdminController::class, 'networkUsersUpdate'])->name('network-users.update');
+    Route::delete('/network-users/{id}', [AdminController::class, 'networkUsersDestroy'])->name('network-users.destroy');
     Route::get('/packages', [AdminController::class, 'packages'])->name('packages');
     Route::get('/packages/create', [AdminController::class, 'packagesCreate'])->name('packages.create');
     Route::post('/packages', [AdminController::class, 'packagesStore'])->name('packages.store');

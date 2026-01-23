@@ -185,9 +185,127 @@ class AdminController extends Controller
      */
     public function networkUsers(): View
     {
-        $networkUsers = NetworkUser::latest()->paginate(20);
+        $networkUsers = NetworkUser::with(['customer', 'package'])->latest()->paginate(20);
+        
+        $stats = [
+            'active' => NetworkUser::where('status', 'active')->count(),
+            'suspended' => NetworkUser::where('status', 'suspended')->count(),
+            'inactive' => NetworkUser::where('status', 'inactive')->count(),
+            'total' => NetworkUser::count(),
+        ];
 
-        return view('panels.admin.network-users.index', compact('networkUsers'));
+        return view('panels.admin.network-users.index', compact('networkUsers', 'stats'));
+    }
+
+    /**
+     * Show the form for creating a new network user.
+     */
+    public function networkUsersCreate(): View
+    {
+        $customers = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'customer');
+        })->get();
+        $packages = ServicePackage::where('status', 'active')->get();
+        $routers = MikrotikRouter::where('status', 'active')->get();
+
+        return view('panels.admin.network-users.create', compact('customers', 'packages', 'routers'));
+    }
+
+    /**
+     * Store a newly created network user.
+     */
+    public function networkUsersStore(Request $request)
+    {
+        $validated = $request->validate([
+            'customer_id' => 'required|exists:users,id',
+            'username' => 'required|string|max:255|unique:network_users,username',
+            'password' => 'required|string|min:6',
+            'package_id' => 'required|exists:service_packages,id',
+            'router_id' => 'nullable|exists:mikrotik_routers,id',
+            'service_type' => 'required|in:pppoe,hotspot,static_ip',
+            'ip_address' => 'nullable|ip',
+            'status' => 'required|in:active,suspended,inactive',
+        ]);
+
+        $networkUser = NetworkUser::create($validated);
+
+        return redirect()->route('panel.admin.network-users')
+            ->with('success', 'Network user created successfully.');
+    }
+
+    /**
+     * Display the specified network user.
+     */
+    public function networkUsersShow($id): View
+    {
+        $networkUser = NetworkUser::with(['customer', 'package', 'router'])->findOrFail($id);
+
+        return view('panels.admin.network-users.show', compact('networkUser'));
+    }
+
+    /**
+     * Show the form for editing the specified network user.
+     */
+    public function networkUsersEdit($id): View
+    {
+        $networkUser = NetworkUser::findOrFail($id);
+        $customers = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'customer');
+        })->get();
+        $packages = ServicePackage::where('status', 'active')->get();
+        $routers = MikrotikRouter::where('status', 'active')->get();
+
+        return view('panels.admin.network-users.edit', compact('networkUser', 'customers', 'packages', 'routers'));
+    }
+
+    /**
+     * Update the specified network user.
+     */
+    public function networkUsersUpdate(Request $request, $id)
+    {
+        $networkUser = NetworkUser::findOrFail($id);
+
+        $validated = $request->validate([
+            'customer_id' => 'required|exists:users,id',
+            'username' => 'required|string|max:255|unique:network_users,username,' . $id,
+            'password' => 'nullable|string|min:6',
+            'package_id' => 'required|exists:service_packages,id',
+            'router_id' => 'nullable|exists:mikrotik_routers,id',
+            'service_type' => 'required|in:pppoe,hotspot,static_ip',
+            'ip_address' => 'nullable|ip',
+            'status' => 'required|in:active,suspended,inactive',
+        ]);
+
+        if (empty($validated['password'])) {
+            unset($validated['password']);
+        }
+
+        $networkUser->update($validated);
+
+        return redirect()->route('panel.admin.network-users')
+            ->with('success', 'Network user updated successfully.');
+    }
+
+    /**
+     * Remove the specified network user.
+     */
+    public function networkUsersDestroy($id)
+    {
+        $networkUser = NetworkUser::findOrFail($id);
+        $networkUser->delete();
+
+        return redirect()->route('panel.admin.network-users')
+            ->with('success', 'Network user deleted successfully.');
+    }
+
+    /**
+     * Show the form for importing network users from router.
+     */
+    public function networkUsersImport(): View
+    {
+        $routers = MikrotikRouter::where('status', 'active')->get();
+
+        return view('panels.admin.network-users.import', compact('routers'));
     }
 
     /**
