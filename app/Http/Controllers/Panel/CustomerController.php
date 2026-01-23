@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\NetworkUser;
 use App\Models\NetworkUserSession;
 use App\Models\Payment;
+use App\Models\Ticket;
 use App\Services\PdfService;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -97,8 +98,23 @@ class CustomerController extends Controller
      */
     public function tickets(): View
     {
-        // To be implemented with ticket system
-        return view('panels.customer.tickets.index');
+        $user = auth()->user();
+        
+        // Get customer's own tickets
+        $tickets = Ticket::where('customer_id', $user->id)
+            ->with(['assignedTo', 'resolver'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // Calculate stats
+        $stats = [
+            'total' => Ticket::where('customer_id', $user->id)->count(),
+            'open' => Ticket::where('customer_id', $user->id)->where('status', Ticket::STATUS_OPEN)->count(),
+            'pending' => Ticket::where('customer_id', $user->id)->where('status', Ticket::STATUS_PENDING)->count(),
+            'resolved' => Ticket::where('customer_id', $user->id)->where('status', Ticket::STATUS_RESOLVED)->count(),
+        ];
+
+        return view('panels.customer.tickets.index', compact('tickets', 'stats'));
     }
 
     /**

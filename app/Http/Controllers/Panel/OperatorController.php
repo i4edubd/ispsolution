@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\Ticket;
 use Illuminate\View\View;
 
 class OperatorController extends Controller
@@ -118,16 +119,17 @@ class OperatorController extends Controller
      */
     public function complaints(): View
     {
-        // TODO: Implement ticket system
-        // When implemented, filter tickets by operator's assigned customers
-        // For now, return empty paginated collection to prevent blade errors
-        $complaints = new \Illuminate\Pagination\LengthAwarePaginator(
-            [],
-            0,
-            20,
-            1,
-            ['path' => request()->url(), 'query' => request()->query()]
-        );
+        $user = auth()->user();
+        
+        // Get customer IDs for this operator (own customers + sub-operator customers)
+        $customerIds = $user->subordinates()->where('operator_level', 100)->pluck('id');
+        
+        // Get tickets for these customers
+        $complaints = Ticket::whereIn('customer_id', $customerIds)
+            ->with(['customer', 'assignedTo', 'creator'])
+            ->orderBy('priority', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
         return view('panels.operator.complaints.index', compact('complaints'));
     }
