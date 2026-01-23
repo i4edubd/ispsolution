@@ -72,6 +72,13 @@ class MikrotikRouter extends Model
         return $this->hasMany(PackageProfileMapping::class, 'router_id');
     }
 
+    // Note: NetworkUser relationship is indirect through PackageProfileMapping
+    // Uncomment if router_id is added to network_users table
+    // public function networkUsers(): HasMany
+    // {
+    //     return $this->hasMany(NetworkUser::class, 'router_id');
+    // }
+
     // Optimized query scopes
     public function scopeActive(Builder $query): Builder
     {
