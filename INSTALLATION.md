@@ -8,7 +8,10 @@ This script provides a complete, automated installation of the ISP Solution on a
 
 The script installs and configures:
 
-1. **System Updates**: Latest security patches and system packages
+1. **System Optimization**: 
+   - Swap memory (configurable, default 2GB)
+   - System updates and security patches
+
 2. **Core Dependencies**: 
    - PHP 8.2+ with required extensions
    - Composer (PHP dependency manager)
@@ -19,7 +22,7 @@ The script installs and configures:
 
 3. **Network Services**:
    - FreeRADIUS server for authentication
-   - OpenVPN server (optional)
+   - OpenVPN server (fully configured, default enabled)
 
 4. **Application Setup**:
    - Clone ISP Solution from GitHub
@@ -35,13 +38,15 @@ The script installs and configures:
    - PHP-FPM optimization
    - Firewall rules
    - Laravel task scheduler
+   - SSL/HTTPS (optional with Let's Encrypt)
+   - Tenant subdomain automation
 
 ## Supported Systems
 
 - Ubuntu 18.04 LTS
 - Ubuntu 20.04 LTS
-- Ubuntu 22.04 LTS
-- Ubuntu 24.04 LTS
+- Ubuntu 22.04 LTS ✓ **Tested**
+- Ubuntu 24.04 LTS ✓ **Tested**
 
 **Note**: Script must be run on a **fresh** Ubuntu installation for best results.
 
@@ -68,11 +73,33 @@ export DOMAIN_NAME="isp.yourdomain.com"
 sudo bash install.sh
 ```
 
-### With OpenVPN
+### With Custom Domain and SSL
 
 ```bash
-# Enable OpenVPN installation
+# Set domain and email for SSL certificate
+export DOMAIN_NAME="isp.yourdomain.com"
+export EMAIL="admin@yourdomain.com"
+export SETUP_SSL="yes"
+sudo bash install.sh
+```
+
+### With Custom Swap Size
+
+```bash
+# Set custom swap memory (default: 2G)
+export SWAP_SIZE="4G"
+sudo bash install.sh
+```
+
+### Full Configuration Example
+
+```bash
+# Complete configuration with all options
+export DOMAIN_NAME="isp.example.com"
+export EMAIL="admin@example.com"
+export SETUP_SSL="yes"
 export INSTALL_OPENVPN="yes"
+export SWAP_SIZE="4G"
 sudo bash install.sh
 ```
 
@@ -84,6 +111,15 @@ Set these environment variables before running the script:
 # Domain name (default: localhost)
 export DOMAIN_NAME="isp.example.com"
 
+# Email for SSL notifications (required if SETUP_SSL=yes)
+export EMAIL="admin@example.com"
+
+# Enable SSL with Let's Encrypt (default: no)
+export SETUP_SSL="yes"
+
+# Swap memory size (default: 2G)
+export SWAP_SIZE="2G"
+
 # Installation directory (default: /var/www/ispsolution)
 export INSTALL_DIR="/var/www/ispsolution"
 
@@ -93,7 +129,7 @@ export DB_USER="ispsolution"
 export RADIUS_DB_NAME="radius"
 export RADIUS_DB_USER="radius"
 
-# Install OpenVPN server (default: no)
+# Install OpenVPN server (default: yes)
 export INSTALL_OPENVPN="yes"
 
 # Run installation
@@ -106,18 +142,19 @@ sudo bash install.sh
 
 The script performs these steps in order:
 
-1. ✅ **System Update** - Updates package lists and upgrades system
-2. ✅ **Basic Dependencies** - Installs curl, wget, git, etc.
-3. ✅ **PHP 8.2** - Installs PHP and required extensions
-4. ✅ **Composer** - Installs PHP dependency manager
-5. ✅ **Node.js** - Installs Node.js LTS and NPM
-6. ✅ **MySQL 8.0** - Installs and secures database server
-7. ✅ **Redis** - Installs cache and queue server
-8. ✅ **Nginx** - Installs web server
-9. ✅ **FreeRADIUS** - Installs RADIUS authentication server
-10. ✅ **OpenVPN** - Installs VPN server (if enabled)
-11. ✅ **Clone Repository** - Gets latest code from GitHub
-12. ✅ **Setup Databases** - Creates application and RADIUS databases
+1. ✅ **Setup Swap Memory** - Configures swap space for better performance
+2. ✅ **System Update** - Updates package lists and upgrades system
+3. ✅ **Basic Dependencies** - Installs curl, wget, git, etc.
+4. ✅ **PHP 8.2** - Installs PHP and required extensions
+5. ✅ **Composer** - Installs PHP dependency manager
+6. ✅ **Node.js** - Installs Node.js LTS and NPM
+7. ✅ **MySQL 8.0** - Installs and secures database server
+8. ✅ **Redis** - Installs cache and queue server
+9. ✅ **Nginx** - Installs web server
+10. ✅ **FreeRADIUS** - Installs RADIUS authentication server
+11. ✅ **OpenVPN** - Installs and configures VPN server (default enabled)
+12. ✅ **Clone Repository** - Gets latest code from GitHub
+13. ✅ **Setup Databases** - Creates application and RADIUS databases
 13. ✅ **Configure Laravel** - Sets up environment and dependencies
 14. ✅ **Install Node Modules** - Installs and builds frontend assets
 15. ✅ **Run Migrations** - Creates database tables
@@ -125,9 +162,11 @@ The script performs these steps in order:
 17. ✅ **Configure Nginx** - Sets up virtual host
 18. ✅ **Configure Firewall** - Opens required ports
 19. ✅ **Configure FreeRADIUS** - Connects to MySQL
-20. ✅ **Setup Scheduler** - Configures Laravel cron
-21. ✅ **Optimize** - Caches configuration and routes
-22. ✅ **Summary** - Displays credentials and next steps
+20. ✅ **Setup SSL** - Installs Let's Encrypt certificate (if enabled)
+21. ✅ **Subdomain Automation** - Configures tenant subdomain creation tool
+22. ✅ **Setup Scheduler** - Configures Laravel cron
+23. ✅ **Optimize** - Caches configuration and routes
+24. ✅ **Summary** - Displays credentials and next steps
 
 ## Post-Installation
 
@@ -175,10 +214,29 @@ All credentials are saved securely to:
 
 2. **Configure DNS**
    - Point your domain to the server IP
-   - Update APP_URL in `.env` file
+   - For tenant subdomains, create wildcard DNS: *.yourdomain.com → server IP
+   - Update APP_URL in `.env` file if needed
 
-3. **Install SSL Certificate**
+3. **OpenVPN Client Setup** (if installed)
    ```bash
+   # Client certificates are in ~/openvpn-ca/keys/
+   # Generate client config:
+   cd ~/openvpn-ca
+   ./build-key client1
+   
+   # Transfer client.crt, client.key, ca.crt, and ta.key to client
+   ```
+
+4. **Create Tenant Subdomains**
+   ```bash
+   # Automatically create subdomain for new tenant
+   sudo create-tenant-subdomain.sh tenant1 123
+   
+   # This creates: tenant1.yourdomain.com
+   # And automatically obtains SSL if configured
+   ```
+
+5. **Configure MikroTik Routers**
    # Using Let's Encrypt (recommended)
    sudo apt-get install certbot python3-certbot-nginx
    sudo certbot --nginx -d yourdomain.com

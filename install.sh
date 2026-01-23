@@ -39,7 +39,10 @@ RADIUS_DB_NAME=${RADIUS_DB_NAME:-"radius"}
 RADIUS_DB_USER=${RADIUS_DB_USER:-"radius"}
 RADIUS_DB_PASSWORD=${RADIUS_DB_PASSWORD:-"$(openssl rand -base64 18 | tr -d '=+/' | cut -c1-16)"}
 INSTALL_DIR="/var/www/ispsolution"
-INSTALL_OPENVPN=${INSTALL_OPENVPN:-"no"}
+INSTALL_OPENVPN=${INSTALL_OPENVPN:-"yes"}  # Changed default to yes
+SETUP_SSL=${SETUP_SSL:-"no"}  # Set to "yes" to install SSL with Let's Encrypt
+SWAP_SIZE=${SWAP_SIZE:-"2G"}  # Default 2GB swap
+EMAIL=${EMAIL:-""}  # Email for SSL certificate notifications
 
 # Functions
 print_info() {
@@ -79,7 +82,46 @@ EOF
     echo -e "${NC}"
 }
 
-# Step 1: Update system packages
+# Step 1: Setup swap memory
+setup_swap() {
+    print_info "Setting up swap memory (${SWAP_SIZE})..."
+    
+    # Check if swap already exists
+    if swapon --show | grep -q "/swapfile"; then
+        print_info "Swap file already exists, skipping creation"
+        return
+    fi
+    
+    # Check available disk space
+    AVAILABLE_SPACE=$(df -BG / | awk 'NR==2 {print $4}' | sed 's/G//')
+    REQUIRED_SPACE=$(echo "$SWAP_SIZE" | sed 's/G//')
+    
+    if [ "$AVAILABLE_SPACE" -lt "$REQUIRED_SPACE" ]; then
+        print_warning "Not enough disk space for ${SWAP_SIZE} swap. Available: ${AVAILABLE_SPACE}G"
+        print_info "Reducing swap size to 1G"
+        SWAP_SIZE="1G"
+    fi
+    
+    # Create swap file
+    fallocate -l "$SWAP_SIZE" /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=$(echo "$SWAP_SIZE" | sed 's/G/*1024/; s/M//') 2>/dev/null
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    
+    # Make swap permanent
+    if ! grep -q "/swapfile" /etc/fstab; then
+        echo "/swapfile none swap sw 0 0" >> /etc/fstab
+    fi
+    
+    # Optimize swap settings
+    echo "vm.swappiness=10" >> /etc/sysctl.conf
+    echo "vm.vfs_cache_pressure=50" >> /etc/sysctl.conf
+    sysctl -p
+    
+    print_success "Swap memory configured: $(free -h | grep Swap | awk '{print $2}')"
+}
+
+# Step 2: Update system packages
 update_system() {
     print_info "Updating system packages..."
     apt-get update -y
@@ -229,12 +271,80 @@ install_freeradius() {
     print_success "FreeRADIUS installed"
 }
 
-# Step 10: Install OpenVPN (optional)
+# Step 10: Install and configure OpenVPN
 install_openvpn() {
     if [ "$INSTALL_OPENVPN" = "yes" ]; then
-        print_info "Installing OpenVPN server..."
+        print_info "Installing and configuring OpenVPN server..."
         apt-get install -y openvpn easy-rsa
-        print_success "OpenVPN installed"
+        
+        # Setup Easy-RSA
+        make-cadir ~/openvpn-ca
+        cd ~/openvpn-ca
+        
+        # Configure vars file
+        cat > vars <<EOF
+export KEY_COUNTRY="US"
+export KEY_PROVINCE="CA"
+export KEY_CITY="SanFrancisco"
+export KEY_ORG="ISP Solution"
+export KEY_EMAIL="${EMAIL:-admin@example.com}"
+export KEY_OU="ISP"
+export KEY_NAME="server"
+EOF
+        
+        # Build CA and server certificates
+        source vars
+        ./clean-all 2>/dev/null || true
+        ./build-ca --batch 2>/dev/null || true
+        ./build-key-server --batch server 2>/dev/null || true
+        ./build-dh 2>/dev/null || true
+        openvpn --genkey --secret keys/ta.key 2>/dev/null || true
+        
+        # Copy certificates to OpenVPN directory
+        cd ~/openvpn-ca/keys
+        cp ca.crt server.crt server.key ta.key dh2048.pem /etc/openvpn/ 2>/dev/null || true
+        
+        # Create server configuration
+        cat > /etc/openvpn/server.conf <<EOF
+port 1194
+proto udp
+dev tun
+ca ca.crt
+cert server.crt
+key server.key
+dh dh2048.pem
+server 10.8.0.0 255.255.255.0
+ifconfig-pool-persist ipp.txt
+push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 8.8.8.8"
+push "dhcp-option DNS 8.8.4.4"
+keepalive 10 120
+tls-auth ta.key 0
+cipher AES-256-CBC
+user nobody
+group nogroup
+persist-key
+persist-tun
+status openvpn-status.log
+verb 3
+EOF
+        
+        # Enable IP forwarding
+        echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+        sysctl -p
+        
+        # Configure firewall for OpenVPN
+        ufw allow 1194/udp
+        
+        # Start and enable OpenVPN
+        systemctl start openvpn@server
+        systemctl enable openvpn@server
+        
+        cd "$INSTALL_DIR"
+        
+        print_success "OpenVPN server installed and configured"
+        print_info "OpenVPN configuration: /etc/openvpn/server.conf"
+        print_info "Client certificates: ~/openvpn-ca/keys/"
     else
         print_info "Skipping OpenVPN installation (set INSTALL_OPENVPN=yes to install)"
     fi
@@ -463,7 +573,123 @@ EOF
     print_success "FreeRADIUS configured"
 }
 
-# Step 20: Setup Laravel scheduler
+# Step 20: Setup SSL with Let's Encrypt
+setup_ssl() {
+    if [ "$SETUP_SSL" = "yes" ] && [ "$DOMAIN_NAME" != "localhost" ]; then
+        print_info "Setting up SSL certificate with Let's Encrypt..."
+        
+        # Validate email is provided
+        if [ -z "$EMAIL" ]; then
+            print_error "EMAIL environment variable required for SSL setup"
+            print_info "Skipping SSL setup. Run manually: certbot --nginx -d ${DOMAIN_NAME}"
+            return
+        fi
+        
+        # Install certbot
+        apt-get install -y certbot python3-certbot-nginx
+        
+        # Obtain and install certificate
+        certbot --nginx -d "${DOMAIN_NAME}" --non-interactive --agree-tos --email "${EMAIL}" --redirect
+        
+        # Setup auto-renewal
+        systemctl enable certbot.timer
+        systemctl start certbot.timer
+        
+        print_success "SSL certificate installed for ${DOMAIN_NAME}"
+        print_info "Certificate will auto-renew via systemd timer"
+    else
+        if [ "$DOMAIN_NAME" = "localhost" ]; then
+            print_info "Skipping SSL setup (domain is localhost)"
+        else
+            print_info "Skipping SSL setup (set SETUP_SSL=yes and EMAIL=your@email.com to enable)"
+        fi
+    fi
+}
+
+# Step 21: Setup tenant subdomain automation
+setup_subdomain_automation() {
+    print_info "Setting up tenant subdomain automation..."
+    
+    # Create script for subdomain creation
+    cat > /usr/local/bin/create-tenant-subdomain.sh <<'SUBDOMAIN_SCRIPT'
+#!/bin/bash
+# Script to create subdomain for new tenant
+# Usage: create-tenant-subdomain.sh <subdomain> <tenant_id>
+
+SUBDOMAIN=$1
+TENANT_ID=$2
+BASE_DOMAIN="${DOMAIN_NAME}"
+INSTALL_DIR="${INSTALL_DIR}"
+
+if [ -z "$SUBDOMAIN" ] || [ -z "$TENANT_ID" ]; then
+    echo "Usage: $0 <subdomain> <tenant_id>"
+    exit 1
+fi
+
+FULL_DOMAIN="${SUBDOMAIN}.${BASE_DOMAIN}"
+
+# Create Nginx configuration for subdomain
+cat > /etc/nginx/sites-available/${SUBDOMAIN} <<NGINX_SUB
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${FULL_DOMAIN};
+    root ${INSTALL_DIR}/public;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+
+    index index.php;
+
+    charset utf-8;
+
+    location / {
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
+        include fastcgi_params;
+        fastcgi_hide_header X-Powered-By;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+NGINX_SUB
+
+# Enable site
+ln -sf /etc/nginx/sites-available/${SUBDOMAIN} /etc/nginx/sites-enabled/
+
+# Test and reload Nginx
+nginx -t && systemctl reload nginx
+
+echo "Subdomain ${FULL_DOMAIN} created successfully"
+
+# If SSL is enabled, obtain certificate for subdomain
+if [ -f /usr/bin/certbot ] && [ "${BASE_DOMAIN}" != "localhost" ]; then
+    certbot --nginx -d "${FULL_DOMAIN}" --non-interactive --agree-tos --email "${EMAIL:-admin@${BASE_DOMAIN}}" --redirect 2>/dev/null || true
+fi
+SUBDOMAIN_SCRIPT
+
+    # Make script executable
+    chmod +x /usr/local/bin/create-tenant-subdomain.sh
+    
+    # Update .env with domain placeholders
+    sed -i "s|APP_URL=.*|APP_URL=http://${DOMAIN_NAME}|" "$INSTALL_DIR/.env"
+    
+    print_success "Tenant subdomain automation configured"
+    print_info "Use: create-tenant-subdomain.sh <subdomain> <tenant_id>"
+}
+
+# Step 22: Setup Laravel scheduler
 setup_scheduler() {
     print_info "Setting up Laravel task scheduler..."
     
@@ -496,7 +722,14 @@ display_summary() {
     echo ""
     echo -e "${BLUE}Installation Details:${NC}"
     echo -e "  Application URL:     http://${DOMAIN_NAME}"
+    if [ "$SETUP_SSL" = "yes" ] && [ "$DOMAIN_NAME" != "localhost" ]; then
+        echo -e "  SSL Enabled:         ✓ https://${DOMAIN_NAME}"
+    fi
     echo -e "  Installation Dir:    ${INSTALL_DIR}"
+    echo -e "  Swap Memory:         $(free -h | grep Swap | awk '{print $2}')"
+    if [ "$INSTALL_OPENVPN" = "yes" ]; then
+        echo -e "  OpenVPN:             ✓ Installed and configured"
+    fi
     echo ""
     echo -e "${BLUE}Database Credentials:${NC}"
     echo -e "  MySQL Root Password: ${DB_ROOT_PASSWORD}"
@@ -518,12 +751,26 @@ display_summary() {
     echo -e "${YELLOW}Important:${NC}"
     echo -e "  1. Save the database credentials shown above in a secure location"
     echo -e "  2. Configure your DNS to point to this server"
-    echo -e "  3. Consider installing SSL certificate (Let's Encrypt)"
+    if [ "$SETUP_SSL" != "yes" ]; then
+        echo -e "  3. Consider installing SSL certificate (Let's Encrypt)"
+    fi
     echo -e "  4. Review security settings in production"
     echo -e "  5. Configure MikroTik routers in the admin panel"
+    if [ "$INSTALL_OPENVPN" = "yes" ]; then
+        echo -e "  6. Generate OpenVPN client configs from ~/openvpn-ca/keys/"
+    fi
+    echo ""
+    echo -e "${BLUE}Tenant Subdomain:${NC}"
+    echo -e "  To create tenant subdomains automatically:"
+    echo -e "  sudo create-tenant-subdomain.sh <subdomain> <tenant_id>"
+    echo -e "  Example: sudo create-tenant-subdomain.sh tenant1 123"
     echo ""
     echo -e "${BLUE}Next Steps:${NC}"
-    echo -e "  1. Visit http://${DOMAIN_NAME} to access the application"
+    if [ "$SETUP_SSL" = "yes" ] && [ "$DOMAIN_NAME" != "localhost" ]; then
+        echo -e "  1. Visit https://${DOMAIN_NAME} to access the application"
+    else
+        echo -e "  1. Visit http://${DOMAIN_NAME} to access the application"
+    fi
     echo -e "  2. Login with one of the demo accounts"
     echo -e "  3. Configure your network services (RADIUS, MikroTik)"
     echo -e "  4. Read the documentation in ${INSTALL_DIR}/docs/"
@@ -580,6 +827,7 @@ main() {
     print_warning "This will take several minutes. Please be patient..."
     echo ""
     
+    setup_swap
     update_system
     install_basic_dependencies
     install_php
@@ -599,6 +847,8 @@ main() {
     configure_nginx
     configure_firewall
     configure_freeradius
+    setup_ssl
+    setup_subdomain_automation
     setup_scheduler
     optimize_laravel
     display_summary
