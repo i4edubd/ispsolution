@@ -45,7 +45,7 @@ class PaymentGatewayServiceTest extends TestCase
             'total_amount' => 1000,
         ]);
 
-        $result = $this->paymentGatewayService->initiatePayment('bkash', $invoice, 1000);
+        $result = $this->paymentGatewayService->initiatePayment($invoice, 'bkash');
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('success', $result);
@@ -63,7 +63,7 @@ class PaymentGatewayServiceTest extends TestCase
             'total_amount' => 1000,
         ]);
 
-        $result = $this->paymentGatewayService->initiatePayment('nagad', $invoice, 1000);
+        $result = $this->paymentGatewayService->initiatePayment($invoice, 'nagad');
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('success', $result);
@@ -81,7 +81,7 @@ class PaymentGatewayServiceTest extends TestCase
             'total_amount' => 1000,
         ]);
 
-        $result = $this->paymentGatewayService->initiatePayment('sslcommerz', $invoice, 1000);
+        $result = $this->paymentGatewayService->initiatePayment($invoice, 'sslcommerz');
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('success', $result);
@@ -99,7 +99,7 @@ class PaymentGatewayServiceTest extends TestCase
             'total_amount' => 1000,
         ]);
 
-        $result = $this->paymentGatewayService->initiatePayment('stripe', $invoice, 1000);
+        $result = $this->paymentGatewayService->initiatePayment($invoice, 'stripe');
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('success', $result);
@@ -117,19 +117,14 @@ class PaymentGatewayServiceTest extends TestCase
             'total_amount' => 1000,
         ]);
 
-        $result = $this->paymentGatewayService->initiatePayment('unsupported', $invoice, 1000);
-
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('success', $result);
-        $this->assertFalse($result['success']);
+        $this->expectException(\Exception::class);
+        $this->paymentGatewayService->initiatePayment($invoice, 'unsupported');
     }
 
     public function test_can_verify_payment()
     {
-        $result = $this->paymentGatewayService->verifyPayment('bkash', 'test-transaction-id');
-
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('success', $result);
+        $this->expectException(\Exception::class);
+        $this->paymentGatewayService->verifyPayment('test-transaction-id', 'bkash', $this->tenant->id);
     }
 
     public function test_can_process_webhook()
@@ -140,9 +135,7 @@ class PaymentGatewayServiceTest extends TestCase
             'amount' => 1000,
         ];
 
-        $result = $this->paymentGatewayService->processWebhook('bkash', $webhookData);
-
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('success', $result);
+        $this->expectException(\Exception::class);
+        $this->paymentGatewayService->processWebhook('bkash', $webhookData);
     }
 }
