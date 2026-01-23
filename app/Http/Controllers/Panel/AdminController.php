@@ -645,23 +645,46 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'operator_type' => 'nullable|string',
+            'company_name' => 'nullable|string|max:255',
+            'company_address' => 'nullable|string',
+            'company_phone' => 'nullable|string|max:20',
+            'payment_type' => 'required|in:prepaid,postpaid',
+            'credit_limit' => 'nullable|numeric|min:0',
+            'sms_charges_by' => 'required|in:admin,operator',
+            'sms_cost_per_unit' => 'nullable|numeric|min:0',
+            'allow_sub_operator' => 'nullable|boolean',
+            'allow_rename_package' => 'nullable|boolean',
+            'can_manage_customers' => 'nullable|boolean',
+            'can_view_financials' => 'nullable|boolean',
+            'is_active' => 'nullable|boolean',
         ]);
 
-        // Create the user
+        // Create the user with all fields
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
-            'operator_type' => $validated['operator_type'] ?? null,
-            'is_active' => true,
+            'company_name' => $validated['company_name'] ?? null,
+            'company_address' => $validated['company_address'] ?? null,
+            'company_phone' => $validated['company_phone'] ?? null,
+            'payment_type' => $validated['payment_type'],
+            'credit_limit' => $validated['payment_type'] === 'postpaid' ? ($validated['credit_limit'] ?? 0) : 0,
+            'sms_charges_by' => $validated['sms_charges_by'],
+            'sms_cost_per_unit' => $validated['sms_charges_by'] === 'operator' ? ($validated['sms_cost_per_unit'] ?? 0) : 0,
+            'allow_sub_operator' => $request->has('allow_sub_operator'),
+            'allow_rename_package' => $request->has('allow_rename_package'),
+            'can_manage_customers' => $request->has('can_manage_customers') ? true : true, // Default to true
+            'can_view_financials' => $request->has('can_view_financials') ? true : true, // Default to true
+            'is_active' => $request->has('is_active'),
+            'operator_level' => User::OPERATOR_LEVEL_OPERATOR,
+            'tenant_id' => auth()->user()->tenant_id,
         ]);
 
         // Assign operator role using the model method
         $user->assignRole('operator');
 
         return redirect()->route('panel.admin.operators')
-            ->with('success', 'Operator created successfully.');
+            ->with('success', 'Operator created successfully with all configurations.');
     }
 
     /**
