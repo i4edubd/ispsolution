@@ -277,16 +277,17 @@
 **Status**: ⏳ Pending  
 **Estimated Effort**: Medium  
 **Location**: `app/Http/Controllers/Panel/OperatorController.php` (line 121)
+**Description**: Implement a unified ticket system to handle customer complaints and support requests. The system should allow operators to manage tickets for their assigned customers.
 **Tasks**:
-- [ ] Create `app/Models/Ticket.php` or `app/Models/Complaint.php` model
-- [ ] Create migration for tickets/complaints table
-- [ ] Implement ticket creation by operators
+- [ ] Create `app/Models/Ticket.php` model (unified model for tickets/complaints)
+- [ ] Create migration for `tickets` table with appropriate fields
+- [ ] Implement ticket creation by operators and customers
 - [ ] Add ticket status workflow (open, in-progress, resolved, closed)
 - [ ] Implement ticket assignment logic
 - [ ] Add ticket filtering by operator's assigned customers
 - [ ] Implement ticket history and tracking
-- [ ] Add ticket priority levels
-- [ ] Create views for ticket management
+- [ ] Add ticket priority levels (low, medium, high, urgent)
+- [ ] Create views for ticket management (list, create, view, update)
 
 **Related Files**:
 - `app/Http/Controllers/Panel/OperatorController.php` - complaints() method needs implementation
