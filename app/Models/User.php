@@ -650,4 +650,12 @@ class User extends Authenticatable
     {
         return ! empty($this->two_factor_secret);
     }
+
+    /**
+     * Get operator wallet transactions.
+     */
+    public function walletTransactions(): HasMany
+    {
+        return $this->hasMany(OperatorWalletTransaction::class, 'operator_id');
+    }
 }

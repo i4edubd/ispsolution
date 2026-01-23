@@ -1582,4 +1582,128 @@ class AdminController extends Controller
         return redirect()->route('panel.admin.dashboard')
             ->with('success', 'You are now logged back in as admin.');
     }
+
+    /**
+     * Display operator wallet management page.
+     */
+    public function operatorWallets(): View
+    {
+        $operators = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'operator');
+        })->with('walletTransactions')->latest()->paginate(20);
+
+        return view('panels.admin.operators.wallets', compact('operators'));
+    }
+
+    /**
+     * Show form to add funds to operator wallet.
+     */
+    public function addOperatorFunds(User $operator): View
+    {
+        return view('panels.admin.operators.add-funds', compact('operator'));
+    }
+
+    /**
+     * Process adding funds to operator wallet.
+     */
+    public function storeOperatorFunds(Request $request, User $operator)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $balanceBefore = $operator->wallet_balance ?? 0;
+            $balanceAfter = $balanceBefore + $validated['amount'];
+
+            // Update operator wallet balance
+            $operator->update(['wallet_balance' => $balanceAfter]);
+
+            // Record transaction
+            \App\Models\OperatorWalletTransaction::create([
+                'operator_id' => $operator->id,
+                'transaction_type' => 'credit',
+                'amount' => $validated['amount'],
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+                'description' => $validated['description'] ?? 'Manual fund addition by admin',
+                'created_by' => auth()->id(),
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('panel.admin.operators.wallets')
+                ->with('success', 'Funds added successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to add funds: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Show form to deduct funds from operator wallet.
+     */
+    public function deductOperatorFunds(User $operator): View
+    {
+        return view('panels.admin.operators.deduct-funds', compact('operator'));
+    }
+
+    /**
+     * Process deducting funds from operator wallet.
+     */
+    public function processDeductOperatorFunds(Request $request, User $operator)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $balanceBefore = $operator->wallet_balance ?? 0;
+            
+            if ($balanceBefore < $validated['amount']) {
+                return back()->with('error', 'Insufficient wallet balance.');
+            }
+
+            $balanceAfter = $balanceBefore - $validated['amount'];
+
+            // Update operator wallet balance
+            $operator->update(['wallet_balance' => $balanceAfter]);
+
+            // Record transaction
+            \App\Models\OperatorWalletTransaction::create([
+                'operator_id' => $operator->id,
+                'transaction_type' => 'debit',
+                'amount' => $validated['amount'],
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+                'description' => $validated['description'] ?? 'Manual fund deduction by admin',
+                'created_by' => auth()->id(),
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('panel.admin.operators.wallets')
+                ->with('success', 'Funds deducted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to deduct funds: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Display operator wallet transaction history.
+     */
+    public function operatorWalletHistory(User $operator): View
+    {
+        $transactions = \App\Models\OperatorWalletTransaction::where('operator_id', $operator->id)
+            ->with('creator')
+            ->latest()
+            ->paginate(50);
+
+        return view('panels.admin.operators.wallet-history', compact('operator', 'transactions'));
+    }
 }

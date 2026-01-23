@@ -251,6 +251,14 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
         ->withoutMiddleware('role:admin')
         ->middleware('auth');
 
+    // Operator Wallet Management
+    Route::get('/operators/wallets', [AdminController::class, 'operatorWallets'])->name('operators.wallets');
+    Route::get('/operators/{operator}/add-funds', [AdminController::class, 'addOperatorFunds'])->name('operators.add-funds');
+    Route::post('/operators/{operator}/add-funds', [AdminController::class, 'storeOperatorFunds'])->name('operators.store-funds');
+    Route::get('/operators/{operator}/deduct-funds', [AdminController::class, 'deductOperatorFunds'])->name('operators.deduct-funds');
+    Route::post('/operators/{operator}/deduct-funds', [AdminController::class, 'processDeductOperatorFunds'])->name('operators.process-deduct-funds');
+    Route::get('/operators/{operator}/wallet-history', [AdminController::class, 'operatorWalletHistory'])->name('operators.wallet-history');
+
     // Payment Gateway Management
     Route::get('/payment-gateways', [AdminController::class, 'paymentGateways'])->name('payment-gateways');
     Route::get('/payment-gateways/create', [AdminController::class, 'paymentGatewaysCreate'])->name('payment-gateways.create');
