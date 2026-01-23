@@ -223,18 +223,18 @@ class FinancialReportService
 
         $revenue = DB::table('invoices')
             ->join('network_users', 'invoices.user_id', '=', 'network_users.id')
-            ->join('service_packages', 'network_users.package_id', '=', 'service_packages.id')
+            ->join('packages', 'network_users.package_id', '=', 'packages.id')
             ->where('invoices.tenant_id', $tenantId)
             ->where('network_users.tenant_id', $tenantId)
-            ->where('service_packages.tenant_id', $tenantId)
+            ->where('packages.tenant_id', $tenantId)
             ->whereBetween('invoices.invoice_date', [$startDate, $endDate])
             ->where('invoices.status', 'paid')
             ->select(
-                'service_packages.name as service_name',
+                'packages.name as service_name',
                 DB::raw('COUNT(invoices.id) as invoice_count'),
                 DB::raw('SUM(invoices.total_amount) as total_revenue')
             )
-            ->groupBy('service_packages.name')
+            ->groupBy('packages.name')
             ->get();
 
         $totalRevenue = $revenue->sum('total_revenue');

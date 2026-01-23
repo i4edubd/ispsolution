@@ -44,7 +44,7 @@ class UpdateCustomerRequest extends FormRequest
             'state' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:20',
             'country' => 'nullable|string|max:100',
-            'package_id' => 'required|exists:service_packages,id',
+            'package_id' => 'required|exists:packages,id',
             'installation_date' => 'nullable|date',
             'billing_cycle' => 'required|in:monthly,quarterly,semi-annual,annual',
             'connection_type' => 'required|in:pppoe,hotspot,static_ip',

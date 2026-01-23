@@ -99,7 +99,7 @@ class NetworkUserController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'nullable|email|unique:network_users,email,' . $id,
             'service_type' => 'sometimes|in:pppoe,hotspot,static_ip',
-            'package_id' => 'nullable|exists:service_packages,id',
+            'package_id' => 'nullable|exists:packages,id',
             'status' => 'nullable|in:active,suspended,expired',
         ]);
 
