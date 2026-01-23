@@ -465,14 +465,14 @@ Route::prefix('panel/staff')->name('panel.staff.')->middleware(['auth', 'role:st
     Route::get('/olt', [StaffController::class, 'oltDevices'])->name('olt');
 });
 
-// Card Distributor Panel
-Route::prefix('panel/card-distributor')->name('panel.card-distributor.')->middleware(['auth', 'role:card-distributor'])->group(function () {
-    Route::get('/dashboard', [CardDistributorController::class, 'dashboard'])->name('dashboard');
-    Route::get('/cards', [CardDistributorController::class, 'cards'])->name('cards.index');
-    Route::get('/sales', [CardDistributorController::class, 'sales'])->name('sales.index');
-    Route::get('/commissions', [CardDistributorController::class, 'commissions'])->name('commissions.index');
-    Route::get('/balance', [CardDistributorController::class, 'balance'])->name('balance');
-});
+// Card Distributor Panel (DEPRECATED - Role removed from v3.1 role hierarchy)
+// Route::prefix('panel/card-distributor')->name('panel.card-distributor.')->middleware(['auth', 'role:card-distributor'])->group(function () {
+//     Route::get('/dashboard', [CardDistributorController::class, 'dashboard'])->name('dashboard');
+//     Route::get('/cards', [CardDistributorController::class, 'cards'])->name('cards.index');
+//     Route::get('/sales', [CardDistributorController::class, 'sales'])->name('sales.index');
+//     Route::get('/commissions', [CardDistributorController::class, 'commissions'])->name('commissions.index');
+//     Route::get('/balance', [CardDistributorController::class, 'balance'])->name('balance');
+// });
 
 // Customer Panel
 Route::prefix('panel/customer')->name('panel.customer.')->middleware(['auth', 'role:customer'])->group(function () {
