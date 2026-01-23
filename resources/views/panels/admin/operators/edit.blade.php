@@ -33,7 +33,7 @@
     <!-- Form -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
-            <form action="#" method="POST" class="space-y-6">
+            <form action="{{ route('panel.admin.operators.update', $operator->id) }}" method="POST" class="space-y-6">
                 @csrf
                 @method('PUT')
 
