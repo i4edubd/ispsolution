@@ -9,6 +9,7 @@ use App\Contracts\PackageSpeedServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Models\MikrotikIpPool;
 use App\Models\MikrotikPppoeUser;
+use App\Models\MikrotikProfile;
 use App\Models\MikrotikQueue;
 use App\Models\MikrotikRouter;
 use App\Models\MikrotikVpnAccount;
