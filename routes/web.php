@@ -196,6 +196,11 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/packages', [AdminController::class, 'packages'])->name('packages');
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
 
+    // Role Label Settings
+    Route::get('/settings/role-labels', [\App\Http\Controllers\Panel\RoleLabelSettingController::class, 'index'])->name('settings.role-labels');
+    Route::put('/settings/role-labels', [\App\Http\Controllers\Panel\RoleLabelSettingController::class, 'update'])->name('settings.role-labels.update');
+    Route::delete('/settings/role-labels/{roleSlug}', [\App\Http\Controllers\Panel\RoleLabelSettingController::class, 'destroy'])->name('settings.role-labels.destroy');
+
     // Network Device Management - Legacy routes (kept for backward compatibility)
     // These redirect to the more organized /network/* routes
     Route::get('/mikrotik', function () {
