@@ -72,6 +72,7 @@ The following deprecated roles have been removed from code, migrations, and UI:
 
 | ❌ Deprecated Role | ✅ Replaced By  | Notes                                      |
 |--------------------|-----------------|---------------------------------------------|
+| Group Admin        | Admin           | Admin is now the consistent term (Level 20) |
 | Reseller           | Operator        | Operator (level 30) replaces Reseller      |
 | Sub-Reseller       | Sub-Operator    | Sub-Operator (level 40) replaces Sub-Reseller |
 | Card Distributor   | (Deprecated)    | Card distribution functionality removed     |
