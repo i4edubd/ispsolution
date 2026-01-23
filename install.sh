@@ -93,7 +93,7 @@ deep_clean_system() {
     
     # Remove PHP and all extensions
     print_status "Removing PHP..."
-    apt-get remove --purge -y php* libapache2-mod-php* 2>/dev/null || true
+    apt-get remove --purge -y php8.2* php8.1* php8.0* php7.4* libapache2-mod-php* 2>/dev/null || true
     apt-get autoremove -y 2>/dev/null || true
     rm -rf /etc/php /usr/lib/php
     
@@ -108,8 +108,10 @@ deep_clean_system() {
     rm -rf /usr/local/lib/node_modules /usr/local/bin/node /usr/local/bin/npm
     rm -rf /root/.npm /root/.node-gyp
     # Also clean up common user directories if they exist
-    [ -d /home/*/.npm ] && rm -rf /home/*/.npm 2>/dev/null || true
-    [ -d /home/*/.node-gyp ] && rm -rf /home/*/.node-gyp 2>/dev/null || true
+    for user_home in /home/*; do
+        [ -d "$user_home/.npm" ] && rm -rf "$user_home/.npm" 2>/dev/null || true
+        [ -d "$user_home/.node-gyp" ] && rm -rf "$user_home/.node-gyp" 2>/dev/null || true
+    done
     
     # Remove Redis
     print_status "Removing Redis..."
@@ -163,16 +165,16 @@ setup_swap() {
 check_existing_presence() {
     print_status "Verifying clean state after deep clean..."
     
-    # Since we've already done deep clean, just verify MySQL is not accessible with old credentials
-    # This is a safety check to ensure the cleanup was successful
+    # Since we've already done deep clean, just verify the cleanup was successful
+    # These are safety checks to ensure nothing unexpected remains
     
     if [ -d "$INSTALL_DIR" ]; then
         print_status "Note: Application directory still exists, but will be overwritten."
     fi
     
-    # Check if MySQL is accessible (shouldn't be after deep clean)
-    if mysql -u root -e "status" >/dev/null 2>&1; then
-        print_status "MySQL is accessible without password (expected after clean install)."
+    # Check if MySQL is still accessible (shouldn't be after deep clean)
+    if command -v mysql >/dev/null 2>&1 && mysql -u root -e "status" >/dev/null 2>&1; then
+        print_status "Warning: MySQL is still accessible after cleanup - this is unexpected."
     fi
     
     print_done "System verified clean and ready for installation."
