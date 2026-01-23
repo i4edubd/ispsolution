@@ -242,8 +242,8 @@
                             Test Connection
                         </button>
                         <div class="flex space-x-2">
-                            <a href="#" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">Edit</a>
-                            <a href="#" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">Settings</a>
+                            <a href="{{ route('panel.admin.payment-gateways.edit', $gateway->id) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">Edit</a>
+                            <a href="{{ route('panel.admin.payment-gateways.settings', $gateway->id) }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">Settings</a>
                         </div>
                     </div>
                 </div>

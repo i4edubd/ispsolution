@@ -161,6 +161,11 @@ Route::get('/demo10', function () {
 Route::prefix('panel/super-admin')->name('panel.super-admin.')->middleware(['auth', 'role:super-admin'])->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [SuperAdminController::class, 'users'])->name('users');
+    Route::get('/users/create', [SuperAdminController::class, 'usersCreate'])->name('users.create');
+    Route::post('/users', [SuperAdminController::class, 'usersStore'])->name('users.store');
+    Route::get('/users/{id}/edit', [SuperAdminController::class, 'usersEdit'])->name('users.edit');
+    Route::put('/users/{id}', [SuperAdminController::class, 'usersUpdate'])->name('users.update');
+    Route::delete('/users/{id}', [SuperAdminController::class, 'usersDestroy'])->name('users.destroy');
     Route::get('/roles', [SuperAdminController::class, 'roles'])->name('roles');
 
     // ISP/Admin Management
@@ -315,6 +320,11 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     // Payment Gateway Management
     Route::get('/payment-gateways', [AdminController::class, 'paymentGateways'])->name('payment-gateways');
     Route::get('/payment-gateways/create', [AdminController::class, 'paymentGatewaysCreate'])->name('payment-gateways.create');
+    Route::post('/payment-gateways', [AdminController::class, 'paymentGatewaysStore'])->name('payment-gateways.store');
+    Route::get('/payment-gateways/{id}/edit', [AdminController::class, 'paymentGatewaysEdit'])->name('payment-gateways.edit');
+    Route::put('/payment-gateways/{id}', [AdminController::class, 'paymentGatewaysUpdate'])->name('payment-gateways.update');
+    Route::get('/payment-gateways/{id}/settings', [AdminController::class, 'paymentGatewaysSettings'])->name('payment-gateways.settings');
+    Route::put('/payment-gateways/{id}/settings', [AdminController::class, 'paymentGatewaysUpdateSettings'])->name('payment-gateways.settings.update');
 
     // Package Profile Mappings
     Route::prefix('packages/{package}/mappings')->name('packages.mappings.')->scopeBindings()->group(function () {
@@ -632,6 +642,9 @@ Route::prefix('panel/developer')->name('panel.developer.')->middleware(['auth', 
     // Super Admin Management
     Route::get('/super-admins', [DeveloperController::class, 'superAdmins'])->name('super-admins.index');
     Route::get('/super-admins/create', [DeveloperController::class, 'createSuperAdmin'])->name('super-admins.create');
+    Route::get('/super-admins/{id}', [DeveloperController::class, 'showSuperAdmin'])->name('super-admins.show');
+    Route::get('/super-admins/{id}/edit', [DeveloperController::class, 'editSuperAdmin'])->name('super-admins.edit');
+    Route::put('/super-admins/{id}', [DeveloperController::class, 'updateSuperAdmin'])->name('super-admins.update');
 
     // Admin (ISP) Management
     Route::get('/admins', [DeveloperController::class, 'allAdmins'])->name('admins.index');
