@@ -70,7 +70,8 @@ Comprehensive guides for each user role in the system:
 ### Core Features
 - **[TODO Features A-Z](../TODO_FEATURES_A2Z.md)** - Complete feature list and specifications
 - **[Feature Requests](../Feature.md)** - Requested features
-- **[Implementation Status](IMPLEMENTATION_STATUS.md)** - Current development status
+- **[Implementation Status](IMPLEMENTATION_STATUS.md)** - Current development status (Feature tracking)
+- **[Network Services Status](../IMPLEMENTATION_STATUS.md)** - Network services implementation
 - **[Implementation TODO](../IMPLEMENTATION_TODO.md)** - Implementation tasks
 
 ### Panel & UI

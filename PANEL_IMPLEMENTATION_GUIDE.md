@@ -383,9 +383,9 @@ The core business logic has been implemented as documented in `IMPLEMENTATION_ST
 ## Support & Documentation
 
 - **Panel Specification**: See `PANELS_SPECIFICATION.md`
-- **Role Hierarchy**: See `ROLE_HIERARCHY_IMPLEMENTATION.md`
-- **Quick Reference**: See `ROLE_SYSTEM_QUICK_REFERENCE.md`
-- **Routing Guide**: See `QUICK_REFERENCE_PAGINATION_ROUTING.md`
+- **Role Hierarchy**: See `docs/technical/ROLE_SYSTEM.md`
+- **Permissions Guide**: See `docs/ROLES_AND_PERMISSIONS.md`
+- **Routing Guide**: See `ROUTING_TROUBLESHOOTING_GUIDE.md`
 
 ---
 
