@@ -240,6 +240,7 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/operators/staff', [AdminController::class, 'staff'])->name('operators.staff');
     Route::get('/operators/{id}/profile', [AdminController::class, 'operatorProfile'])->name('operators.profile');
     Route::get('/operators/{id}/special-permissions', [AdminController::class, 'operatorSpecialPermissions'])->name('operators.special-permissions');
+    Route::put('/operators/{id}/special-permissions', [AdminController::class, 'updateOperatorSpecialPermissions'])->name('operators.special-permissions.update');
 
     // Payment Gateway Management
     Route::get('/payment-gateways', [AdminController::class, 'paymentGateways'])->name('payment-gateways');

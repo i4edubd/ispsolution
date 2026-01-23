@@ -15,7 +15,7 @@ class StoreInvoiceRequest extends FormRequest
     {
         return [
             'user_id' => ['required', 'exists:users,id'],
-            'package_id' => ['nullable', 'exists:service_packages,id'],
+            'package_id' => ['nullable', 'exists:packages,id'],
             'amount' => ['required', 'numeric', 'min:0'],
             'tax_amount' => ['nullable', 'numeric', 'min:0'],
             'billing_period_start' => ['nullable', 'date'],

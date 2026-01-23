@@ -19,6 +19,7 @@ class MikrotikRouter extends Model
         'tenant_id',
         'name',
         'ip_address',
+        'host',
         'api_port',
         'username',
         'password',

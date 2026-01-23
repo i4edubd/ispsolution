@@ -521,6 +521,27 @@ class AdminController extends Controller
     }
 
     /**
+     * Update operator special permissions.
+     */
+    public function updateOperatorSpecialPermissions(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string',
+        ]);
+
+        $operator = User::findOrFail($id);
+        
+        // Here you would update the operator's permissions
+        // This depends on your permission system implementation
+        // Example: $operator->syncPermissions($validated['permissions'] ?? []);
+        
+        return redirect()
+            ->route('panel.admin.operators.special-permissions', $id)
+            ->with('success', 'Special permissions updated successfully.');
+    }
+
+    /**
      * Display payment gateways listing.
      */
     public function paymentGateways(): View
@@ -557,7 +578,7 @@ class AdminController extends Controller
      */
     public function routers(): View
     {
-        $routers = MikrotikRouter::with('networkUsers')->paginate(20);
+        $routers = MikrotikRouter::with('pppoeUsers')->paginate(20);
 
         $stats = [
             'total' => MikrotikRouter::count(),

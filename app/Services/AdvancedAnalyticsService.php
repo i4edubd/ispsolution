@@ -146,15 +146,15 @@ class AdvancedAnalyticsService
     {
         // Service package distribution
         $packageDistribution = NetworkUser::where('tenant_id', $tenantId)
-            ->join('service_packages', 'network_users.package_id', '=', 'service_packages.id')
+            ->join('packages', 'network_users.package_id', '=', 'packages.id')
             ->where('network_users.is_active', true)
             ->select(
-                'service_packages.name',
-                'service_packages.price',
+                'packages.name',
+                'packages.price',
                 DB::raw('COUNT(network_users.id) as customer_count'),
-                DB::raw('SUM(service_packages.price) as total_monthly_revenue')
+                DB::raw('SUM(packages.price) as total_monthly_revenue')
             )
-            ->groupBy('service_packages.id', 'service_packages.name', 'service_packages.price')
+            ->groupBy('packages.id', 'packages.name', 'packages.price')
             ->get();
 
         // Service performance with ARPU calculation

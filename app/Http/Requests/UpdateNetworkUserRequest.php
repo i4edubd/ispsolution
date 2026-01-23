@@ -32,7 +32,7 @@ class UpdateNetworkUserRequest extends FormRequest
                 Rule::unique('network_users', 'username')->ignore($networkUserId),
             ],
             'password' => 'nullable|string|min:6',
-            'package_id' => 'required|exists:service_packages,id',
+            'package_id' => 'required|exists:packages,id',
             'user_id' => 'required|exists:users,id',
             'service_type' => 'required|in:pppoe,hotspot,static_ip',
             'ip_address' => [
