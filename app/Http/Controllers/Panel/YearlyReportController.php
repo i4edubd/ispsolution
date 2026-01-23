@@ -30,34 +30,46 @@ class YearlyReportController extends Controller
 
     /**
      * Yearly Card Distributor Payments Report
+     * Optimized to prevent N+1 queries
      */
     public function cardDistributorPayments(Request $request): View
     {
         $year = $request->input('year', Carbon::now()->year);
+        $tenantId = auth()->user()->tenant_id;
         
-        // Get card distributors
-        $distributors = User::where('role_level', 90) // Card distributor role level
-            ->with(['payments' => function ($query) use ($year) {
-                $query->whereYear('created_at', $year);
-            }])
+        // Get card distributors with tenant scoping
+        $distributors = User::where('role_level', 90)
+            ->where('tenant_id', $tenantId)
             ->get();
 
+        // Single query to get all payment data for the year
+        $paymentData = Payment::whereYear('created_at', $year)
+            ->whereIn('user_id', $distributors->pluck('id'))
+            ->select(
+                'user_id',
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(amount) as total_amount')
+            )
+            ->groupBy('user_id', DB::raw('MONTH(created_at)'))
+            ->get();
+
+        // Build monthly data from results
         $monthlyData = [];
         for ($month = 1; $month <= 12; $month++) {
             $monthlyData[$month] = [];
             foreach ($distributors as $distributor) {
-                $monthlyData[$month][$distributor->id] = $distributor->payments()
-                    ->whereYear('created_at', $year)
-                    ->whereMonth('created_at', $month)
-                    ->sum('amount');
+                $monthlyData[$month][$distributor->id] = 0;
             }
         }
 
+        foreach ($paymentData as $data) {
+            $monthlyData[$data->month][$data->user_id] = $data->total_amount;
+        }
+
+        // Calculate totals
         $totalByDistributor = [];
         foreach ($distributors as $distributor) {
-            $totalByDistributor[$distributor->id] = $distributor->payments()
-                ->whereYear('created_at', $year)
-                ->sum('amount');
+            $totalByDistributor[$distributor->id] = array_sum(array_column($monthlyData, $distributor->id));
         }
 
         $grandTotal = array_sum($totalByDistributor);
@@ -73,38 +85,54 @@ class YearlyReportController extends Controller
 
     /**
      * Yearly Cash In Report (Income)
+     * Optimized with single aggregated query
      */
     public function cashIn(Request $request): View
     {
         $year = $request->input('year', Carbon::now()->year);
+        $tenantId = auth()->user()->tenant_id;
         
-        // Get all payments received (cash in)
+        // Single query to get all monthly income data
+        $paymentData = Payment::whereYear('payment_date', $year)
+            ->when($tenantId, function ($query) use ($tenantId) {
+                return $query->where('tenant_id', $tenantId);
+            })
+            ->select(
+                DB::raw('MONTH(payment_date) as month'),
+                'payment_method',
+                DB::raw('SUM(amount) as total_amount'),
+                DB::raw('COUNT(*) as payment_count')
+            )
+            ->groupBy(DB::raw('MONTH(payment_date)'), 'payment_method')
+            ->get();
+
+        // Build monthly income structure
         $monthlyIncome = [];
         $sourceBreakdown = [];
         
         for ($month = 1; $month <= 12; $month++) {
-            $payments = Payment::whereYear('payment_date', $year)
-                ->whereMonth('payment_date', $month)
-                ->get();
-
             $monthlyIncome[$month] = [
-                'total' => $payments->sum('amount'),
-                'count' => $payments->count(),
-                'by_method' => $payments->groupBy('payment_method')->map(function ($items) {
-                    return [
-                        'amount' => $items->sum('amount'),
-                        'count' => $items->count()
-                    ];
-                }),
+                'total' => 0,
+                'count' => 0,
+                'by_method' => [],
+            ];
+        }
+
+        foreach ($paymentData as $data) {
+            $month = $data->month;
+            $method = $data->payment_method ?? 'cash';
+            
+            $monthlyIncome[$month]['total'] += $data->total_amount;
+            $monthlyIncome[$month]['count'] += $data->payment_count;
+            $monthlyIncome[$month]['by_method'][$method] = [
+                'amount' => $data->total_amount,
+                'count' => $data->payment_count
             ];
 
-            // Track sources
-            foreach ($payments->groupBy('payment_method') as $method => $items) {
-                if (!isset($sourceBreakdown[$method])) {
-                    $sourceBreakdown[$method] = array_fill(1, 12, 0);
-                }
-                $sourceBreakdown[$method][$month] = $items->sum('amount');
+            if (!isset($sourceBreakdown[$method])) {
+                $sourceBreakdown[$method] = array_fill(1, 12, 0);
             }
+            $sourceBreakdown[$method][$month] = $data->total_amount;
         }
 
         $yearlyTotal = array_sum(array_column($monthlyIncome, 'total'));
@@ -121,30 +149,46 @@ class YearlyReportController extends Controller
 
     /**
      * Yearly Cash Out Report (Expenses)
+     * Optimized with tenant scoping and single query
      */
     public function cashOut(Request $request): View
     {
         $year = $request->input('year', Carbon::now()->year);
+        $tenantId = auth()->user()->tenant_id;
         
-        // Get all operator wallet deductions and system expenses
+        // Single aggregated query for all operator transactions
+        $transactionData = OperatorWalletTransaction::whereYear('created_at', $year)
+            ->when($tenantId, function ($query) use ($tenantId) {
+                return $query->where('tenant_id', $tenantId);
+            })
+            ->where('transaction_type', 'debit')
+            ->select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(CASE WHEN description LIKE "%commission%" THEN amount ELSE 0 END) as commissions'),
+                DB::raw('SUM(CASE WHEN description LIKE "%withdrawal%" THEN amount ELSE 0 END) as withdrawals'),
+                DB::raw('SUM(amount) as total'),
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy(DB::raw('MONTH(created_at)'))
+            ->get()
+            ->keyBy('month');
+
         $monthlyExpenses = [];
-        $categoryBreakdown = [];
+        $categoryBreakdown = [
+            'Operator Commissions' => array_fill(1, 12, 0),
+            'Operator Withdrawals' => array_fill(1, 12, 0),
+        ];
         
         for ($month = 1; $month <= 12; $month++) {
-            // Operator commissions and withdrawals
-            $operatorTransactions = OperatorWalletTransaction::whereYear('created_at', $year)
-                ->whereMonth('created_at', $month)
-                ->where('transaction_type', 'debit')
-                ->get();
-
+            $data = $transactionData->get($month);
+            
             $monthlyExpenses[$month] = [
-                'operator_commissions' => $operatorTransactions->where('description', 'like', '%commission%')->sum('amount'),
-                'operator_withdrawals' => $operatorTransactions->where('description', 'like', '%withdrawal%')->sum('amount'),
-                'total' => $operatorTransactions->sum('amount'),
-                'count' => $operatorTransactions->count(),
+                'operator_commissions' => $data->commissions ?? 0,
+                'operator_withdrawals' => $data->withdrawals ?? 0,
+                'total' => $data->total ?? 0,
+                'count' => $data->count ?? 0,
             ];
 
-            // Category breakdown
             $categoryBreakdown['Operator Commissions'][$month] = $monthlyExpenses[$month]['operator_commissions'];
             $categoryBreakdown['Operator Withdrawals'][$month] = $monthlyExpenses[$month]['operator_withdrawals'];
         }
@@ -163,58 +207,89 @@ class YearlyReportController extends Controller
 
     /**
      * Yearly Operator Income Report
+     * Optimized with single aggregated queries per data type
      */
     public function operatorIncome(Request $request): View
     {
         $year = $request->input('year', Carbon::now()->year);
+        $tenantId = auth()->user()->tenant_id;
         
-        // Get all operators
-        $operators = User::whereIn('role_level', [30, 40]) // Operator and Sub-Operator
+        // Get all operators with tenant scoping
+        $operators = User::whereIn('role_level', [30, 40])
+            ->when($tenantId, function ($query) use ($tenantId) {
+                return $query->where('tenant_id', $tenantId);
+            })
             ->get();
 
+        $operatorIds = $operators->pluck('id');
+
+        // Single query for all payment collections
+        $paymentsData = Payment::whereYear('payment_date', $year)
+            ->whereIn('collected_by', $operatorIds)
+            ->select(
+                'collected_by as operator_id',
+                DB::raw('MONTH(payment_date) as month'),
+                DB::raw('SUM(amount) as total_amount')
+            )
+            ->groupBy('collected_by', DB::raw('MONTH(payment_date)'))
+            ->get();
+
+        // Single query for all commissions
+        $commissionsData = OperatorWalletTransaction::whereYear('created_at', $year)
+            ->whereIn('user_id', $operatorIds)
+            ->where('transaction_type', 'credit')
+            ->where('description', 'like', '%commission%')
+            ->select(
+                'user_id as operator_id',
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('SUM(amount) as total_amount')
+            )
+            ->groupBy('user_id', DB::raw('MONTH(created_at)'))
+            ->get();
+
+        // Build monthly data structure
         $monthlyData = [];
         for ($month = 1; $month <= 12; $month++) {
             $monthlyData[$month] = [];
             foreach ($operators as $operator) {
-                // Get payments collected by operator
-                $operatorPayments = Payment::whereYear('payment_date', $year)
-                    ->whereMonth('payment_date', $month)
-                    ->where('collected_by', $operator->id)
-                    ->sum('amount');
-
-                // Get operator's commissions
-                $commissions = OperatorWalletTransaction::whereYear('created_at', $year)
-                    ->whereMonth('created_at', $month)
-                    ->where('user_id', $operator->id)
-                    ->where('transaction_type', 'credit')
-                    ->where('description', 'like', '%commission%')
-                    ->sum('amount');
-
                 $monthlyData[$month][$operator->id] = [
-                    'collections' => $operatorPayments,
-                    'commissions' => $commissions,
-                    'total' => $operatorPayments + $commissions,
+                    'collections' => 0,
+                    'commissions' => 0,
+                    'total' => 0,
                 ];
             }
         }
 
+        // Fill in payments data
+        foreach ($paymentsData as $data) {
+            if (isset($monthlyData[$data->month][$data->operator_id])) {
+                $monthlyData[$data->month][$data->operator_id]['collections'] = $data->total_amount;
+                $monthlyData[$data->month][$data->operator_id]['total'] += $data->total_amount;
+            }
+        }
+
+        // Fill in commissions data
+        foreach ($commissionsData as $data) {
+            if (isset($monthlyData[$data->month][$data->operator_id])) {
+                $monthlyData[$data->month][$data->operator_id]['commissions'] = $data->total_amount;
+                $monthlyData[$data->month][$data->operator_id]['total'] += $data->total_amount;
+            }
+        }
+
+        // Calculate yearly totals per operator
         $totalByOperator = [];
         foreach ($operators as $operator) {
-            $collections = Payment::whereYear('payment_date', $year)
-                ->where('collected_by', $operator->id)
-                ->sum('amount');
-
-            $commissions = OperatorWalletTransaction::whereYear('created_at', $year)
-                ->where('user_id', $operator->id)
-                ->where('transaction_type', 'credit')
-                ->where('description', 'like', '%commission%')
-                ->sum('amount');
-
             $totalByOperator[$operator->id] = [
-                'collections' => $collections,
-                'commissions' => $commissions,
-                'total' => $collections + $commissions,
+                'collections' => 0,
+                'commissions' => 0,
+                'total' => 0,
             ];
+            
+            for ($month = 1; $month <= 12; $month++) {
+                $totalByOperator[$operator->id]['collections'] += $monthlyData[$month][$operator->id]['collections'];
+                $totalByOperator[$operator->id]['commissions'] += $monthlyData[$month][$operator->id]['commissions'];
+                $totalByOperator[$operator->id]['total'] += $monthlyData[$month][$operator->id]['total'];
+            }
         }
 
         return view('panels.admin.reports.yearly.operator-income', compact(
@@ -247,6 +322,69 @@ class YearlyReportController extends Controller
             'Professional Services',
             'Other Expenses',
         ];
+
+        for ($month = 1; $month <= 12; $month++) {
+            $monthlyExpenses[$month] = [
+                'total' => 0,
+                'categories' => [],
+            ];
+
+            foreach ($categories as $category) {
+                $amount = 0; // In production, fetch from expenses table
+                $monthlyExpenses[$month]['categories'][$category] = $amount;
+                $monthlyExpenses[$month]['total'] += $amount;
+
+                if (!isset($categoryTotals[$category])) {
+                    $categoryTotals[$category] = 0;
+                }
+                $categoryTotals[$category] += $amount;
+            }
+        }
+
+        $yearlyTotal = array_sum(array_column($monthlyExpenses, 'total'));
+        $averageMonthly = $yearlyTotal / 12;
+
+        return view('panels.admin.reports.yearly.expenses', compact(
+            'year',
+            'monthlyExpenses',
+            'categoryTotals',
+            'categories',
+            'yearlyTotal',
+            'averageMonthly'
+        ));
+    }
+
+    /**
+     * Export yearly report to Excel
+     */
+    public function exportExcel(Request $request, string $reportType)
+    {
+        $year = $request->input('year', Carbon::now()->year);
+        
+        // Implementation would use ExcelExportService
+        // For now, return a placeholder
+        return response()->json([
+            'message' => 'Excel export for ' . $reportType . ' will be implemented',
+            'year' => $year
+        ]);
+    }
+
+    /**
+     * Export yearly report to PDF
+     */
+    public function exportPdf(Request $request, string $reportType)
+    {
+        $year = $request->input('year', Carbon::now()->year);
+        
+        // Implementation would use PdfService
+        // For now, return a placeholder
+        return response()->json([
+            'message' => 'PDF export for ' . $reportType . ' will be implemented',
+            'year' => $year
+        ]);
+    }
+}
+
 
         for ($month = 1; $month <= 12; $month++) {
             $monthlyExpenses[$month] = [

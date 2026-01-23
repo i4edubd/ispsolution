@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('parent_id')->nullable()->constrained('zones')->onDelete('cascade');
             $table->string('name');
-            $table->string('code', 50)->unique();
+            $table->string('code', 50);
             $table->text('description')->nullable();
             $table->decimal('latitude', 10, 8)->nullable()->comment('Center latitude for radius coverage');
             $table->decimal('longitude', 11, 8)->nullable()->comment('Center longitude for radius coverage');
@@ -32,6 +32,9 @@ return new class extends Migration
 
             $table->index(['tenant_id', 'is_active']);
             $table->index('parent_id');
+            
+            // Zone code should be unique per tenant, not globally
+            $table->unique(['tenant_id', 'code'], 'zones_tenant_code_unique');
         });
     }
 

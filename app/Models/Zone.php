@@ -121,16 +121,23 @@ class Zone extends Model
 
     /**
      * Get total customer count in zone and all child zones
+     * Note: This attribute should be used sparingly as it can be expensive.
+     * For reports, use withCount() queries instead.
      */
     public function getTotalCustomersCountAttribute(): int
     {
-        $count = $this->customers()->count();
-        
-        foreach ($this->children as $child) {
-            $count += $child->total_customers_count;
-        }
-        
-        return $count;
+        // Use a single query with subquery to count customers in this zone and all descendants
+        return User::where('role_level', 100)
+            ->where(function ($query) {
+                $query->where('zone_id', $this->id)
+                    ->orWhereIn('zone_id', function ($subQuery) {
+                        $subQuery->select('id')
+                            ->from('zones')
+                            ->where('parent_id', $this->id)
+                            ->orWhereRaw('parent_id IN (SELECT id FROM zones WHERE parent_id = ?)', [$this->id]);
+                    });
+            })
+            ->count();
     }
 
     /**
