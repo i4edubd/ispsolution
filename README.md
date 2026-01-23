@@ -187,8 +187,24 @@ php artisan db:seed --class=DemoSeeder
 
 ## Getting Started
 
+### Automated Installation (Recommended)
+
+For a fresh Ubuntu server, use our automated installation script:
+
+```bash
+# Download and run the installation script
+wget https://raw.githubusercontent.com/i4edubd/ispsolution/main/install.sh
+chmod +x install.sh
+sudo bash install.sh
+```
+
+This installs everything you need (PHP, MySQL, Redis, Nginx, RADIUS, etc.) and configures the application automatically.
+
+**📖 Full Installation Guide**: [INSTALLATION.md](INSTALLATION.md)
+
 ### Prerequisites
-- Docker and Docker Compose
+- Ubuntu 18.04+, 20.04+, 22.04+, or 24.04+ (for automated install)
+- Docker and Docker Compose (for Docker setup)
 - Git
 
 ### Quick Start with Docker
@@ -585,8 +601,23 @@ See workflow files in `.github/workflows/` for details.
 
 ## Documentation
 
-### Core Documentation
+### Getting Started
+- **[Installation Guide](INSTALLATION.md)** ⭐ - Complete automated installation guide
 - **[Documentation Index](docs/INDEX.md)** - Complete documentation catalog
+- **[Quick Start](README.md#getting-started)** - Get up and running quickly
+
+### User Guides by Role
+Choose the guide for your role:
+- **[Developer Guide](docs/guides/DEVELOPER_GUIDE.md)** - Level 0: System development and administration
+- **[Super Admin Guide](docs/guides/SUPERADMIN_GUIDE.md)** - Level 10: Tenant management
+- **[Admin Guide](docs/guides/ADMIN_GUIDE.md)** - Level 20: ISP owner operations
+- **[Operator Guide](docs/guides/OPERATOR_GUIDE.md)** - Level 30: Area/zone management
+- **[Sub-Operator Guide](docs/guides/SUBOPERATOR_GUIDE.md)** - Level 40: Local customer management
+- **[Manager Guide](docs/guides/MANAGER_GUIDE.md)** - Level 50: Oversight and reporting
+- **[Staff Guide](docs/guides/STAFF_GUIDE.md)** - Level 80: Administrative support
+- **[Customer Guide](docs/guides/CUSTOMER_GUIDE.md)** - Level 100: End user self-service
+
+### Core Documentation
 - **[Roles & Permissions Guide](docs/ROLES_AND_PERMISSIONS.md)** - Complete role hierarchy, permissions, and data isolation
 - **[API Documentation](docs/API.md)** - Complete REST API reference with authentication and examples
 - **[Testing Guide](docs/TESTING.md)** - How to run and write tests
