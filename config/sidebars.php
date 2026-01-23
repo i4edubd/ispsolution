@@ -288,39 +288,6 @@ return [
         ],
     ],
 
-    'card_distributor' => [
-        [
-            'key' => 'dashboard',
-            'label' => 'Dashboard',
-            'icon' => 'bi-speedometer2',
-            'route' => 'panel.card-distributor.dashboard',
-        ],
-        [
-            'key' => 'inventory',
-            'label' => 'Card Inventory',
-            'icon' => 'bi-box-seam',
-            'route' => 'panel.card-distributor.cards.index',
-        ],
-        [
-            'key' => 'sales',
-            'label' => 'Sales Tracking',
-            'icon' => 'bi-cart',
-            'route' => 'panel.card-distributor.sales.index',
-        ],
-        [
-            'key' => 'commissions',
-            'label' => 'Commission Reports',
-            'icon' => 'bi-currency-dollar',
-            'route' => 'panel.card-distributor.commissions.index',
-        ],
-        [
-            'key' => 'payment_history',
-            'label' => 'Payment History',
-            'icon' => 'bi-clock-history',
-            'route' => 'panel.card-distributor.balance',
-        ],
-    ],
-
     'manager' => [
         [
             'key' => 'dashboard',

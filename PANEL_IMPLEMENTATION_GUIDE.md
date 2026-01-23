@@ -153,11 +153,10 @@ resources/views/panels/
 - **Controller**: StaffController
 - **Missing**: Ticket system integration
 
-#### 8. Other Panels
-- Sub-Operator: Basic functionality in place
+#### 7. Other Panels
+- Operator: Basic functionality in place
+- Sub-Operator: Basic structure
 - Accountant: Reporting views in place
-- Reseller/Sub-Reseller: Basic structure
-- Card Distributor: Basic structure
 - Customer: Self-service portal in place
 
 ---

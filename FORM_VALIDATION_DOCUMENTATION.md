@@ -33,7 +33,7 @@ This document outlines the comprehensive form validation system implemented acro
 
 #### StoreCustomerRequest
 **Purpose:** Validates customer creation  
-**Authorization:** superadmin, admin, manager, staff, reseller, sub-reseller  
+**Authorization:** superadmin, admin, manager, staff, operator, sub-operator  
 **Validation Rules:**
 - `name`: required, string, max:255
 - `email`: required, email, unique:users,email
@@ -54,7 +54,7 @@ This document outlines the comprehensive form validation system implemented acro
 
 #### UpdateCustomerRequest
 **Purpose:** Validates customer updates  
-**Authorization:** superadmin, admin, manager, staff, reseller, sub-reseller  
+**Authorization:** superadmin, admin, manager, staff, operator, sub-operator  
 **Validation Rules:** Same as StoreCustomerRequest, except:
 - `email`: unique except current customer
 - `username`: unique except current customer

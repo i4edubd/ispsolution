@@ -183,14 +183,6 @@
                 ]
             ],
         ];
-    } elseif ($userRole === 'card-distributor') {
-        $menus = [
-            ['label' => 'Dashboard', 'route' => 'panel.card-distributor.dashboard', 'icon' => 'home'],
-            ['label' => 'Cards Inventory', 'route' => 'panel.card-distributor.cards.index', 'icon' => 'card'],
-            ['label' => 'Sales', 'route' => 'panel.card-distributor.sales.index', 'icon' => 'shopping'],
-            ['label' => 'Commissions', 'route' => 'panel.card-distributor.commissions.index', 'icon' => 'currency'],
-            ['label' => 'Balance', 'route' => 'panel.card-distributor.balance', 'icon' => 'wallet'],
-        ];
     } elseif ($userRole === 'operator') {
         $menus = [
             ['label' => 'Dashboard', 'route' => 'panel.operator.dashboard', 'icon' => 'home'],

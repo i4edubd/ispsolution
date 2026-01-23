@@ -28,7 +28,7 @@ This PR implements comprehensive role-based panels for all 9 user roles in the I
 
 ## 🎯 What's Included
 
-### 1. Controllers (11) ✅
+### 1. Controllers (9) ✅
 Complete panel controllers for all roles with dashboard and CRUD methods:
 - `SuperAdminController` - System-wide administration (tenant-wide access)
 - `AdminController` - Tenant administration (14 main sections with controllable menus)
@@ -36,9 +36,6 @@ Complete panel controllers for all roles with dashboard and CRUD methods:
 - `SubOperatorController` - Further restricted operator panel
 - `ManagerController` - Task-specific panel with permission-based access
 - `StaffController` - Support staff
-- `ResellerController` - Service reseller
-- `SubResellerController` - Sub-level reseller
-- `CardDistributorController` - Card distribution (separate portal)
 - `CustomerController` - Customer self-service
 - `DeveloperController` - Technical configuration and infrastructure
 - `AccountantController` - Financial reporting panel (read-only)
@@ -195,11 +192,11 @@ Super Admin:      /panel/super-admin/dashboard
 Admin:            /panel/admin/dashboard
 Manager:          /panel/manager/dashboard
 Staff:            /panel/staff/dashboard
-Reseller:         /panel/reseller/dashboard
-Sub-Reseller:     /panel/sub-reseller/dashboard
-Card Distributor: /panel/card-distributor/dashboard
+Operator:         /panel/operator/dashboard
+Sub-Operator:     /panel/sub-operator/dashboard
 Customer:         /panel/customer/dashboard
 Developer:        /panel/developer/dashboard
+Accountant:       /panel/accountant/dashboard
 ```
 
 ### Route Names
@@ -230,7 +227,7 @@ Route::middleware(['auth', 'permission:users.manage'])->group(function () {
 
 ## 📊 Statistics
 
-- **9 Controllers** - One for each role (SuperAdmin, Admin, Manager, Staff, Reseller, SubReseller, CardDistributor, Customer, Developer)
+- **9 Controllers** - One for each role (SuperAdmin, Admin, Manager, Staff, Operator, SubOperator, Customer, Developer, Accountant)
 - **45+ Routes** - Complete routing structure with middleware protection
 - **112 Views** - All necessary UI components including dashboards, CRUD views, and components
 - **3 Middleware** - Access control layer (CheckRole, CheckPermission)

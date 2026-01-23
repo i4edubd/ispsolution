@@ -105,7 +105,7 @@ This document provides comprehensive specifications for all user panels in the I
 - Network status
 - Quick actions
 
-#### 2.2 Resellers & Managers
+#### 2.2 Operators & Managers
 **Controllable Menu** - Can be disabled per operator
 - **Operators**: Create and manage operator accounts (Level 30)
 - **Sub-Operators**: Manage sub-level operators (Level 40)
@@ -210,7 +210,7 @@ This document provides comprehensive specifications for all user panels in the I
 
 ### Controllable Menus
 The following menus can be disabled per operator using the `disabled_menus` field:
-1. `resellers_managers` - Resellers & Managers menu
+1. `operators_managers` - Operators & Managers menu
 2. `routers_packages` - Routers & Packages menu
 3. `recharge_cards` - Recharge Card menu
 4. `customers` - Customer menu
@@ -406,60 +406,7 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 
 ---
 
-## 6. Card Distributor Portal
-
-### Access Level
-- **Separate Portal**: Not part of admin panel
-- **Scope**: Card inventory and sales only
-- **URL Prefix**: `/card-distributors/*` (separate routing)
-
-### Main Sections
-
-#### 6.1 Dashboard
-- Card inventory summary
-- Sales statistics
-- Commission overview
-- Recent transactions
-
-#### 6.2 Card Inventory View
-- Available cards by denomination
-- Sold cards
-- Expired cards
-- Card status tracking
-
-#### 6.3 Sales Tracking
-- Transaction history
-- Card redemption tracking
-- Customer information (limited)
-- Sales by period
-
-#### 6.4 Commission Reports
-- Earned commissions
-- Pending payouts
-- Commission history
-- Performance metrics
-
-#### 6.5 Payment History
-- Distributor account balance
-- Payment received history
-- Outstanding balance
-- Settlement records
-
-### Restrictions
-- **Read-only access**: Cannot modify system data
-- **No customer management**: Cannot create or modify customers
-- **No administrative features**: Limited to card operations only
-- **Separate portal**: Isolated from main admin panel
-
-### Key Features
-- Card inventory management (view only)
-- Sales tracking and reporting
-- Commission calculation
-- Simple, focused interface
-
----
-
-## 7. Developer Panel
+## 6. Developer Panel
 
 ### Access Level
 - **Source Code Owner**: Technical configuration access
@@ -538,7 +485,7 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 
 ---
 
-## 8. Accountant Panel
+## 7. Accountant Panel
 
 ### Access Level
 - **Financial Reporting Panel**: Read-only financial access
@@ -547,13 +494,13 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 
 ### Main Sections
 
-#### 8.1 Dashboard
+#### 7.1 Dashboard
 - Financial overview
 - Revenue metrics
 - Outstanding balances
 - Collection summary
 
-#### 8.2 Financial Reports
+#### 7.2 Financial Reports
 - Income/Expense reports
 - Payment history reports
 - Customer statement reports
@@ -561,25 +508,25 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 - Profit/Loss statements
 - Cash flow reports
 
-#### 8.3 Income/Expense Tracking
+#### 7.3 Income/Expense Tracking
 - Transaction history (view only)
 - Expense records (view only)
 - Category-wise breakdown
 - Period comparisons
 
-#### 8.4 VAT Collections
+#### 7.4 VAT Collections
 - VAT collected summary
 - Tax reports
 - Compliance documentation
 - Period-wise VAT tracking
 
-#### 8.5 Payment History
+#### 7.5 Payment History
 - All payment records (view only)
 - Gateway transactions
 - Manual payments
 - Refunds and adjustments
 
-#### 8.6 Customer Statements
+#### 7.6 Customer Statements
 - Individual customer statements
 - Outstanding balances
 - Payment history by customer
@@ -600,7 +547,7 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 
 ---
 
-## 9. Customer Panel
+## 8. Customer Panel
 
 ### Access Level
 - **Self-Service Portal**: Personal account management
@@ -609,32 +556,32 @@ The following menus can be disabled per operator using the `disabled_menus` fiel
 
 ### Main Sections
 
-#### 9.1 Dashboard
+#### 8.1 Dashboard
 - Account overview
 - Package details
 - Usage summary
 - Recent activity
 
-#### 9.2 Profile Management
+#### 8.2 Profile Management
 - Personal information
 - Contact details
 - Password change
 - Notification preferences
 
-#### 9.3 Billing
+#### 8.3 Billing
 - View invoices
 - Payment history
 - Make payment (online/offline)
 - Download receipts
 - Package renewal
 
-#### 9.4 Usage Statistics
+#### 8.4 Usage Statistics
 - Data upload/download
 - Session history
 - Bandwidth usage
 - Monthly trends
 
-#### 9.5 Support Tickets
+#### 8.5 Support Tickets
 - Create new ticket
 - View ticket history
 - Track ticket status
@@ -675,7 +622,7 @@ Customer:     100  (Lowest - Self-service)
 Admins can disable specific menus for Operators using the `disabled_menus` field in the users table:
 
 **Available Menu Keys:**
-- `resellers_managers`
+- `operators_managers`
 - `routers_packages`
 - `recharge_cards`
 - `customers`
