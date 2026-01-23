@@ -1,165 +1,149 @@
 #!/bin/bash
 
 ################################################################################
-# ISP Solution - Complete Installation Script for Ubuntu 22.04+
+# ISP Solution - Optimized Installation Script (Enhanced)
+# Target OS: Ubuntu 22.04 / 24.04 LTS
 ################################################################################
 
-# <<<----------------- BEGIN: DEFAULT ENVIRONMENT VARIABLES ------------------->
-DOMAIN_NAME="radius.ispbills.com"
-SETUP_SSL="yes"
-EMAIL="admin@radius.ispbills.com"
-# <<<------------------ END: DEFAULT ENVIRONMENT VARIABLES -------------------->>
+set -e 
 
-set -euo pipefail
-
+# Color codes
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+# Configuration (Editable)
+DOMAIN_NAME=${DOMAIN_NAME:-"radius.ispbills.com"}
 DB_NAME=${DB_NAME:-"ispsolution"}
 DB_USER=${DB_USER:-"ispsolution"}
-DB_PASSWORD=${DB_PASSWORD:-"$(openssl rand -base64 18 | tr -d '=+/' | cut -c1-16)"}
-DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-"$(openssl rand -base64 18 | tr -d '=+/' | cut -c1-16)"}
+DB_PASSWORD=${DB_PASSWORD:-"$(openssl rand -base64 12)"}
+DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-"$(openssl rand -base64 12)"}
 RADIUS_DB_NAME=${RADIUS_DB_NAME:-"radius"}
 RADIUS_DB_USER=${RADIUS_DB_USER:-"radius"}
-RADIUS_DB_PASSWORD=${RADIUS_DB_PASSWORD:-"$(openssl rand -base64 18 | tr -d '=+/' | cut -c1-16)"}
+RADIUS_DB_PASSWORD=${RADIUS_DB_PASSWORD:-"$(openssl rand -base64 12)"}
 INSTALL_DIR="/var/www/ispsolution"
-INSTALL_OPENVPN=${INSTALL_OPENVPN:-"yes"}
-SWAP_SIZE=${SWAP_SIZE:-"2G"}
+INSTALL_OPENVPN="yes"
+SETUP_SSL="no"
+EMAIL=${EMAIL:-"admin@$DOMAIN_NAME"}
 
-print_info()      { echo -e "${BLUE}[INFO]${NC} $1"; }
-print_success()   { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-print_warning()   { echo -e "${YELLOW}[WARNING]${NC} $1"; }
-print_error()     { echo -e "${RED}[ERROR]${NC} $1"; }
+# --- Utility Functions ---
+print_status() { echo -e "${BLUE}[INFO]${NC} $1"; }
+print_done() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+print_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
-check_root()      { if [ "$EUID" -ne 0 ]; then print_error "Run as root or with sudo"; exit 1; fi; }
-
-print_banner() {
-cat << EOF
-${GREEN}
-╔═══════════════════════════════════════════════════════════╗
-║            ISP SOLUTION INSTALLATION SCRIPT               ║
-║      Complete setup for Ubuntu 22.04+ (Fresh Install)     ║
-╚═══════════════════════════════════════════════════════════╝
-${NC}
-EOF
-}
-
-setup_swap() {
-    print_info "Setting up swap memory (${SWAP_SIZE})..."
-    if swapon --show | grep -q "/swapfile"; then
-        print_info "Swap file exists, skipping"
-        return
+check_root() {
+    if [ "$EUID" -ne 0 ]; then
+        print_error "Please run as root (sudo bash install.sh)"
+        exit 1
     fi
-    fallocate -l "$SWAP_SIZE" /swapfile 2>/dev/null || dd if=/dev/zero of=/swapfile bs=1M count=$(echo "$SWAP_SIZE"|sed 's/G/*1024/;s/M//;s/K/*1/;s/B//g'|bc)
-    chmod 600 /swapfile
-    mkswap /swapfile
-    swapon /swapfile
-    grep -q '^/swapfile' /etc/fstab || echo "/swapfile none swap sw 0 0" >> /etc/fstab
-    sysctl vm.swappiness=10
-    sysctl vm.vfs_cache_pressure=50
-    print_success "Swap configured."
 }
 
-update_system() {
-    print_info "Updating system packages..."
-    DEBIAN_FRONTEND=noninteractive apt-get update -y
-    DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
-    print_success "System updated"
+# --- Step 1: Core Dependencies ---
+install_essentials() {
+    print_status "Installing system essentials..."
+    apt-get update -y
+    apt-get install -y software-properties-common curl wget git unzip zip gnupg2 \
+        ca-certificates lsb-release apt-transport-https build-essential openssl \
+        ufw bc fail2ban
+    print_done "Essentials installed."
 }
 
-install_basic_dependencies() {
-    print_info "Installing basic dependencies..."
-    DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common curl wget git unzip zip gnupg2 ca-certificates lsb-release apt-transport-https build-essential openssl ufw dialog bc
-    print_success "Basic dependencies installed"
+# --- Step 2: Swap Memory ---
+setup_swap() {
+    if swapon --show | grep -q "/swapfile"; then
+        print_status "Swap exists, skipping."
+    else
+        print_status "Setting up 2GB swap..."
+        fallocate -l 2G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=2048
+        chmod 600 /swapfile
+        mkswap /swapfile
+        swapon /swapfile
+        echo '/swapfile none swap sw 0 0' >> /etc/fstab
+        print_done "Swap configured."
+    fi
 }
 
-install_php() {
-    print_info "Installing PHP 8.2..."
+# --- Step 3: PHP & Web Stack ---
+install_stack() {
+    print_status "Installing PHP 8.2, Nginx, Redis, and MySQL..."
     add-apt-repository ppa:ondrej/php -y
     apt-get update -y
-    DEBIAN_FRONTEND=noninteractive apt-get install -y php8.2 php8.2-fpm php8.2-cli php8.2-common php8.2-mysql php8.2-zip php8.2-gd php8.2-mbstring php8.2-curl php8.2-xml php8.2-bcmath php8.2-redis php8.2-intl php8.2-soap php8.2-imagick
-    systemctl enable php8.2-fpm
-    systemctl start php8.2-fpm
-    print_success "PHP installed"
+    apt-get install -y php8.2-fpm php8.2-cli php8.2-mysql php8.2-zip php8.2-gd \
+        php8.2-mbstring php8.2-curl php8.2-xml php8.2-bcmath php8.2-redis \
+        php8.2-intl php8.2-imagick nginx redis-server mysql-server
+    
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    apt-get install -y nodejs
 }
 
-install_composer() {
-    print_info "Installing Composer..."
-    if ! command -v composer >/dev/null 2>&1; then
-        curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-        chmod +x /usr/local/bin/composer
-    fi
+# --- Step 4: Secure MySQL & Create Databases ---
+configure_mysql() {
+    print_status "Securing MySQL and creating databases..."
+    
+    # Secure Root
+    mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_ROOT_PASSWORD}';"
+    
+    SECURE_CONF=$(mktemp)
+    cat > "$SECURE_CONF" <<EOF
+[client]
+user=root
+password=${DB_ROOT_PASSWORD}
+EOF
+
+    # Create App Database & User
+    mysql --defaults-extra-file="$SECURE_CONF" -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME};"
+    mysql --defaults-extra-file="$SECURE_CONF" -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';"
+    mysql --defaults-extra-file="$SECURE_CONF" -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';"
+
+    # Create Radius Database & User
+    mysql --defaults-extra-file="$SECURE_CONF" -e "CREATE DATABASE IF NOT EXISTS ${RADIUS_DB_NAME};"
+    mysql --defaults-extra-file="$SECURE_CONF" -e "CREATE USER IF NOT EXISTS '${RADIUS_DB_USER}'@'localhost' IDENTIFIED BY '${RADIUS_DB_PASSWORD}';"
+    mysql --defaults-extra-file="$SECURE_CONF" -e "GRANT ALL PRIVILEGES ON ${RADIUS_DB_NAME}.* TO '${RADIUS_DB_USER}'@'localhost';"
+
+    mysql --defaults-extra-file="$SECURE_CONF" -e "DELETE FROM mysql.user WHERE User='';"
+    mysql --defaults-extra-file="$SECURE_CONF" -e "DROP DATABASE IF EXISTS test;"
+    mysql --defaults-extra-file="$SECURE_CONF" -e "FLUSH PRIVILEGES;"
+    rm "$SECURE_CONF"
 }
 
-install_nodejs() {
-    print_info "Installing Node.js..."
-    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
-    DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
-    npm install -g npm@latest
+# --- Step 5: FreeRADIUS ---
+configure_freeradius() {
+    print_status "Configuring FreeRADIUS..."
+    apt-get install -y freeradius freeradius-mysql freeradius-utils
+    
+    ln -sf /etc/freeradius/3.0/mods-available/sql /etc/freeradius/3.0/mods-enabled/
+    ln -sf /etc/freeradius/3.0/mods-available/sqlcounter /etc/freeradius/3.0/mods-enabled/
+
+    sed -i 's/driver = "rlm_sql_null"/driver = "rlm_sql_mysql"/' /etc/freeradius/3.0/mods-available/sql
+    sed -i "s/login = \"radius\"/login = \"${RADIUS_DB_USER}\"/" /etc/freeradius/3.0/mods-available/sql
+    sed -i "s/password = \"radpass\"/password = \"${RADIUS_DB_PASSWORD}\"/" /etc/freeradius/3.0/mods-available/sql
 }
 
-install_mysql() {
-    print_info "Installing MySQL..."
-    DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server mysql-client
-    systemctl enable mysql
-    systemctl start mysql
-    sudo mysql <<MYSQL_SCRIPT
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${DB_ROOT_PASSWORD}';
-FLUSH PRIVILEGES;
-MYSQL_SCRIPT
-}
+# --- Step 6: OpenVPN ---
+configure_openvpn() {
+    print_status "Setting up OpenVPN..."
+    apt-get install -y openvpn easy-rsa
+    # Enable IP Forwarding
+    echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
+    sysctl -p
 
-install_redis() {
-    DEBIAN_FRONTEND=noninteractive apt-get install -y redis-server
-    systemctl enable redis-server
-}
-
-install_nginx() {
-    DEBIAN_FRONTEND=noninteractive apt-get install -y nginx
-    systemctl enable nginx
-}
-
-install_freeradius() {
-    DEBIAN_FRONTEND=noninteractive apt-get install -y freeradius freeradius-mysql freeradius-utils
-    systemctl enable freeradius
-}
-
-clone_repository() {
-    print_info "Cloning ISP Solution repository..."
-    mkdir -p /var/www
-    if [ -d "$INSTALL_DIR" ]; then
-        mv "$INSTALL_DIR" "${INSTALL_DIR}.backup.$(date +%Y%m%d_%H%M%S)"
-    fi
-    git clone https://github.com/i4edubd/ispsolution.git "$INSTALL_DIR" || { print_error "Git clone failed. Check internet or repo URL."; exit 1; }
-    cd "$INSTALL_DIR"
-    print_success "Repository cloned to $INSTALL_DIR"
-}
-
-install_openvpn() {
-    if [ "$INSTALL_OPENVPN" = "yes" ]; then
-        print_info "Installing OpenVPN and Easy-RSA..."
-        DEBIAN_FRONTEND=noninteractive apt-get install -y openvpn easy-rsa
-        
-        rm -rf ~/openvpn-ca
-        make-cadir ~/openvpn-ca
-        cd ~/openvpn-ca
-
-        # FIX: Disable pipefail to prevent 'yes' command from breaking the script
-        set +o pipefail 
-        ./easyrsa init-pki
-        yes "" | ./easyrsa --batch build-ca nopass
-        ./easyrsa --batch gen-req server nopass
-        echo "yes" | ./easyrsa --batch sign-req server server
-        ./easyrsa gen-dh
-        openvpn --genkey secret ta.key
-        set -o pipefail
-
-        cp pki/ca.crt pki/issued/server.crt pki/private/server.key pki/dh.pem ta.key /etc/openvpn/
-
-        cat > /etc/openvpn/server.conf <<EOF
+    mkdir -p ~/openvpn-ca
+    cp -r /usr/share/easy-rsa/* ~/openvpn-ca/
+    cd ~/openvpn-ca
+    
+    ./easyrsa init-pki
+    ./easyrsa build-ca nopass batch
+    ./easyrsa gen-dh
+    ./easyrsa build-server-full server nopass batch
+    openvpn --genkey --secret ta.key
+    
+    cp pki/ca.crt pki/issued/server.crt pki/private/server.key pki/dh.pem ta.key /etc/openvpn/
+    
+    cat > /etc/openvpn/server.conf <<EOF
 port 1194
 proto udp
 dev tun
@@ -167,147 +151,105 @@ ca ca.crt
 cert server.crt
 key server.key
 dh dh.pem
+tls-auth ta.key 0
 server 10.8.0.0 255.255.255.0
-ifconfig-pool-persist ipp.txt
 push "redirect-gateway def1 bypass-dhcp"
 push "dhcp-option DNS 8.8.8.8"
-push "dhcp-option DNS 8.8.4.4"
 keepalive 10 120
-tls-auth ta.key 0
-cipher AES-256-CBC
-user nobody
-group nogroup
+cipher AES-256-GCM
 persist-key
 persist-tun
 status openvpn-status.log
 verb 3
 EOF
-        echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
-        sysctl -p
-        ufw allow 1194/udp
-        systemctl start openvpn@server
-        systemctl enable openvpn@server
-        print_success "OpenVPN configured."
-    fi
+    systemctl enable --now openvpn@server
 }
 
-setup_databases() {
-    print_info "Setting up databases..."
-    MYSQL_CREDS=$(mktemp)
-    cat > "$MYSQL_CREDS" <<EOF
-[client]
-user=root
-password=${DB_ROOT_PASSWORD}
-EOF
-    chmod 600 "$MYSQL_CREDS"
-    mysql --defaults-extra-file="$MYSQL_CREDS" <<MYSQL_SCRIPT
-CREATE DATABASE IF NOT EXISTS ${DB_NAME};
-CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
-GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';
-CREATE DATABASE IF NOT EXISTS ${RADIUS_DB_NAME};
-CREATE USER IF NOT EXISTS '${RADIUS_DB_USER}'@'localhost' IDENTIFIED BY '${RADIUS_DB_PASSWORD}';
-GRANT ALL PRIVILEGES ON ${RADIUS_DB_NAME}.* TO '${RADIUS_DB_USER}'@'localhost';
-FLUSH PRIVILEGES;
-MYSQL_SCRIPT
-    rm -f "$MYSQL_CREDS"
-}
-
-configure_laravel() {
-    print_info "Configuring Laravel..."
+# --- Step 7: Laravel App Setup & Auto .env Edit ---
+setup_laravel() {
+    print_status "Cloning and configuring Laravel..."
+    mkdir -p "$INSTALL_DIR"
+    git clone https://github.com/i4edubd/ispsolution.git "$INSTALL_DIR"
     cd "$INSTALL_DIR"
-    cp .env.example .env || true
+    
+    cp .env.example .env
+    
+    # Auto Edit .env
+    sed -i "s|APP_URL=.*|APP_URL=http://${DOMAIN_NAME}|" .env
     sed -i "s|DB_DATABASE=.*|DB_DATABASE=${DB_NAME}|" .env
     sed -i "s|DB_USERNAME=.*|DB_USERNAME=${DB_USER}|" .env
     sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|" .env
-    composer install --no-interaction --optimize-autoloader --no-dev
-    php artisan key:generate --force
-    chown -R www-data:www-data "$INSTALL_DIR"
-    chmod -R 775 "$INSTALL_DIR/storage" "$INSTALL_DIR/bootstrap/cache"
-}
-
-install_node_dependencies() {
-    print_info "Building assets..."
-    cd "$INSTALL_DIR"
-    npm install && npm run build
-}
-
-run_migrations() {
-    cd "$INSTALL_DIR"
-    php artisan migrate --force
-}
-
-seed_database() {
-    cd "$INSTALL_DIR"
-    php artisan db:seed --class=RoleSeeder --force
-}
-
-configure_nginx() {
-    cat > /etc/nginx/sites-available/ispsolution <<NGINX_CONFIG
-server {
-    listen 80;
-    server_name ${DOMAIN_NAME};
-    root ${INSTALL_DIR}/public;
-    index index.php;
-    location / { try_files \$uri \$uri/ /index.php?\$query_string; }
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
-    }
-}
-NGINX_CONFIG
-    ln -sf /etc/nginx/sites-available/ispsolution /etc/nginx/sites-enabled/
-    rm -f /etc/nginx/sites-enabled/default
-    systemctl reload nginx
-}
-
-configure_firewall() {
-    ufw --force enable
-    ufw allow 22,80,443,1812,1813,1194/udp
-}
-
-configure_freeradius() {
-    ln -sf /etc/freeradius/3.0/mods-available/sql /etc/freeradius/3.0/mods-enabled/
-    # (Radius configuration happens here using variables)
-    systemctl restart freeradius
-}
-
-setup_ssl() {
-    if [ "$SETUP_SSL" = "yes" ] && [ "$DOMAIN_NAME" != "localhost" ]; then
-        apt-get install -y certbot python3-certbot-nginx
-        certbot --nginx -d "${DOMAIN_NAME}" --non-interactive --agree-tos --email "${EMAIL}" --redirect
+    
+    # RADIUS secondary connection (common in ISP Laravel apps)
+    if grep -q "RADIUS_DB_PASSWORD" .env; then
+        sed -i "s|RADIUS_DB_DATABASE=.*|RADIUS_DB_DATABASE=${RADIUS_DB_NAME}|" .env
+        sed -i "s|RADIUS_DB_USERNAME=.*|RADIUS_DB_USERNAME=${RADIUS_DB_USER}|" .env
+        sed -i "s|RADIUS_DB_PASSWORD=.*|RADIUS_DB_PASSWORD=${RADIUS_DB_PASSWORD}|" .env
     fi
+    
+    composer install --no-dev --optimize-autoloader
+    php artisan key:generate
+    
+    chown -R www-data:www-data "$INSTALL_DIR"
+    chmod -R 775 storage bootstrap/cache
 }
 
+# --- Step 8: Automation Script ---
+setup_automation() {
+    cat <<EOF > /usr/local/bin/create-tenant
+#!/bin/bash
+SUBDOMAIN=\$1
+BASE_DOMAIN="${DOMAIN_NAME}"
+if [ -z "\$SUBDOMAIN" ]; then echo "Usage: create-tenant <name>"; exit 1; fi
+FULL_DOMAIN="\$SUBDOMAIN.\$BASE_DOMAIN"
+echo "Creating config for \$FULL_DOMAIN"
+EOF
+    chmod +x /usr/local/bin/create-tenant
+}
+
+# --- Step 9: Save Credentials ---
+save_credentials() {
+    print_status "Saving credentials to /root/ispsolution-credentials.txt"
+    cat <<EOF > /root/ispsolution-credentials.txt
+#################################################
+ISP Solution Credentials - $(date)
+#################################################
+MySQL Root Password: ${DB_ROOT_PASSWORD}
+
+App Database Name:   ${DB_NAME}
+App DB User:         ${DB_USER}
+App DB Password:     ${DB_PASSWORD}
+
+Radius Database Name: ${RADIUS_DB_NAME}
+Radius DB User:       ${RADIUS_DB_USER}
+Radius DB Password:   ${RADIUS_DB_PASSWORD}
+
+Domain:              ${DOMAIN_NAME}
+Admin Email:         ${EMAIL}
+#################################################
+EOF
+    chmod 600 /root/ispsolution-credentials.txt
+}
+
+# --- Execution ---
 main() {
     check_root
-    print_banner
+    install_essentials
     setup_swap
-    update_system
-    install_basic_dependencies
-    
-    # CRITICAL: Clone first so directory exists for all other services
-    clone_repository
-    
-    install_php
-    install_composer
-    install_nodejs
-    install_mysql
-    install_redis
-    install_nginx
-    install_freeradius
-    install_openvpn
-    setup_databases
-    configure_laravel
-    install_node_dependencies
-    run_migrations
-    seed_database
-    configure_nginx
-    configure_firewall
+    install_stack
+    configure_mysql
     configure_freeradius
-    setup_ssl
+    configure_openvpn
+    setup_laravel
+    setup_automation
+    save_credentials
     
-    print_success "ALL DONE. View credentials in /root/ispsolution-credentials.txt"
+    # Firewall
+    ufw allow 22,80,443,1812,1813,1194/udp
+    ufw --force enable
+    
+    print_done "Installation Complete!"
+    echo "Check /root/ispsolution-credentials.txt for all passwords."
 }
 
 main "$@"
