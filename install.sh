@@ -20,12 +20,9 @@
 # - System packages and dependencies
 # - PHP 8.2+ and extensions
 # - Composer
-# - Node.js and NPM
-# - MySQL 8.0
-# - Redis
+# - MySQL Server (default Ubuntu version)
 # - Nginx web server
 # - FreeRADIUS server
-# - OpenVPN server (optional)
 # - Laravel application setup
 # - Database configuration
 #
@@ -68,7 +65,8 @@ deep_clean_system() {
     
     # Remove MySQL/MariaDB completely
     print_status "Removing MySQL/MariaDB..."
-    apt-get remove --purge -y mysql-server mysql-client mysql-common mysql-server-core-* mysql-client-core-* mariadb-server mariadb-client 2>/dev/null || true
+    apt-get remove --purge -y mysql-server mysql-client mysql-common mariadb-server mariadb-client 2>/dev/null || true
+    apt-get remove --purge -y mysql-server-8.0 mysql-client-8.0 mysql-server-5.7 mysql-client-5.7 2>/dev/null || true
     apt-get autoremove -y 2>/dev/null || true
     rm -rf /etc/mysql /var/lib/mysql /var/log/mysql
     rm -rf /var/lib/mysql-files /var/lib/mysql-keyring
