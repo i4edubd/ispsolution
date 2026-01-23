@@ -364,93 +364,109 @@ class YearlyReportController extends Controller
     /**
      * Export yearly report to Excel
      */
-    public function exportExcel(Request $request, string $reportType)
+    public function exportExcel(Request $request, string $reportType, ExcelExportService $excelService)
     {
         $year = $request->input('year', Carbon::now()->year);
         
-        // Implementation would use ExcelExportService
-        // For now, return a placeholder
-        return response()->json([
-            'message' => 'Excel export for ' . $reportType . ' will be implemented',
-            'year' => $year
-        ]);
-    }
-
-    /**
-     * Export yearly report to PDF
-     */
-    public function exportPdf(Request $request, string $reportType)
-    {
-        $year = $request->input('year', Carbon::now()->year);
-        
-        // Implementation would use PdfService
-        // For now, return a placeholder
-        return response()->json([
-            'message' => 'PDF export for ' . $reportType . ' will be implemented',
-            'year' => $year
-        ]);
-    }
-}
-
-
-        for ($month = 1; $month <= 12; $month++) {
-            $monthlyExpenses[$month] = [
-                'total' => 0,
-                'categories' => [],
-            ];
-
-            foreach ($categories as $category) {
-                $amount = 0; // In production, fetch from expenses table
-                $monthlyExpenses[$month]['categories'][$category] = $amount;
-                $monthlyExpenses[$month]['total'] += $amount;
-
-                if (!isset($categoryTotals[$category])) {
-                    $categoryTotals[$category] = 0;
-                }
-                $categoryTotals[$category] += $amount;
-            }
+        // Get data based on report type
+        switch ($reportType) {
+            case 'cash-in':
+                $data = Payment::whereYear('paid_at', $year)
+                    ->where('status', 'completed')
+                    ->with(['user:id,name', 'invoice:id,invoice_number'])
+                    ->orderBy('paid_at')
+                    ->get();
+                $filename = "cash_in_report_{$year}";
+                return $excelService->exportPayments($data, $filename);
+                
+            case 'cash-out':
+                // For cash out, we'd typically have expense records
+                // Using a generic collection approach
+                $expenses = collect([]); // Would query expense model if it exists
+                return response()->json([
+                    'message' => 'Cash out report export - Expense model not configured',
+                    'year' => $year
+                ]);
+                
+            case 'operator-income':
+                $operators = User::where('operator_type', 'operator')
+                    ->orWhere('operator_type', 'sub_operator')
+                    ->get();
+                $payments = Payment::whereYear('paid_at', $year)
+                    ->where('status', 'completed')
+                    ->with(['user:id,name', 'collector:id,name'])
+                    ->orderBy('paid_at')
+                    ->get();
+                $filename = "operator_income_report_{$year}";
+                return $excelService->exportPayments($payments, $filename);
+                
+            case 'card-distributor':
+                $cards = RechargeCard::whereYear('sold_at', $year)
+                    ->with(['distributor:id,name'])
+                    ->orderBy('sold_at')
+                    ->get();
+                return response()->json([
+                    'message' => 'Card distributor export - Custom export implementation needed',
+                    'year' => $year,
+                    'count' => $cards->count()
+                ]);
+                
+            default:
+                return response()->json(['error' => 'Unknown report type'], 400);
         }
-
-        $yearlyTotal = array_sum(array_column($monthlyExpenses, 'total'));
-        $averageMonthly = $yearlyTotal / 12;
-
-        return view('panels.admin.reports.yearly.expenses', compact(
-            'year',
-            'monthlyExpenses',
-            'categoryTotals',
-            'categories',
-            'yearlyTotal',
-            'averageMonthly'
-        ));
-    }
-
-    /**
-     * Export yearly report to Excel
-     */
-    public function exportExcel(Request $request, string $reportType)
-    {
-        $year = $request->input('year', Carbon::now()->year);
-        
-        // Implementation would use ExcelExportService
-        // For now, return a placeholder
-        return response()->json([
-            'message' => 'Excel export for ' . $reportType . ' will be implemented',
-            'year' => $year
-        ]);
     }
 
     /**
      * Export yearly report to PDF
      */
-    public function exportPdf(Request $request, string $reportType)
+    public function exportPdf(Request $request, string $reportType, PdfService $pdfService)
     {
         $year = $request->input('year', Carbon::now()->year);
         
-        // Implementation would use PdfService
-        // For now, return a placeholder
-        return response()->json([
-            'message' => 'PDF export for ' . $reportType . ' will be implemented',
-            'year' => $year
-        ]);
+        // Get data based on report type
+        switch ($reportType) {
+            case 'cash-in':
+                $data = [
+                    'year' => $year,
+                    'title' => "Cash In Report - {$year}",
+                    'payments' => Payment::whereYear('paid_at', $year)
+                        ->where('status', 'completed')
+                        ->with(['user:id,name', 'invoice:id,invoice_number'])
+                        ->orderBy('paid_at')
+                        ->get(),
+                    'total' => Payment::whereYear('paid_at', $year)
+                        ->where('status', 'completed')
+                        ->sum('amount'),
+                ];
+                
+                return response()->json([
+                    'message' => 'PDF export would generate here',
+                    'year' => $year,
+                    'type' => $reportType,
+                    'total' => $data['total']
+                ]);
+                
+            case 'operator-income':
+                $data = [
+                    'year' => $year,
+                    'title' => "Operator Income Report - {$year}",
+                    'operators' => User::where('operator_type', 'operator')
+                        ->orWhere('operator_type', 'sub_operator')
+                        ->with(['payments' => function($query) use ($year) {
+                            $query->whereYear('paid_at', $year)
+                                ->where('status', 'completed');
+                        }])
+                        ->get(),
+                ];
+                
+                return response()->json([
+                    'message' => 'PDF export would generate here',
+                    'year' => $year,
+                    'type' => $reportType,
+                ]);
+                
+            default:
+                return response()->json(['error' => 'Unknown report type'], 400);
+        }
     }
 }
