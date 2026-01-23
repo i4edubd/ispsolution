@@ -391,6 +391,18 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/api/analytics/growth', [AnalyticsController::class, 'growthMetrics'])->name('analytics.api.growth');
     Route::get('/api/analytics/performance', [AnalyticsController::class, 'performanceIndicators'])->name('analytics.api.performance');
 
+    // Yearly Reports
+    Route::prefix('yearly-reports')->name('yearly-reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Panel\YearlyReportController::class, 'index'])->name('index');
+        Route::get('/card-distributor-payments', [\App\Http\Controllers\Panel\YearlyReportController::class, 'cardDistributorPayments'])->name('card-distributor-payments');
+        Route::get('/cash-in', [\App\Http\Controllers\Panel\YearlyReportController::class, 'cashIn'])->name('cash-in');
+        Route::get('/cash-out', [\App\Http\Controllers\Panel\YearlyReportController::class, 'cashOut'])->name('cash-out');
+        Route::get('/operator-income', [\App\Http\Controllers\Panel\YearlyReportController::class, 'operatorIncome'])->name('operator-income');
+        Route::get('/expenses', [\App\Http\Controllers\Panel\YearlyReportController::class, 'expenses'])->name('expenses');
+        Route::get('/{reportType}/export-excel', [\App\Http\Controllers\Panel\YearlyReportController::class, 'exportExcel'])->name('export-excel');
+        Route::get('/{reportType}/export-pdf', [\App\Http\Controllers\Panel\YearlyReportController::class, 'exportPdf'])->name('export-pdf');
+    });
+
     // Cable TV Management
     Route::prefix('cable-tv')->name('cable-tv.')->group(function () {
         Route::get('/', [CableTvController::class, 'index'])->name('index');
