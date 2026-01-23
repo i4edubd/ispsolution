@@ -410,6 +410,52 @@ class AdminController extends Controller
     }
 
     /**
+     * Update the specified customer.
+     */
+    public function customersUpdate(Request $request, $id)
+    {
+        $customer = NetworkUser::findOrFail($id);
+
+        $validated = $request->validate([
+            'username' => 'required|string|min:3|max:255|unique:network_users,username,'.$id.'|regex:/^[a-zA-Z0-9_-]+$/',
+            'password' => 'nullable|string|min:8',
+            'service_type' => 'required|in:pppoe,hotspot,cable-tv,static-ip,other',
+            'package_id' => 'required|exists:packages,id',
+            'status' => 'required|in:active,inactive,suspended',
+        ]);
+
+        // Prepare update data
+        $updateData = [
+            'username' => $validated['username'],
+            'service_type' => $validated['service_type'],
+            'package_id' => $validated['package_id'],
+            'status' => $validated['status'],
+        ];
+
+        // Only update password if provided
+        if (!empty($validated['password'])) {
+            $updateData['password'] = bcrypt($validated['password']);
+        }
+
+        $customer->update($updateData);
+
+        return redirect()->route('panel.admin.customers')
+            ->with('success', 'Customer updated successfully.');
+    }
+
+    /**
+     * Remove the specified customer.
+     */
+    public function customersDestroy($id)
+    {
+        $customer = NetworkUser::findOrFail($id);
+        $customer->delete();
+
+        return redirect()->route('panel.admin.customers')
+            ->with('success', 'Customer deleted successfully.');
+    }
+
+    /**
      * Show customer detail.
      */
     public function customersShow($id): View
