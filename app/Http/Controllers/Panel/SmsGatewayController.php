@@ -143,17 +143,19 @@ class SmsGatewayController extends Controller
         ]);
 
         try {
-            // TODO: Implement test SMS sending logic based on gateway type
-            // This is a placeholder - actual implementation should use the gateway's configuration
-            // to send a test SMS through the appropriate provider
+            $smsService = app(\App\Services\SmsService::class);
+            $result = $smsService->sendTestSms($gateway, $request->phone_number);
             
-            // Example structure for future implementation:
-            // $smsService = app(\App\Services\SmsService::class);
-            // $smsService->sendTestSms($gateway, $request->phone_number);
-            
-            return back()->with('error', 'Test SMS functionality not yet implemented. Please check gateway configuration manually.');
+            if ($result) {
+                return back()->with('success', "Test SMS sent successfully to {$request->phone_number}. Check SMS logs for delivery status.");
+            } else {
+                return back()->with('error', 'Failed to send test SMS. Check SMS logs for details.');
+            }
         } catch (\Exception $e) {
-            Log::error('SMS Gateway test failed: ' . $e->getMessage());
+            Log::error('SMS Gateway test failed: ' . $e->getMessage(), [
+                'gateway' => $gateway->id,
+                'phone' => $request->phone_number,
+            ]);
             return back()->with('error', 'Failed to send test SMS: ' . $e->getMessage());
         }
     }
