@@ -93,7 +93,7 @@ Route::prefix('v1')->middleware('rate_limit:public_api')->group(function () {
     });
 
     // MikroTik Routes
-    Route::prefix('mikrotik')->group(function () {
+    Route::prefix('mikrotik')->middleware(['auth', 'rate_limit:api'])->group(function () {
         // Router Management
         Route::get('/routers', [MikrotikController::class, 'listRouters'])->name('api.mikrotik.routers.index');
         Route::post('/routers/{id}/connect', [MikrotikController::class, 'connectRouter'])->name('api.mikrotik.routers.connect');

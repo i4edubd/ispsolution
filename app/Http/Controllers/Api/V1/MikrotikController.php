@@ -337,12 +337,17 @@ class MikrotikController extends Controller
     public function viewProfile(int $id): JsonResponse
     {
         $profile = MikrotikProfile::with('router')->findOrFail($id);
+        $this->authorize('view', $profile);
 
         return response()->json($profile);
     }
 
     /**
      * Update a profile
+     *
+     * Note: This updates the local database only. Changes are not synchronized
+     * to the MikroTik router. Use the import-profiles endpoint to sync from
+     * the router to the database after making changes on the router directly.
      */
     public function updateProfile(Request $request, int $id): JsonResponse
     {
@@ -363,6 +368,7 @@ class MikrotikController extends Controller
         }
 
         $profile = MikrotikProfile::findOrFail($id);
+        $this->authorize('update', $profile);
         $profile->update($validator->validated());
 
         return response()->json([
@@ -373,10 +379,15 @@ class MikrotikController extends Controller
 
     /**
      * Delete a profile
+     *
+     * Note: This deletes from the local database only. The profile is not
+     * removed from the MikroTik router. Manage profiles directly on the router
+     * and use the import-profiles endpoint to sync the database.
      */
     public function deleteProfile(int $id): JsonResponse
     {
         $profile = MikrotikProfile::findOrFail($id);
+        $this->authorize('delete', $profile);
         $profile->delete();
 
         return response()->json([
@@ -461,12 +472,17 @@ class MikrotikController extends Controller
     public function viewIpPool(int $id): JsonResponse
     {
         $pool = MikrotikIpPool::with('router')->findOrFail($id);
+        $this->authorize('view', $pool);
 
         return response()->json($pool);
     }
 
     /**
      * Update an IP pool
+     *
+     * Note: This updates the local database only. Changes are not synchronized
+     * to the MikroTik router. Use the import-pools endpoint to sync from
+     * the router to the database after making changes on the router directly.
      */
     public function updateIpPool(Request $request, int $id): JsonResponse
     {
@@ -484,6 +500,7 @@ class MikrotikController extends Controller
         }
 
         $pool = MikrotikIpPool::findOrFail($id);
+        $this->authorize('update', $pool);
         $pool->update($validator->validated());
 
         return response()->json([
@@ -494,10 +511,15 @@ class MikrotikController extends Controller
 
     /**
      * Delete an IP pool
+     *
+     * Note: This deletes from the local database only. The IP pool is not
+     * removed from the MikroTik router. Manage IP pools directly on the router
+     * and use the import-pools endpoint to sync the database.
      */
     public function deleteIpPool(int $id): JsonResponse
     {
         $pool = MikrotikIpPool::findOrFail($id);
+        $this->authorize('delete', $pool);
         $pool->delete();
 
         return response()->json([
@@ -643,12 +665,17 @@ class MikrotikController extends Controller
     public function viewVpnAccount(int $id): JsonResponse
     {
         $account = MikrotikVpnAccount::with('router')->findOrFail($id);
+        $this->authorize('view', $account);
 
         return response()->json($account);
     }
 
     /**
      * Update a VPN account
+     *
+     * Note: This updates the local database only. Changes are not synchronized
+     * to the MikroTik router. VPN accounts should be managed directly on the
+     * router, and this endpoint is primarily for tracking purposes.
      */
     public function updateVpnAccount(Request $request, int $id): JsonResponse
     {
@@ -667,6 +694,7 @@ class MikrotikController extends Controller
         }
 
         $account = MikrotikVpnAccount::findOrFail($id);
+        $this->authorize('update', $account);
         $account->update($validator->validated());
 
         return response()->json([
@@ -677,10 +705,15 @@ class MikrotikController extends Controller
 
     /**
      * Delete a VPN account
+     *
+     * Note: This deletes from the local database only. The VPN account is not
+     * removed from the MikroTik router. Manage VPN accounts directly on the
+     * router for actual configuration changes.
      */
     public function deleteVpnAccount(int $id): JsonResponse
     {
         $account = MikrotikVpnAccount::findOrFail($id);
+        $this->authorize('delete', $account);
         $account->delete();
 
         return response()->json([
@@ -766,12 +799,17 @@ class MikrotikController extends Controller
     public function viewQueue(int $id): JsonResponse
     {
         $queue = MikrotikQueue::with('router')->findOrFail($id);
+        $this->authorize('view', $queue);
 
         return response()->json($queue);
     }
 
     /**
      * Update a queue
+     *
+     * Note: This updates the local database only. Changes are not synchronized
+     * to the MikroTik router. Queues should be managed directly on the router,
+     * and this endpoint is primarily for tracking purposes.
      */
     public function updateQueue(Request $request, int $id): JsonResponse
     {
@@ -794,6 +832,7 @@ class MikrotikController extends Controller
         }
 
         $queue = MikrotikQueue::findOrFail($id);
+        $this->authorize('update', $queue);
         $queue->update($validator->validated());
 
         return response()->json([
@@ -804,10 +843,15 @@ class MikrotikController extends Controller
 
     /**
      * Delete a queue
+     *
+     * Note: This deletes from the local database only. The queue is not
+     * removed from the MikroTik router. Manage queues directly on the router
+     * for actual configuration changes.
      */
     public function deleteQueue(int $id): JsonResponse
     {
         $queue = MikrotikQueue::findOrFail($id);
+        $this->authorize('delete', $queue);
         $queue->delete();
 
         return response()->json([
@@ -932,6 +976,7 @@ class MikrotikController extends Controller
     public function viewPackageMapping(int $id): JsonResponse
     {
         $mapping = PackageProfileMapping::with(['package', 'router'])->findOrFail($id);
+        $this->authorize('view', $mapping);
 
         return response()->json($mapping);
     }
@@ -955,6 +1000,7 @@ class MikrotikController extends Controller
         }
 
         $mapping = PackageProfileMapping::findOrFail($id);
+        $this->authorize('update', $mapping);
         $mapping->update($validator->validated());
 
         return response()->json([
@@ -969,6 +1015,7 @@ class MikrotikController extends Controller
     public function deletePackageMapping(int $id): JsonResponse
     {
         $mapping = PackageProfileMapping::findOrFail($id);
+        $this->authorize('delete', $mapping);
         $mapping->delete();
 
         return response()->json([

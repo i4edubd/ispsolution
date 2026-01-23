@@ -27,7 +27,11 @@ class MikrotikControllerCrudTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
+        // Create user with admin level
+        $this->user = User::factory()->create([
+            'operator_level' => 20, // Admin level
+        ]);
+
         $this->actingAs($this->user);
 
         $this->router = MikrotikRouter::create([
@@ -279,6 +283,8 @@ class MikrotikControllerCrudTest extends TestCase
                 'message' => 'IP pool updated successfully',
             ]);
 
+        $pool->refresh();
+        $this->assertEquals(['192.168.1.10-192.168.1.200'], $pool->ranges);
         $this->assertDatabaseHas('mikrotik_ip_pools', [
             'id' => $pool->id,
             'name' => 'pool-clients',
