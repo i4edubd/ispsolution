@@ -161,6 +161,11 @@ Route::get('/demo10', function () {
 Route::prefix('panel/super-admin')->name('panel.super-admin.')->middleware(['auth', 'role:super-admin'])->group(function () {
     Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/users', [SuperAdminController::class, 'users'])->name('users');
+    Route::get('/users/create', [SuperAdminController::class, 'usersCreate'])->name('users.create');
+    Route::post('/users', [SuperAdminController::class, 'usersStore'])->name('users.store');
+    Route::get('/users/{id}/edit', [SuperAdminController::class, 'usersEdit'])->name('users.edit');
+    Route::put('/users/{id}', [SuperAdminController::class, 'usersUpdate'])->name('users.update');
+    Route::delete('/users/{id}', [SuperAdminController::class, 'usersDestroy'])->name('users.destroy');
     Route::get('/roles', [SuperAdminController::class, 'roles'])->name('roles');
 
     // ISP/Admin Management
@@ -199,6 +204,14 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::put('/users/{id}', [AdminController::class, 'usersUpdate'])->name('users.update');
     Route::delete('/users/{id}', [AdminController::class, 'usersDestroy'])->name('users.destroy');
     Route::get('/network-users', [AdminController::class, 'networkUsers'])->name('network-users');
+    Route::get('/network-users/create', [AdminController::class, 'networkUsersCreate'])->name('network-users.create');
+    Route::post('/network-users', [AdminController::class, 'networkUsersStore'])->name('network-users.store');
+    Route::get('/network-users/import', [AdminController::class, 'networkUsersImport'])->name('network-users.import');
+    Route::post('/network-users/import', [AdminController::class, 'networkUsersProcessImport'])->name('network-users.import.process');
+    Route::get('/network-users/{id}', [AdminController::class, 'networkUsersShow'])->name('network-users.show');
+    Route::get('/network-users/{id}/edit', [AdminController::class, 'networkUsersEdit'])->name('network-users.edit');
+    Route::put('/network-users/{id}', [AdminController::class, 'networkUsersUpdate'])->name('network-users.update');
+    Route::delete('/network-users/{id}', [AdminController::class, 'networkUsersDestroy'])->name('network-users.destroy');
     Route::get('/packages', [AdminController::class, 'packages'])->name('packages');
     Route::get('/packages/create', [AdminController::class, 'packagesCreate'])->name('packages.create');
     Route::post('/packages', [AdminController::class, 'packagesStore'])->name('packages.store');
@@ -624,6 +637,9 @@ Route::prefix('panel/developer')->name('panel.developer.')->middleware(['auth', 
     // Super Admin Management
     Route::get('/super-admins', [DeveloperController::class, 'superAdmins'])->name('super-admins.index');
     Route::get('/super-admins/create', [DeveloperController::class, 'createSuperAdmin'])->name('super-admins.create');
+    Route::get('/super-admins/{id}', [DeveloperController::class, 'showSuperAdmin'])->name('super-admins.show');
+    Route::get('/super-admins/{id}/edit', [DeveloperController::class, 'editSuperAdmin'])->name('super-admins.edit');
+    Route::put('/super-admins/{id}', [DeveloperController::class, 'updateSuperAdmin'])->name('super-admins.update');
 
     // Admin (ISP) Management
     Route::get('/admins', [DeveloperController::class, 'allAdmins'])->name('admins.index');

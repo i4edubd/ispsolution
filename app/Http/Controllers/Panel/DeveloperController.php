@@ -501,6 +501,55 @@ class DeveloperController extends Controller
     }
 
     /**
+     * Display the specified Super Admin.
+     */
+    public function showSuperAdmin($id): View
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'super-admin');
+        })->with('roles', 'tenant')->findOrFail($id);
+
+        return view('panels.developer.super-admins.show', compact('admin'));
+    }
+
+    /**
+     * Show form to edit a Super Admin.
+     */
+    public function editSuperAdmin($id): View
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'super-admin');
+        })->with('roles', 'tenant')->findOrFail($id);
+
+        return view('panels.developer.super-admins.edit', compact('admin'));
+    }
+
+    /**
+     * Update the specified Super Admin.
+     */
+    public function updateSuperAdmin(Request $request, $id)
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'super-admin');
+        })->findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:8',
+        ]);
+
+        $admin->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => !empty($validated['password']) ? bcrypt($validated['password']) : $admin->password,
+        ]);
+
+        return redirect()->route('panel.developer.super-admins.index')
+            ->with('success', 'Super Admin updated successfully.');
+    }
+
+    /**
      * Display payment gateways configuration.
      */
     public function paymentGateways(): View

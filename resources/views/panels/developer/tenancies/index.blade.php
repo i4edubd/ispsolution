@@ -1,6 +1,6 @@
 @extends('panels.layouts.app')
 
-@section('title', 'Tenancy Management')
+@section('title', 'Tenancy')
 
 @section('content')
 <div class="container-fluid">
@@ -8,7 +8,7 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-1 text-foreground">Tenancy Management</h1>
+                    <h1 class="h3 mb-1 text-foreground">Tenancy</h1>
                     <p class="text-muted-foreground mb-0">Manage all ISP tenancies</p>
                 </div>
                 <a href="{{ route('panel.developer.tenancies.create') }}" class="btn btn-primary">

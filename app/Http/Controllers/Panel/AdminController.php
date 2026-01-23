@@ -29,6 +29,8 @@ use App\Services\PdfExportService;
 use App\Services\PdfService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -185,9 +187,255 @@ class AdminController extends Controller
      */
     public function networkUsers(): View
     {
-        $networkUsers = NetworkUser::latest()->paginate(20);
+        $networkUsers = NetworkUser::with(['user', 'package'])->latest()->paginate(20);
+        
+        $stats = [
+            'active' => NetworkUser::where('status', 'active')->count(),
+            'suspended' => NetworkUser::where('status', 'suspended')->count(),
+            'inactive' => NetworkUser::where('status', 'inactive')->count(),
+            'total' => NetworkUser::count(),
+        ];
 
-        return view('panels.admin.network-users.index', compact('networkUsers'));
+        return view('panels.admin.network-users.index', compact('networkUsers', 'stats'));
+    }
+
+    /**
+     * Show the form for creating a new network user.
+     */
+    public function networkUsersCreate(): View
+    {
+        $customers = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'customer');
+        })->get();
+        $packages = Package::where('status', 'active')->get();
+        $routers = MikrotikRouter::where('status', 'active')->get();
+
+        return view('panels.admin.network-users.create', compact('customers', 'packages', 'routers'));
+    }
+
+    /**
+     * Store a newly created network user.
+     */
+    public function networkUsersStore(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'username' => 'required|string|max:255|unique:network_users,username',
+            'password' => 'required|string|min:6',
+            'package_id' => 'required|exists:packages,id',
+            'service_type' => 'required|in:pppoe,hotspot,static',
+            'status' => 'required|in:active,suspended,inactive',
+        ]);
+
+        // Don't store the password in the database - it should be managed via router API
+        $networkUserData = [
+            'user_id' => $validated['user_id'],
+            'username' => $validated['username'],
+            'package_id' => $validated['package_id'],
+            'service_type' => $validated['service_type'],
+            'status' => $validated['status'],
+        ];
+
+        $networkUser = NetworkUser::create($networkUserData);
+
+        // TODO: Push the password to the actual router via MikrotikService
+        // $mikrotikService->createPppoeUser([
+        //     'username' => $validated['username'],
+        //     'password' => $validated['password'],
+        //     ...
+        // ]);
+
+        return redirect()->route('panel.admin.network-users')
+            ->with('success', 'Network user created successfully.');
+    }
+
+    /**
+     * Display the specified network user.
+     */
+    public function networkUsersShow($id): View
+    {
+        $networkUser = NetworkUser::with(['user', 'package'])->findOrFail($id);
+
+        return view('panels.admin.network-users.show', compact('networkUser'));
+    }
+
+    /**
+     * Show the form for editing the specified network user.
+     */
+    public function networkUsersEdit($id): View
+    {
+        $networkUser = NetworkUser::findOrFail($id);
+        $customers = User::whereHas('roles', function ($query) {
+            $query->where('slug', 'customer');
+        })->get();
+        $packages = Package::where('status', 'active')->get();
+        $routers = MikrotikRouter::where('status', 'active')->get();
+
+        return view('panels.admin.network-users.edit', compact('networkUser', 'customers', 'packages', 'routers'));
+    }
+
+    /**
+     * Update the specified network user.
+     */
+    public function networkUsersUpdate(Request $request, $id)
+    {
+        $networkUser = NetworkUser::findOrFail($id);
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'username' => 'required|string|max:255|unique:network_users,username,' . $id,
+            'password' => 'nullable|string|min:6',
+            'package_id' => 'required|exists:packages,id',
+            'service_type' => 'required|in:pppoe,hotspot,static',
+            'status' => 'required|in:active,suspended,inactive',
+        ]);
+
+        // Update only the allowed fields (not password)
+        $networkUserData = [
+            'user_id' => $validated['user_id'],
+            'username' => $validated['username'],
+            'package_id' => $validated['package_id'],
+            'service_type' => $validated['service_type'],
+            'status' => $validated['status'],
+        ];
+
+        $networkUser->update($networkUserData);
+
+        // TODO: If password is provided, update it on the router via MikrotikService
+        // if (!empty($validated['password'])) {
+        //     $mikrotikService->updatePppoeUser($validated['username'], [
+        //         'password' => $validated['password'],
+        //     ]);
+        // }
+
+        return redirect()->route('panel.admin.network-users')
+            ->with('success', 'Network user updated successfully.');
+    }
+
+    /**
+     * Remove the specified network user.
+     */
+    public function networkUsersDestroy($id)
+    {
+        $networkUser = NetworkUser::findOrFail($id);
+        $networkUser->delete();
+
+        return redirect()->route('panel.admin.network-users')
+            ->with('success', 'Network user deleted successfully.');
+    }
+
+    /**
+     * Show the form for importing network users from router.
+     */
+    public function networkUsersImport(): View
+    {
+        $routers = MikrotikRouter::where('status', 'active')->get();
+
+        return view('panels.admin.network-users.import', compact('routers'));
+    }
+
+    /**
+     * Process the import of network users from router.
+     */
+    public function networkUsersProcessImport(Request $request)
+    {
+        $validated = $request->validate([
+            'router_id' => 'required|exists:mikrotik_routers,id',
+            'skip_existing' => 'boolean',
+            'auto_create_customers' => 'boolean',
+            'sync_packages' => 'boolean',
+        ]);
+
+        try {
+            $mikrotikService = app(\App\Services\MikrotikService::class);
+            
+            // Import secrets (PPPoE users) from router
+            $secrets = $mikrotikService->importSecrets($validated['router_id']);
+            
+            if (empty($secrets)) {
+                return redirect()->route('panel.admin.network-users.import')
+                    ->with('error', 'No users found on the selected router or unable to connect.');
+            }
+
+            $imported = 0;
+            $skipped = 0;
+            $errors = [];
+
+            foreach ($secrets as $secret) {
+                try {
+                    // Skip if user already exists
+                    if ($validated['skip_existing'] ?? true) {
+                        if (NetworkUser::where('username', $secret['name'])->exists()) {
+                            $skipped++;
+                            continue;
+                        }
+                    }
+
+                    // Find or create customer if auto_create_customers is enabled
+                    $userId = null;
+                    if ($validated['auto_create_customers'] ?? false) {
+                        $emailDomain = config('app.imported_user_domain', 'imported.local');
+                        $customer = User::firstOrCreate(
+                            ['email' => $secret['name'] . '@' . $emailDomain],
+                            [
+                                'name' => $secret['name'],
+                                'password' => bcrypt(Str::random(32)), // Strong random password
+                            ]
+                        );
+                        $userId = $customer->id;
+                    }
+
+                    // Find package by profile name if sync_packages is enabled
+                    $packageId = null;
+                    if ($validated['sync_packages'] ?? true) {
+                        $package = Package::where('name', 'like', '%' . ($secret['profile'] ?? 'default') . '%')->first();
+                        $packageId = $package?->id;
+                    }
+
+                    // Normalize disabled flag and determine status
+                    $disabledRaw = $secret['disabled'] ?? false;
+                    $isDisabled = in_array($disabledRaw, [true, 1, '1', 'yes', 'true', 'on'], true);
+                    $status = $isDisabled ? 'inactive' : 'active';
+
+                    // Create network user - don't store the password
+                    NetworkUser::create([
+                        'user_id' => $userId,
+                        'username' => $secret['name'],
+                        'service_type' => $secret['service'] ?? 'pppoe',
+                        'package_id' => $packageId,
+                        'status' => $status,
+                    ]);
+
+                    // Note: Passwords remain on the router and are not stored in our database
+                    // for security reasons. Users must be managed via the router API.
+
+                    $imported++;
+                } catch (\Exception $e) {
+                    $errors[] = "Failed to import user {$secret['name']}: " . $e->getMessage();
+                }
+            }
+
+            $message = "Successfully imported {$imported} network users.";
+            if ($skipped > 0) {
+                $message .= " Skipped {$skipped} existing users.";
+            }
+            if (!empty($errors)) {
+                $message .= " Encountered " . count($errors) . " errors.";
+            }
+
+            return redirect()->route('panel.admin.network-users')
+                ->with('success', $message)
+                ->with('import_errors', $errors);
+
+        } catch (\Exception $e) {
+            Log::error('Network users import failed', [
+                'router_id' => $validated['router_id'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('panel.admin.network-users.import')
+                ->with('error', 'Import failed: ' . $e->getMessage());
+        }
     }
 
     /**
