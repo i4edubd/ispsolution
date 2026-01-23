@@ -73,7 +73,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <span class="text-gray-500 dark:text-gray-400 sm:text-sm">৳</span>
                             </div>
-                            <input type="number" name="amount" id="amount" step="0.01" min="0.01" max="{{ $operator->wallet_balance ?? 0 }}" required
+                            <input type="number" name="amount" id="amount" step="0.01" min="0.01" required
                                    class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-8 pr-12 sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md @error('amount') border-red-300 @enderror"
                                    placeholder="0.00" value="{{ old('amount') }}">
                         </div>

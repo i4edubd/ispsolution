@@ -1594,7 +1594,7 @@ class AdminController extends Controller
     {
         $operators = User::whereHas('roles', function ($query) {
             $query->where('slug', 'operator');
-        })->with('walletTransactions')->latest()->paginate(20);
+        })->latest()->paginate(20);
 
         return view('panels.admin.operators.wallets', compact('operators'));
     }
@@ -1604,6 +1604,8 @@ class AdminController extends Controller
      */
     public function addOperatorFunds(User $operator): View
     {
+        abort_unless($operator->isOperatorRole(), 403, 'User is not an operator.');
+        
         return view('panels.admin.operators.add-funds', compact('operator'));
     }
 
@@ -1612,6 +1614,8 @@ class AdminController extends Controller
      */
     public function storeOperatorFunds(Request $request, User $operator)
     {
+        abort_unless($operator->isOperatorRole(), 403, 'User is not an operator.');
+        
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string|max:500',
@@ -1651,6 +1655,8 @@ class AdminController extends Controller
      */
     public function deductOperatorFunds(User $operator): View
     {
+        abort_unless($operator->isOperatorRole(), 403, 'User is not an operator.');
+        
         return view('panels.admin.operators.deduct-funds', compact('operator'));
     }
 
@@ -1659,8 +1665,10 @@ class AdminController extends Controller
      */
     public function processDeductOperatorFunds(Request $request, User $operator)
     {
+        abort_unless($operator->isOperatorRole(), 403, 'User is not an operator.');
+        
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:0.01',
+            'amount' => 'required|numeric|min:0.01|max:' . ($operator->wallet_balance ?? 0),
             'description' => 'nullable|string|max:500',
         ]);
 
@@ -1703,6 +1711,8 @@ class AdminController extends Controller
      */
     public function operatorWalletHistory(User $operator): View
     {
+        abort_unless($operator->isOperatorRole(), 403, 'User is not an operator.');
+        
         $transactions = OperatorWalletTransaction::where('operator_id', $operator->id)
             ->with('creator')
             ->latest()
@@ -1728,7 +1738,12 @@ class AdminController extends Controller
      */
     public function assignOperatorPackageRate(User $operator): View
     {
-        $packages = Package::where('is_global', true)->orWhere('operator_id', $operator->id)->get();
+        abort_unless($operator->isOperatorRole(), 403, 'User is not an operator.');
+        
+        $packages = Package::where(function ($query) use ($operator) {
+            $query->where('is_global', true)
+                  ->orWhere('operator_id', $operator->id);
+        })->get();
         $existingRates = OperatorPackageRate::where('operator_id', $operator->id)
             ->pluck('package_id')
             ->toArray();
@@ -1741,6 +1756,8 @@ class AdminController extends Controller
      */
     public function storeOperatorPackageRate(Request $request, User $operator)
     {
+        abort_unless($operator->isOperatorRole(), 403, 'User is not an operator.');
+        
         $validated = $request->validate([
             'package_id' => 'required|exists:packages,id',
             'custom_price' => 'required|numeric|min:0',
@@ -1764,10 +1781,12 @@ class AdminController extends Controller
     /**
      * Delete operator package rate.
      */
-    public function deleteOperatorPackageRate(User $operator, $packageId)
+    public function deleteOperatorPackageRate(User $operator, $package)
     {
+        abort_unless($operator->isOperatorRole(), 403, 'User is not an operator.');
+        
         OperatorPackageRate::where('operator_id', $operator->id)
-            ->where('package_id', $packageId)
+            ->where('package_id', $package)
             ->delete();
 
         return redirect()->route('panel.admin.operators.package-rates')
@@ -1791,6 +1810,8 @@ class AdminController extends Controller
      */
     public function assignOperatorSmsRate(User $operator): View
     {
+        abort_unless($operator->isOperatorRole(), 403, 'User is not an operator.');
+        
         $smsRate = OperatorSmsRate::where('operator_id', $operator->id)->first();
 
         return view('panels.admin.operators.assign-sms-rate', compact('operator', 'smsRate'));
@@ -1801,10 +1822,12 @@ class AdminController extends Controller
      */
     public function storeOperatorSmsRate(Request $request, User $operator)
     {
+        abort_unless($operator->isOperatorRole(), 403, 'User is not an operator.');
+        
         $validated = $request->validate([
             'rate_per_sms' => 'required|numeric|min:0',
-            'bulk_rate_threshold' => 'nullable|integer|min:1',
-            'bulk_rate_per_sms' => 'nullable|numeric|min:0',
+            'bulk_rate_threshold' => 'required_with:bulk_rate_per_sms|nullable|integer|min:1',
+            'bulk_rate_per_sms' => 'required_with:bulk_rate_threshold|nullable|numeric|min:0',
         ]);
 
         $validated['operator_id'] = $operator->id;
@@ -1823,6 +1846,8 @@ class AdminController extends Controller
      */
     public function deleteOperatorSmsRate(User $operator)
     {
+        abort_unless($operator->isOperatorRole(), 403, 'User is not an operator.');
+        
         OperatorSmsRate::where('operator_id', $operator->id)->delete();
 
         return redirect()->route('panel.admin.operators.sms-rates')

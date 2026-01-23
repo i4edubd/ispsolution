@@ -65,7 +65,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($operator->smsRate && $operator->smsRate->bulk_rate_per_sms)
+                                    @if($operator->smsRate && $operator->smsRate->bulk_rate_per_sms && $operator->smsRate->bulk_rate_threshold)
                                         <div class="text-sm text-gray-900 dark:text-gray-100">
                                             ৳{{ number_format($operator->smsRate->bulk_rate_per_sms, 4) }}
                                             <span class="text-xs text-gray-500">({{ $operator->smsRate->bulk_rate_threshold }}+ SMS)</span>
