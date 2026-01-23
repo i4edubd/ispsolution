@@ -504,19 +504,19 @@ return [
             'key' => 'cards',
             'label' => 'Recharge Cards',
             'icon' => 'bi-credit-card-2-front',
-            'route' => 'panel.card-distributor.cards.index',
+            'route' => 'panel.card-distributor.cards',
         ],
         [
             'key' => 'sales',
             'label' => 'Sales History',
             'icon' => 'bi-cart-check',
-            'route' => 'panel.card-distributor.sales.index',
+            'route' => 'panel.card-distributor.sales',
         ],
         [
             'key' => 'commissions',
             'label' => 'My Commissions',
             'icon' => 'bi-currency-dollar',
-            'route' => 'panel.card-distributor.commissions.index',
+            'route' => 'panel.card-distributor.commissions',
         ],
         [
             'key' => 'balance',

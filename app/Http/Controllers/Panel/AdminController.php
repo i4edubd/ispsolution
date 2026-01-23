@@ -19,6 +19,7 @@ use App\Models\OperatorPackageRate;
 use App\Models\OperatorSmsRate;
 use App\Models\OperatorWalletTransaction;
 use App\Models\Package;
+use App\Models\PackageProfileMapping;
 use App\Models\Payment;
 use App\Models\PaymentGateway;
 use App\Models\Role;
@@ -240,6 +241,10 @@ class AdminController extends Controller
         $networkUser = NetworkUser::create($networkUserData);
 
         // Push the password to the actual router via MikrotikService
+        // SECURITY WARNING: MikrotikService currently uses HTTP for router communication.
+        // For production environments, configure HTTPS with certificate validation in the
+        // MikrotikService to protect credentials during transmission. See MikrotikService
+        // class documentation for security considerations.
         if ($validated['service_type'] === 'pppoe') {
             // Select router with explicit ordering for consistency
             $router = MikrotikRouter::where('status', 'active')
@@ -249,14 +254,23 @@ class AdminController extends Controller
             if ($router) {
                 try {
                     $mikrotikService = app(MikrotikService::class);
-                    $package = Package::find($validated['package_id']);
+
+                    // Resolve PPPoE profile for this package and router
+                    $profileName = 'default';
+                    $profileMapping = PackageProfileMapping::where('package_id', $validated['package_id'])
+                        ->where('router_id', $router->id)
+                        ->first();
+
+                    if ($profileMapping && ! empty($profileMapping->profile_name)) {
+                        $profileName = $profileMapping->profile_name;
+                    }
 
                     $mikrotikService->createPppoeUser([
                         'router_id' => $router->id,
                         'username' => $validated['username'],
                         'password' => $validated['password'],
                         'service' => 'pppoe',
-                        'profile' => $package->pppoe_profile ?? 'default',
+                        'profile' => $profileName,
                     ]);
                 } catch (\Exception $e) {
                     // Log the error but don't fail the user creation
@@ -304,6 +318,9 @@ class AdminController extends Controller
     {
         $networkUser = NetworkUser::findOrFail($id);
 
+        // Capture original username before update for router sync
+        $originalUsername = $networkUser->username;
+
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'username' => 'required|string|max:255|unique:network_users,username,' . $id,
@@ -325,17 +342,23 @@ class AdminController extends Controller
         $networkUser->update($networkUserData);
 
         // If password is provided, update it on the router via MikrotikService
+        // SECURITY WARNING: MikrotikService currently uses HTTP for router communication.
+        // For production environments, configure HTTPS with certificate validation in the
+        // MikrotikService to protect credentials during transmission. See MikrotikService
+        // class documentation for security considerations.
         if (! empty($validated['password']) && $validated['service_type'] === 'pppoe') {
             try {
                 $mikrotikService = app(MikrotikService::class);
 
-                $mikrotikService->updatePppoeUser($validated['username'], [
+                // Use original username to locate the user on the router
+                $mikrotikService->updatePppoeUser($originalUsername, [
                     'password' => $validated['password'],
                 ]);
             } catch (\Exception $e) {
                 // Log the error but don't fail the update
                 Log::warning('Failed to sync password update to router', [
-                    'username' => $validated['username'],
+                    'original_username' => $originalUsername,
+                    'new_username' => $validated['username'],
                     'error' => $e->getMessage(),
                 ]);
             }
