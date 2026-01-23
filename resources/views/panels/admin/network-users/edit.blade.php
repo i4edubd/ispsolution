@@ -32,16 +32,16 @@
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <!-- Customer -->
                     <div>
-                        <label for="customer_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer *</label>
-                        <select id="customer_id" name="customer_id" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <label for="user_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer *</label>
+                        <select id="user_id" name="user_id" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">Select Customer</option>
                             @foreach($customers as $customer)
-                                <option value="{{ $customer->id }}" {{ (old('customer_id', $networkUser->customer_id) == $customer->id) ? 'selected' : '' }}>
+                                <option value="{{ $customer->id }}" {{ (old('user_id', $networkUser->user_id) == $customer->id) ? 'selected' : '' }}>
                                     {{ $customer->name }} ({{ $customer->email }})
                                 </option>
                             @endforeach
                         </select>
-                        @error('customer_id')
+                        @error('user_id')
                             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>
@@ -71,7 +71,7 @@
                         <select id="service_type" name="service_type" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="pppoe" {{ old('service_type', $networkUser->service_type) == 'pppoe' ? 'selected' : '' }}>PPPoE</option>
                             <option value="hotspot" {{ old('service_type', $networkUser->service_type) == 'hotspot' ? 'selected' : '' }}>Hotspot</option>
-                            <option value="static_ip" {{ old('service_type', $networkUser->service_type) == 'static_ip' ? 'selected' : '' }}>Static IP</option>
+                            <option value="static" {{ old('service_type', $networkUser->service_type) == 'static' ? 'selected' : '' }}>Static IP</option>
                         </select>
                         @error('service_type')
                             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
@@ -90,31 +90,6 @@
                             @endforeach
                         </select>
                         @error('package_id')
-                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Router -->
-                    <div>
-                        <label for="router_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Router</label>
-                        <select id="router_id" name="router_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="">Select Router (Optional)</option>
-                            @foreach($routers as $router)
-                                <option value="{{ $router->id }}" {{ (old('router_id', $networkUser->router_id) == $router->id) ? 'selected' : '' }}>
-                                    {{ $router->name }} ({{ $router->ip_address }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('router_id')
-                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- IP Address -->
-                    <div>
-                        <label for="ip_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">IP Address</label>
-                        <input type="text" id="ip_address" name="ip_address" value="{{ old('ip_address', $networkUser->ip_address) }}" placeholder="192.168.1.100" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('ip_address')
                             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
                     </div>

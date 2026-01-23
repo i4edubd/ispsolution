@@ -36,7 +36,7 @@
                     <ul class="list-disc list-inside space-y-1">
                         <li>Select a router to import PPPoE users from</li>
                         <li>The system will fetch all PPPoE users from the selected router</li>
-                        <li>You can review and map users to customers before importing</li>
+                        <li>Users will be imported immediately after you submit the form</li>
                         <li>Duplicate usernames will be skipped automatically</li>
                     </ul>
                 </div>

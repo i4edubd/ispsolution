@@ -186,7 +186,7 @@ class AdminController extends Controller
      */
     public function networkUsers(): View
     {
-        $networkUsers = NetworkUser::with(['customer', 'package'])->latest()->paginate(20);
+        $networkUsers = NetworkUser::with(['user', 'package'])->latest()->paginate(20);
         
         $stats = [
             'active' => NetworkUser::where('status', 'active')->count(),
@@ -206,7 +206,7 @@ class AdminController extends Controller
         $customers = User::whereHas('roles', function ($query) {
             $query->where('slug', 'customer');
         })->get();
-        $packages = ServicePackage::where('status', 'active')->get();
+        $packages = Package::where('status', 'active')->get();
         $routers = MikrotikRouter::where('status', 'active')->get();
 
         return view('panels.admin.network-users.create', compact('customers', 'packages', 'routers'));
@@ -218,17 +218,31 @@ class AdminController extends Controller
     public function networkUsersStore(Request $request)
     {
         $validated = $request->validate([
-            'customer_id' => 'required|exists:users,id',
+            'user_id' => 'required|exists:users,id',
             'username' => 'required|string|max:255|unique:network_users,username',
             'password' => 'required|string|min:6',
-            'package_id' => 'required|exists:service_packages,id',
-            'router_id' => 'nullable|exists:mikrotik_routers,id',
-            'service_type' => 'required|in:pppoe,hotspot,static_ip',
-            'ip_address' => 'nullable|ip',
+            'package_id' => 'required|exists:packages,id',
+            'service_type' => 'required|in:pppoe,hotspot,static',
             'status' => 'required|in:active,suspended,inactive',
         ]);
 
-        $networkUser = NetworkUser::create($validated);
+        // Don't store the password in the database - it should be managed via router API
+        $networkUserData = [
+            'user_id' => $validated['user_id'],
+            'username' => $validated['username'],
+            'package_id' => $validated['package_id'],
+            'service_type' => $validated['service_type'],
+            'status' => $validated['status'],
+        ];
+
+        $networkUser = NetworkUser::create($networkUserData);
+
+        // TODO: Push the password to the actual router via MikrotikService
+        // $mikrotikService->createPppoeUser([
+        //     'username' => $validated['username'],
+        //     'password' => $validated['password'],
+        //     ...
+        // ]);
 
         return redirect()->route('panel.admin.network-users')
             ->with('success', 'Network user created successfully.');
@@ -239,7 +253,7 @@ class AdminController extends Controller
      */
     public function networkUsersShow($id): View
     {
-        $networkUser = NetworkUser::with(['customer', 'package', 'router'])->findOrFail($id);
+        $networkUser = NetworkUser::with(['user', 'package'])->findOrFail($id);
 
         return view('panels.admin.network-users.show', compact('networkUser'));
     }
@@ -253,7 +267,7 @@ class AdminController extends Controller
         $customers = User::whereHas('roles', function ($query) {
             $query->where('slug', 'customer');
         })->get();
-        $packages = ServicePackage::where('status', 'active')->get();
+        $packages = Package::where('status', 'active')->get();
         $routers = MikrotikRouter::where('status', 'active')->get();
 
         return view('panels.admin.network-users.edit', compact('networkUser', 'customers', 'packages', 'routers'));
@@ -267,21 +281,31 @@ class AdminController extends Controller
         $networkUser = NetworkUser::findOrFail($id);
 
         $validated = $request->validate([
-            'customer_id' => 'required|exists:users,id',
+            'user_id' => 'required|exists:users,id',
             'username' => 'required|string|max:255|unique:network_users,username,' . $id,
             'password' => 'nullable|string|min:6',
-            'package_id' => 'required|exists:service_packages,id',
-            'router_id' => 'nullable|exists:mikrotik_routers,id',
-            'service_type' => 'required|in:pppoe,hotspot,static_ip',
-            'ip_address' => 'nullable|ip',
+            'package_id' => 'required|exists:packages,id',
+            'service_type' => 'required|in:pppoe,hotspot,static',
             'status' => 'required|in:active,suspended,inactive',
         ]);
 
-        if (empty($validated['password'])) {
-            unset($validated['password']);
-        }
+        // Update only the allowed fields (not password)
+        $networkUserData = [
+            'user_id' => $validated['user_id'],
+            'username' => $validated['username'],
+            'package_id' => $validated['package_id'],
+            'service_type' => $validated['service_type'],
+            'status' => $validated['status'],
+        ];
 
-        $networkUser->update($validated);
+        $networkUser->update($networkUserData);
+
+        // TODO: If password is provided, update it on the router via MikrotikService
+        // if (!empty($validated['password'])) {
+        //     $mikrotikService->updatePppoeUser($validated['username'], [
+        //         'password' => $validated['password'],
+        //     ]);
+        // }
 
         return redirect()->route('panel.admin.network-users')
             ->with('success', 'Network user updated successfully.');
@@ -347,37 +371,42 @@ class AdminController extends Controller
                     }
 
                     // Find or create customer if auto_create_customers is enabled
-                    $customerId = null;
+                    $userId = null;
                     if ($validated['auto_create_customers'] ?? false) {
                         $emailDomain = config('app.imported_user_domain', 'imported.local');
                         $customer = User::firstOrCreate(
                             ['email' => $secret['name'] . '@' . $emailDomain],
                             [
                                 'name' => $secret['name'],
-                                'password' => bcrypt($secret['password'] ?? 'password'),
+                                'password' => bcrypt(\Illuminate\Support\Str::random(32)), // Strong random password
                             ]
                         );
-                        $customerId = $customer->id;
+                        $userId = $customer->id;
                     }
 
                     // Find package by profile name if sync_packages is enabled
                     $packageId = null;
                     if ($validated['sync_packages'] ?? true) {
-                        $package = ServicePackage::where('name', 'like', '%' . ($secret['profile'] ?? 'default') . '%')->first();
+                        $package = Package::where('name', 'like', '%' . ($secret['profile'] ?? 'default') . '%')->first();
                         $packageId = $package?->id;
                     }
 
-                    // Create network user
+                    // Normalize disabled flag and determine status
+                    $disabledRaw = $secret['disabled'] ?? false;
+                    $isDisabled = in_array($disabledRaw, [true, 1, '1', 'yes', 'true', 'on'], true);
+                    $status = $isDisabled ? 'inactive' : 'active';
+
+                    // Create network user - don't store the password
                     NetworkUser::create([
-                        'customer_id' => $customerId,
+                        'user_id' => $userId,
                         'username' => $secret['name'],
-                        'password' => $secret['password'] ?? '',
                         'service_type' => $secret['service'] ?? 'pppoe',
                         'package_id' => $packageId,
-                        'router_id' => $validated['router_id'],
-                        'ip_address' => $secret['remote-address'] ?? null,
-                        'status' => $secret['disabled'] ?? false ? 'inactive' : 'active',
+                        'status' => $status,
                     ]);
+
+                    // Note: Passwords remain on the router and are not stored in our database
+                    // for security reasons. Users must be managed via the router API.
 
                     $imported++;
                 } catch (\Exception $e) {

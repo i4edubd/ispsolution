@@ -44,9 +44,9 @@
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Customer</dt>
                         <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ $networkUser->customer->name ?? 'N/A' }}
-                            @if($networkUser->customer)
-                                <span class="text-gray-500 dark:text-gray-400">({{ $networkUser->customer->email }})</span>
+                            {{ optional($networkUser->user)->name ?? 'N/A' }}
+                            @if($networkUser->user)
+                                <span class="text-gray-500 dark:text-gray-400">({{ $networkUser->user->email }})</span>
                             @endif
                         </dd>
                     </div>
@@ -88,10 +88,10 @@
             </div>
         </div>
 
-        <!-- Package & Network Information -->
+        <!-- Package Information -->
         <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6">
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Package & Network</h2>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Package Information</h2>
                 <dl class="space-y-4">
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Package</dt>
@@ -101,23 +101,6 @@
                                 <span class="text-gray-500 dark:text-gray-400">({{ $networkUser->package->price }} BDT)</span>
                             @endif
                         </dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Router</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                            {{ $networkUser->router->name ?? 'N/A' }}
-                            @if($networkUser->router)
-                                <span class="text-gray-500 dark:text-gray-400">({{ $networkUser->router->ip_address }})</span>
-                            @endif
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">IP Address</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $networkUser->ip_address ?? 'N/A' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">MAC Address</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ $networkUser->mac_address ?? 'N/A' }}</dd>
                     </div>
                 </dl>
             </div>
