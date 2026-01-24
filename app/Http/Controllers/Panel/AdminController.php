@@ -2189,7 +2189,13 @@ class AdminController extends Controller
             ];
         } catch (\Illuminate\Database\QueryException $e) {
             // Handle case where radacct table doesn't exist
-            $logs = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 50);
+            $logs = new \Illuminate\Pagination\LengthAwarePaginator(
+                [],
+                0,
+                50,
+                1,
+                ['path' => request()->url()]
+            );
             $stats = [
                 'total' => 0,
                 'today' => 0,
@@ -2246,7 +2252,13 @@ class AdminController extends Controller
             ];
         } catch (\Illuminate\Database\QueryException $e) {
             // Handle case where radacct table doesn't exist
-            $logs = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 50);
+            $logs = new \Illuminate\Pagination\LengthAwarePaginator(
+                [],
+                0,
+                50,
+                1,
+                ['path' => request()->url()]
+            );
             $stats = [
                 'total' => 0,
                 'today' => 0,
