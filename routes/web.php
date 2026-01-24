@@ -9,6 +9,7 @@ use App\Http\Controllers\Panel\CustomerController;
 use App\Http\Controllers\Panel\DeveloperController;
 use App\Http\Controllers\Panel\ManagerController;
 use App\Http\Controllers\Panel\MasterPackageController;
+use App\Http\Controllers\Panel\OnuController;
 use App\Http\Controllers\Panel\OperatorPackageController;
 use App\Http\Controllers\Panel\RouterProvisioningController;
 use App\Http\Controllers\Panel\StaffController;
@@ -457,11 +458,11 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     
     // ONU Management Routes
     Route::prefix('network/onu')->name('network.onu.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Panel\OnuController::class, 'index'])->name('index');
-        Route::get('/{onu}', [\App\Http\Controllers\Panel\OnuController::class, 'show'])->name('show');
-        Route::get('/{onu}/edit', [\App\Http\Controllers\Panel\OnuController::class, 'edit'])->name('edit');
-        Route::put('/{onu}', [\App\Http\Controllers\Panel\OnuController::class, 'update'])->name('update');
-        Route::delete('/{onu}', [\App\Http\Controllers\Panel\OnuController::class, 'destroy'])->name('destroy');
+        Route::get('/', [OnuController::class, 'index'])->name('index');
+        Route::get('/{onu}', [OnuController::class, 'show'])->name('show');
+        Route::get('/{onu}/edit', [OnuController::class, 'edit'])->name('edit');
+        Route::put('/{onu}', [OnuController::class, 'update'])->name('update');
+        Route::delete('/{onu}', [OnuController::class, 'destroy'])->name('destroy');
     });
     
     // Router Connection Test

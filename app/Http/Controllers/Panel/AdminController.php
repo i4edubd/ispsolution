@@ -75,7 +75,7 @@ class AdminController extends Controller
                 ->whereHas('roles', function ($query) {
                     $query->where('slug', 'customer');
                 })->count(),
-            'payments_today' => Payment::whereDate('created_at', today())
+            'payments_today' => Payment::whereDate('payment_date', today())
                 ->where('status', 'success')
                 ->sum('amount'),
             'tickets_today' => \App\Models\Ticket::whereDate('created_at', today())->count(),
