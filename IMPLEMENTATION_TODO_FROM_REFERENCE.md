@@ -2157,13 +2157,23 @@ class CardDistributorController extends Controller
         }
         
         // Clear cache
-        // Note: Cache tags require Redis or Memcached. For file/database cache, use:
-        // Cache::forget("distributor:{$distributor->id}:cards:*");
-        // Cache::forget("distributor:{$distributor->id}:mobiles:*");
+        // Note: Cache tags require Redis or Memcached. For file/database cache:
+        // - Cache::flush() clears ALL cache (performance impact!)
+        // - Better approach: implement manual cache key tracking per distributor
         if (config('cache.default') === 'redis' || config('cache.default') === 'memcached') {
             Cache::tags("distributor:{$distributor->id}")->flush();
         } else {
-            Cache::flush(); // Or implement custom cache key clearing
+            // For non-tagging drivers, manually clear specific keys
+            $cacheKeys = [
+                "distributor:{$distributor->id}:cards:*",
+                "distributor:{$distributor->id}:mobiles:*",
+            ];
+            // Note: You may need to implement a custom cache key registry
+            // to track and clear only distributor-specific keys
+            foreach ($cacheKeys as $pattern) {
+                // Implementation depends on your cache driver
+                // This is a placeholder - implement based on your needs
+            }
         }
         
         return response()->json([
@@ -2300,13 +2310,12 @@ class ValidateDistributorApiKey
 **API Routes:**
 ```php
 // In routes/api.php
-// Note: Register the middleware alias in app/Http/Kernel.php:
-// protected $routeMiddleware = [
+// IMPORTANT: First, register the middleware alias in app/Http/Kernel.php:
+// In the $routeMiddleware array, add:
 //     'distributor.api' => \App\Http\Middleware\ValidateDistributorApiKey::class,
-// ];
 
 Route::prefix('v1/distributor')
-    ->middleware(['distributor.api', 'throttle:60,1'])
+    ->middleware(['distributor.api', 'throttle:distributor-api'])
     ->name('api.v1.distributor.')
     ->group(function () {
         Route::get('mobiles', [CardDistributorController::class, 'getMobiles']);
