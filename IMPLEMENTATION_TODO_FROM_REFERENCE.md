@@ -1032,6 +1032,9 @@ use App\Models\PppoeProfile;
 use App\Services\MikroTikService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 
 class PPPoEProfilesIpAllocationModeChangeJob implements ShouldQueue
 {
@@ -1496,6 +1499,8 @@ class MigrateRouterToRadiusCommand extends Command
 namespace App\Services;
 
 use App\Models\Router;
+use App\Models\Radcheck;
+use App\Services\MikroTikService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
@@ -2397,29 +2402,71 @@ components:
         status:
           type: string
           enum: [available, sold, expired]
+          
+    Sale:
+      type: object
+      properties:
+        id:
+          type: integer
+        mobile:
+          type: string
+        card_serial:
+          type: string
+        package_name:
+          type: string
+        price:
+          type: number
+          format: float
+        sold_at:
+          type: string
+          format: date-time
+          
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        errors:
+          type: object
 
 paths:
   /distributor/mobiles:
     get:
       summary: Get list of mobile numbers
+      description: Retrieve all mobile numbers associated with the distributor
+      tags:
+        - Mobiles
       parameters:
         - name: country_code
           in: query
+          description: Filter by country code
           schema:
             type: string
+            enum: [BD, IN, PK, NP, LK, MM]
         - name: status
           in: query
+          description: Filter by status
           schema:
             type: string
+            enum: [active, inactive, suspended]
         - name: page
           in: query
+          description: Page number
           schema:
             type: integer
+            minimum: 1
+            default: 1
         - name: per_page
           in: query
+          description: Items per page
           schema:
             type: integer
+            minimum: 1
             maximum: 100
+            default: 50
       responses:
         '200':
           description: Successful response
@@ -2430,6 +2477,7 @@ paths:
                 properties:
                   success:
                     type: boolean
+                    example: true
                   data:
                     type: object
                     properties:
@@ -2439,33 +2487,137 @@ paths:
                           $ref: '#/components/schemas/Mobile'
                       pagination:
                         type: object
-                        
+                        properties:
+                          current_page:
+                            type: integer
+                          per_page:
+                            type: integer
+                          total:
+                            type: integer
+                          last_page:
+                            type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
   /distributor/cards:
     get:
       summary: Get available cards for sale
+      description: Retrieve all cards available for the distributor
+      tags:
+        - Cards
+      parameters:
+        - name: package_id
+          in: query
+          description: Filter by package ID
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: Filter by card status
+          schema:
+            type: string
+            enum: [available, sold, expired]
       responses:
         '200':
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      cards:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Card'
+                      summary:
+                        type: object
+                        properties:
+                          total_available:
+                            type: integer
+                          total_value:
+                            type: number
+                            format: float
+        '401':
+          description: Unauthorized
           
   /distributor/sales:
     get:
       summary: Get sales history
+      description: Retrieve sales history for the distributor
+      tags:
+        - Sales
       parameters:
         - name: from_date
           in: query
+          description: Filter from date
           schema:
             type: string
             format: date
+            example: "2026-01-01"
         - name: to_date
           in: query
+          description: Filter to date
           schema:
             type: string
             format: date
+            example: "2026-01-31"
+        - name: mobile
+          in: query
+          description: Filter by mobile number
+          schema:
+            type: string
+            example: "+8801712345678"
       responses:
         '200':
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      sales:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Sale'
+                      summary:
+                        type: object
+                        properties:
+                          total_sales:
+                            type: integer
+                          total_revenue:
+                            type: number
+                            format: float
+                          date_range:
+                            type: object
+                            properties:
+                              from:
+                                type: string
+                              to:
+                                type: string
+        '401':
+          description: Unauthorized
+          
     post:
       summary: Record a new card sale
+      description: Record a sale of a card to a mobile number
+      tags:
+        - Sales
       requestBody:
         required: true
         content:
@@ -2478,14 +2630,59 @@ paths:
               properties:
                 mobile:
                   type: string
+                  description: Mobile number with country code
                   example: "+8801712345678"
                 card_id:
                   type: integer
+                  description: ID of the card to sell
+                  example: 100
       responses:
         '201':
           description: Card sold successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Card sold successfully"
+                  data:
+                    type: object
+                    properties:
+                      sale_id:
+                        type: integer
+                      mobile:
+                        type: string
+                      card_serial:
+                        type: string
+                      package_name:
+                        type: string
+                      price:
+                        type: number
+                        format: float
+                      validity_days:
+                        type: integer
+                      expires_at:
+                        type: string
+                        format: date
         '400':
-          description: Validation error
+          description: Validation error or card not available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                success: false
+                message: "Card not available"
+                errors:
+                  card_id:
+                    - "The selected card is not available for sale"
+        '401':
+          description: Unauthorized
 ```
 
 **Testing:**
