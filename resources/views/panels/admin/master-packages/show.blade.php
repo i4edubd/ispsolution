@@ -13,10 +13,10 @@
                     <p class="mt-2 text-gray-600 dark:text-gray-400">Master Package Details</p>
                 </div>
                 <div class="flex gap-2">
-                    <a href="{{ route('panel.developer.master-packages.edit', $masterPackage) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                    <a href="{{ route('panel.admin.master-packages.edit', $masterPackage) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
                         Edit
                     </a>
-                    <a href="{{ route('panel.developer.master-packages.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                    <a href="{{ route('panel.admin.master-packages.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
                         Back
                     </a>
                 </div>
@@ -88,7 +88,7 @@
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Operator Rates</h2>
-                <a href="{{ route('panel.developer.master-packages.assign', $masterPackage) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                <a href="{{ route('panel.admin.master-packages.assign', $masterPackage) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
                     Assign to Operator
                 </a>
             </div>
@@ -124,7 +124,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <form action="{{ route('panel.developer.master-packages.remove-operator', [$masterPackage, $rate]) }}" method="POST" class="inline">
+                                    <form action="{{ route('panel.admin.master-packages.remove-operator', [$masterPackage, $rate]) }}" method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Remove this operator assignment?')">Remove</button>

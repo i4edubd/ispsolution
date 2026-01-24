@@ -13,7 +13,7 @@
                     <p class="mt-2 text-gray-600 dark:text-gray-400">Assign {{ $masterPackage->name }} to an operator with pricing</p>
                 </div>
                 <div>
-                    <a href="{{ route('panel.developer.master-packages.show', $masterPackage) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                    <a href="{{ route('panel.admin.master-packages.show', $masterPackage) }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
                         Back
                     </a>
                 </div>
@@ -45,7 +45,7 @@
 
     <!-- Assignment Form -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-        <form action="{{ route('panel.developer.master-packages.store-assignment', $masterPackage) }}" method="POST" class="p-6">
+        <form action="{{ route('panel.admin.master-packages.store-assignment', $masterPackage) }}" method="POST" class="p-6">
             @csrf
             
             <div class="space-y-6">
@@ -92,7 +92,7 @@
 
                 <!-- Submit Buttons -->
                 <div class="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-                    <a href="{{ route('panel.developer.master-packages.show', $masterPackage) }}" class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                    <a href="{{ route('panel.admin.master-packages.show', $masterPackage) }}" class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
                         Cancel
                     </a>
                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">

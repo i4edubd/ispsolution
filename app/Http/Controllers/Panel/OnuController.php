@@ -86,7 +86,7 @@ class OnuController extends Controller
 
         $onu->update($validated);
 
-        return redirect()->route('panel.admin.onu.show', $onu)
+        return redirect()->route('panel.admin.network.onu.show', $onu)
             ->with('success', 'ONU updated successfully.');
     }
 
@@ -97,7 +97,7 @@ class OnuController extends Controller
     {
         $onu->delete();
 
-        return redirect()->route('panel.admin.onu.index')
+        return redirect()->route('panel.admin.network.onu.index')
             ->with('success', 'ONU deleted successfully.');
     }
 }

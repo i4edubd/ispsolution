@@ -13,7 +13,7 @@
                     <p class="mt-2 text-gray-600 dark:text-gray-400">Update master package details</p>
                 </div>
                 <div>
-                    <a href="{{ route('panel.developer.master-packages.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                    <a href="{{ route('panel.admin.master-packages.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         Back
                     </a>
                 </div>
@@ -23,7 +23,7 @@
 
     <!-- Form -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-        <form action="{{ route('panel.developer.master-packages.update', $masterPackage) }}" method="POST" class="p-6">
+        <form action="{{ route('panel.admin.master-packages.update', $masterPackage) }}" method="POST" class="p-6">
             @csrf
             @method('PUT')
             
@@ -110,7 +110,7 @@
 
                 <!-- Submit Buttons -->
                 <div class="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-                    <a href="{{ route('panel.developer.master-packages.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400">
+                    <a href="{{ route('panel.admin.master-packages.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400">
                         Cancel
                     </a>
                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
