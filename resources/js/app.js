@@ -38,11 +38,40 @@ function initDrawers() {
         toggles.forEach(toggle => {
             toggle.addEventListener('click', function(e) {
                 e.preventDefault();
-                drawer.classList.toggle('hidden');
-                drawer.classList.toggle('block');
+                toggleDrawer(drawer);
             });
         });
+
+        // Close drawer when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            if (!drawer.classList.contains('hidden') && 
+                !drawer.contains(e.target) && 
+                !Array.from(toggles).some(toggle => toggle.contains(e.target))) {
+                closeDrawer(drawer);
+            }
+        });
     });
+}
+
+function toggleDrawer(drawer) {
+    const isHidden = drawer.classList.contains('hidden');
+    if (isHidden) {
+        openDrawer(drawer);
+    } else {
+        closeDrawer(drawer);
+    }
+}
+
+function openDrawer(drawer) {
+    drawer.classList.remove('hidden');
+    drawer.classList.add('flex');
+    document.body.classList.add('overflow-hidden'); // Prevent background scroll on mobile
+}
+
+function closeDrawer(drawer) {
+    drawer.classList.add('hidden');
+    drawer.classList.remove('flex');
+    document.body.classList.remove('overflow-hidden'); // Restore scroll
 }
 
 // Menu functionality
