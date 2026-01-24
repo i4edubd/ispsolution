@@ -717,3 +717,4 @@ class HotspotScenarioDetectionService
             ],
         ]);
     }
+}
