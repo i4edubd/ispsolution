@@ -97,7 +97,11 @@ class WidgetCacheService
             $today = Carbon::today();
 
             // Find users expiring today from network_users table
-            // Assuming expiry is tracked by checking last billing date + package validity
+            // NOTE: Expiry logic assumptions:
+            // - User expiry is tracked via user->expiry_date field
+            // - Active users with status != 'suspended' and is_active = true are checked
+            // TODO: Adjust this logic based on actual business rules for expiry tracking
+            // e.g., calculate from last billing date + package validity_days
             $usersAtRisk = NetworkUser::where('tenant_id', $tenantId)
                 ->where('status', '!=', 'suspended')
                 ->where('is_active', true)
@@ -105,7 +109,7 @@ class WidgetCacheService
                 ->get()
                 ->filter(function ($networkUser) use ($today) {
                     // Check if user has expiry date that matches today
-                    // This is a simplified check - adjust based on your actual expiry logic
+                    // Adjust this logic based on your actual expiry tracking mechanism
                     if ($networkUser->user && isset($networkUser->user->expiry_date)) {
                         return Carbon::parse($networkUser->user->expiry_date)->isSameDay($today);
                     }
@@ -240,8 +244,9 @@ class WidgetCacheService
             $pendingCount = $smsSentToday->where('status', SmsLog::STATUS_PENDING)->count();
 
             // Calculate remaining balance (simplified - would need SMS balance tracking)
-            // This is a placeholder - implement actual balance tracking
-            $remainingBalance = 1000; // Default placeholder value
+            // TODO: Implement actual SMS balance tracking system
+            // For now, return null to indicate balance tracking is not available
+            $remainingBalance = null; // Will be implemented with SMS balance tracking feature
             $usedBalance = $totalCost;
 
             return [
@@ -250,8 +255,9 @@ class WidgetCacheService
                 'failed_count' => $failedCount,
                 'pending_count' => $pendingCount,
                 'total_cost' => round($totalCost, 4),
-                'remaining_balance' => $remainingBalance,
+                'remaining_balance' => $remainingBalance, // null until balance tracking is implemented
                 'used_balance' => round($usedBalance, 4),
+                'balance_tracking_available' => false, // Flag to indicate feature not yet implemented
                 'date' => $today->toDateString(),
             ];
         } catch (\Exception $e) {
@@ -266,8 +272,9 @@ class WidgetCacheService
                 'failed_count' => 0,
                 'pending_count' => 0,
                 'total_cost' => 0,
-                'remaining_balance' => 0,
+                'remaining_balance' => null,
                 'used_balance' => 0,
+                'balance_tracking_available' => false,
                 'date' => Carbon::today()->toDateString(),
             ];
         }

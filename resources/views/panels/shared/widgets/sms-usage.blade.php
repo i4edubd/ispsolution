@@ -57,7 +57,11 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="text-muted">Remaining Balance</span>
-                        <span class="fw-bold text-success">{{ number_format($data['remaining_balance'], 2) }} BDT</span>
+                        @if($data['balance_tracking_available'] ?? false)
+                            <span class="fw-bold text-success">{{ number_format($data['remaining_balance'], 2) }} BDT</span>
+                        @else
+                            <span class="text-muted fst-italic">Not available</span>
+                        @endif
                     </div>
                 </div>
             </div>

@@ -128,6 +128,13 @@
 
 @push('scripts')
 <script>
+function updateWidgetContent(widgetName, data) {
+    // This would ideally re-render the widget with new data
+    // For now, we'll reload the page as a simple solution
+    // TODO: Implement dynamic widget content update without page reload
+    window.location.href = window.location.pathname + '?refresh=1';
+}
+
 function refreshWidget(widgetName) {
     const widgetElement = document.getElementById(`${widgetName}-widget`);
     if (!widgetElement) return;
@@ -151,8 +158,9 @@ function refreshWidget(widgetName) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Reload the page to show updated widget data
-            window.location.href = window.location.pathname + '?refresh=1';
+            // Simple approach: reload page with refresh flag
+            // This ensures widget data is freshly rendered by the server
+            updateWidgetContent(widgetName, data.data[widgetName]);
         } else {
             throw new Error('Failed to refresh widget');
         }
@@ -194,7 +202,8 @@ function refreshAllWidgets() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Reload the page to show updated widget data
+            // Simple approach: reload page with refresh flag
+            // This ensures all widgets are freshly rendered by the server
             window.location.href = window.location.pathname + '?refresh=1';
         } else {
             throw new Error('Failed to refresh widgets');
