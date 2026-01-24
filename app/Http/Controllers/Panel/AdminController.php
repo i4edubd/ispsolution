@@ -3015,12 +3015,16 @@ class AdminController extends Controller
     public function nasStore(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'ip_address' => 'required|ip|unique:nas,ip_address',
-            'secret' => 'required|string|max:255',
+            'name' => 'required|string|max:100',
+            'nas_name' => 'required|string|max:100',
+            'short_name' => 'required|string|max:50',
+            'server' => 'required|string|max:100',
+            'secret' => 'required|string|max:100',
             'type' => 'required|string|max:50',
+            'ports' => 'nullable|integer|min:0',
+            'community' => 'nullable|string|max:100',
             'description' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:active,inactive,maintenance',
         ]);
 
         $validated['tenant_id'] = getCurrentTenantId();
@@ -3059,12 +3063,16 @@ class AdminController extends Controller
         $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'ip_address' => 'required|ip|unique:nas,ip_address,' . $id,
-            'secret' => 'nullable|string|max:255',
+            'name' => 'required|string|max:100',
+            'nas_name' => 'required|string|max:100',
+            'short_name' => 'required|string|max:50',
+            'server' => 'required|string|max:100',
+            'secret' => 'nullable|string|max:100',
             'type' => 'required|string|max:50',
+            'ports' => 'nullable|integer|min:0',
+            'community' => 'nullable|string|max:100',
             'description' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:active,inactive,maintenance',
         ]);
 
         $device->update($validated);
@@ -3095,7 +3103,7 @@ class AdminController extends Controller
         // Simple ping test with sanitized IP
         $output = [];
         $returnCode = 0;
-        $sanitizedIp = escapeshellarg($device->ip_address);
+        $sanitizedIp = escapeshellarg($device->server);
         exec("ping -c 1 -W 2 {$sanitizedIp}", $output, $returnCode);
 
         if ($returnCode === 0) {

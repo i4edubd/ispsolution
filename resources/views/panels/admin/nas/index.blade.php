@@ -12,12 +12,12 @@
                     <h1 class="text-3xl font-bold">NAS Devices</h1>
                     <p class="mt-2 text-gray-600 dark:text-gray-400">Manage your Network Access Server devices</p>
                 </div>
-                <button class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 active:bg-purple-900 focus:outline-none focus:border-purple-900 focus:ring ring-purple-300 disabled:opacity-25 transition ease-in-out duration-150">
+                <a href="{{ route('panel.admin.network.nas.create') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 active:bg-purple-900 focus:outline-none focus:border-purple-900 focus:ring ring-purple-300 disabled:opacity-25 transition ease-in-out duration-150">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                     Add NAS Device
-                </button>
+                </a>
             </div>
         </div>
     </div>
@@ -84,12 +84,12 @@
                     <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No NAS devices</h3>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by adding a new NAS device.</p>
                     <div class="mt-6">
-                        <button class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700">
+                        <a href="{{ route('panel.admin.network.nas.create') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
                             Add NAS Device
-                        </button>
+                        </a>
                     </div>
                 </div>
             @endif
