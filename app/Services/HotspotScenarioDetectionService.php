@@ -680,14 +680,31 @@ class HotspotScenarioDetectionService
      */
     private function buildFederatedRedirectUrl(array $homeOperator, string $username): string
     {
-        $baseUrl = $homeOperator['portal_url'] ?? '';
-        $params = http_build_query([
+        $baseUrl = rtrim($homeOperator['portal_url'] ?? '', '/');
+        
+        // Parse existing URL to preserve any existing query parameters
+        $parsedUrl = parse_url($baseUrl);
+        $path = ($parsedUrl['path'] ?? '') . '/hotspot/login';
+        
+        // Build query parameters
+        $params = [
             'username' => $username,
             'realm' => $homeOperator['realm'],
             'federated' => 'true',
-        ]);
-
-        return $baseUrl . '/hotspot/login?' . $params;
+        ];
+        
+        // Merge with existing query parameters if any
+        if (!empty($parsedUrl['query'])) {
+            parse_str($parsedUrl['query'], $existingParams);
+            $params = array_merge($existingParams, $params);
+        }
+        
+        // Reconstruct URL
+        $scheme = $parsedUrl['scheme'] ?? 'https';
+        $host = $parsedUrl['host'] ?? '';
+        $port = !empty($parsedUrl['port']) ? ':' . $parsedUrl['port'] : '';
+        
+        return $scheme . '://' . $host . $port . $path . '?' . http_build_query($params);
     }
 
     /**

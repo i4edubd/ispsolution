@@ -621,9 +621,12 @@ class HotspotLoginController extends Controller
     protected function sendLoginSuccessSms(HotspotUser $user, string $macAddress): void
     {
         try {
+            // MAC address in standard format is 17 characters (XX:XX:XX:XX:XX:XX)
+            $macDisplay = substr($macAddress, 0, 17);
+            
             $message = sprintf(
                 'Login successful! Your device (%s) is now connected. Welcome back!',
-                substr($macAddress, 0, 17)
+                $macDisplay
             );
 
             $this->smsService->sendSms(

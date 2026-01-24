@@ -195,11 +195,15 @@
         
         // Update progress bar
         const totalDuration = expiresAt - startTime;
-        const elapsed = now - startTime;
-        const progress = (elapsed / totalDuration) * 100;
         
-        document.getElementById('progress-bar').style.width = progress + '%';
-        document.getElementById('progress-percent').textContent = Math.round(progress) + '%';
+        // Avoid division by zero
+        if (totalDuration > 0) {
+            const elapsed = now - startTime;
+            const progress = (elapsed / totalDuration) * 100;
+            
+            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('progress-percent').textContent = Math.round(progress) + '%';
+        }
         
         // Change color to red when less than 5 minutes remaining
         if (remaining < 300) {
