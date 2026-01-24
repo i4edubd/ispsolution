@@ -3138,6 +3138,14 @@ class AdminController extends Controller
     {
         $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
+        // Validate server is a valid IP address before executing command
+        if (! filter_var($device->server, FILTER_VALIDATE_IP)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid IP address format',
+            ], 400);
+        }
+
         // Simple ping test with sanitized IP
         $output = [];
         $returnCode = 0;
@@ -3246,6 +3254,14 @@ class AdminController extends Controller
     {
         $olt = Olt::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
+        // Validate IP address format before executing command
+        if (! filter_var($olt->ip_address, FILTER_VALIDATE_IP)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid IP address format',
+            ], 400);
+        }
+
         // Simple ping test with sanitized IP
         $output = [];
         $returnCode = 0;
@@ -3271,6 +3287,14 @@ class AdminController extends Controller
     public function routerTestConnection($id)
     {
         $router = MikrotikRouter::where('tenant_id', getCurrentTenantId())->findOrFail($id);
+
+        // Validate IP address format before executing command
+        if (! filter_var($router->ip_address, FILTER_VALIDATE_IP)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid IP address format',
+            ], 400);
+        }
 
         // Simple ping test with sanitized IP
         $output = [];
