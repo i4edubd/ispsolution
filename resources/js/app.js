@@ -65,13 +65,13 @@ function toggleDrawer(drawer) {
 function openDrawer(drawer) {
     drawer.classList.remove('hidden');
     drawer.classList.add('flex');
-    document.body.style.overflow = 'hidden'; // Prevent background scroll on mobile
+    document.body.classList.add('overflow-hidden'); // Prevent background scroll on mobile
 }
 
 function closeDrawer(drawer) {
     drawer.classList.add('hidden');
     drawer.classList.remove('flex');
-    document.body.style.overflow = ''; // Restore scroll
+    document.body.classList.remove('overflow-hidden'); // Restore scroll
 }
 
 // Menu functionality
