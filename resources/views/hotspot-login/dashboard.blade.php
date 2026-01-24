@@ -131,9 +131,18 @@
                         <p class="text-sm font-medium text-gray-500">Days Remaining</p>
                         <p class="text-lg font-semibold text-gray-900">
                             @if($user->expires_at)
-                                {{ max(0, now()->diffInDays($user->expires_at, false)) }} days
+                                @php
+                                    $daysLeft = now()->diffInDays($user->expires_at, false);
+                                @endphp
+                                @if($daysLeft > 0)
+                                    {{ $daysLeft }} days
+                                @elseif($daysLeft == 0)
+                                    Expires today
+                                @else
+                                    Expired
+                                @endif
                             @else
-                                N/A
+                                Unlimited
                             @endif
                         </p>
                     </div>

@@ -166,8 +166,36 @@
 
         // Resend OTP Handler
         resendBtn.addEventListener('click', function() {
-            // This would need to be implemented with AJAX
-            alert('Resend OTP functionality coming soon!');
+            resendBtn.disabled = true;
+            
+            // Make AJAX request to resend OTP
+            fetch('{{ route("hotspot.login.request-otp") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    mobile_number: '{{ $mobile_number }}'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reset cooldown
+                    resendCooldown = 60;
+                    updateResendTimer();
+                    alert('OTP has been resent to your mobile number.');
+                } else {
+                    alert(data.message || 'Failed to resend OTP. Please try again.');
+                    resendBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to resend OTP. Please try again.');
+                resendBtn.disabled = false;
+            });
         });
 
         // Auto-submit on 6 digits
