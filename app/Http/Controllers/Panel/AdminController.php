@@ -2986,4 +2986,259 @@ class AdminController extends Controller
         return redirect()->route('panel.admin.operators.sms-rates')
             ->with('success', 'SMS rate removed successfully.');
     }
+
+    // ==================== NAS Device CRUD Methods ====================
+
+    /**
+     * Display NAS devices list.
+     */
+    public function nasList(): View
+    {
+        $devices = Nas::where('tenant_id', tenant('id'))
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('panels.admin.nas.index', compact('devices'));
+    }
+
+    /**
+     * Show create NAS form.
+     */
+    public function nasCreate(): View
+    {
+        return view('panels.admin.nas.create');
+    }
+
+    /**
+     * Store new NAS device.
+     */
+    public function nasStore(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'ip_address' => 'required|ip|unique:nas,ip_address',
+            'secret' => 'required|string|max:255',
+            'type' => 'required|string|max:50',
+            'description' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $validated['tenant_id'] = tenant('id');
+
+        Nas::create($validated);
+
+        return redirect()->route('panel.admin.network.nas')
+            ->with('success', 'NAS device created successfully.');
+    }
+
+    /**
+     * Show NAS device details.
+     */
+    public function nasShow($id): View
+    {
+        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+
+        return view('panels.admin.nas.show', compact('device'));
+    }
+
+    /**
+     * Show edit NAS form.
+     */
+    public function nasEdit($id): View
+    {
+        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+
+        return view('panels.admin.nas.edit', compact('device'));
+    }
+
+    /**
+     * Update NAS device.
+     */
+    public function nasUpdate(Request $request, $id)
+    {
+        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'ip_address' => 'required|ip|unique:nas,ip_address,' . $id,
+            'secret' => 'nullable|string|max:255',
+            'type' => 'required|string|max:50',
+            'description' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $device->update($validated);
+
+        return redirect()->route('panel.admin.network.nas')
+            ->with('success', 'NAS device updated successfully.');
+    }
+
+    /**
+     * Delete NAS device.
+     */
+    public function nasDestroy($id)
+    {
+        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+        $device->delete();
+
+        return redirect()->route('panel.admin.network.nas')
+            ->with('success', 'NAS device deleted successfully.');
+    }
+
+    /**
+     * Test NAS connection.
+     */
+    public function nasTestConnection($id)
+    {
+        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+
+        // Simple ping test
+        $output = [];
+        $returnCode = 0;
+        exec("ping -c 1 -W 2 {$device->ip_address}", $output, $returnCode);
+
+        if ($returnCode === 0) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Connection successful',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Connection failed - Device unreachable',
+        ], 500);
+    }
+
+    // ==================== OLT Device CRUD Methods ====================
+
+    /**
+     * Store new OLT device.
+     */
+    public function oltStore(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'ip_address' => 'required|ip|unique:olts,ip_address',
+            'model' => 'required|string|max:100',
+            'snmp_version' => 'required|in:v1,v2c,v3',
+            'snmp_community' => 'required_if:snmp_version,v1,v2c|nullable|string|max:255',
+            'snmp_port' => 'nullable|integer|min:1|max:65535',
+            'description' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $validated['tenant_id'] = tenant('id');
+
+        Olt::create($validated);
+
+        return redirect()->route('panel.admin.network.olt')
+            ->with('success', 'OLT device created successfully.');
+    }
+
+    /**
+     * Show OLT device details.
+     */
+    public function oltShow($id): View
+    {
+        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+
+        return view('panels.admin.olt.show', compact('olt'));
+    }
+
+    /**
+     * Show edit OLT form.
+     */
+    public function oltEdit($id): View
+    {
+        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+
+        return view('panels.admin.olt.edit', compact('olt'));
+    }
+
+    /**
+     * Update OLT device.
+     */
+    public function oltUpdate(Request $request, $id)
+    {
+        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'ip_address' => 'required|ip|unique:olts,ip_address,' . $id,
+            'model' => 'required|string|max:100',
+            'snmp_version' => 'required|in:v1,v2c,v3',
+            'snmp_community' => 'required_if:snmp_version,v1,v2c|nullable|string|max:255',
+            'snmp_port' => 'nullable|integer|min:1|max:65535',
+            'description' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $olt->update($validated);
+
+        return redirect()->route('panel.admin.network.olt')
+            ->with('success', 'OLT device updated successfully.');
+    }
+
+    /**
+     * Delete OLT device.
+     */
+    public function oltDestroy($id)
+    {
+        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+        $olt->delete();
+
+        return redirect()->route('panel.admin.network.olt')
+            ->with('success', 'OLT device deleted successfully.');
+    }
+
+    /**
+     * Test OLT connection.
+     */
+    public function oltTestConnection($id)
+    {
+        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+
+        // Simple ping test
+        $output = [];
+        $returnCode = 0;
+        exec("ping -c 1 -W 2 {$olt->ip_address}", $output, $returnCode);
+
+        if ($returnCode === 0) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Connection successful',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Connection failed - Device unreachable',
+        ], 500);
+    }
+
+    /**
+     * Test router connection.
+     */
+    public function routerTestConnection($id)
+    {
+        $router = MikrotikRouter::where('tenant_id', tenant('id'))->findOrFail($id);
+
+        // Simple ping test
+        $output = [];
+        $returnCode = 0;
+        exec("ping -c 1 -W 2 {$router->ip_address}", $output, $returnCode);
+
+        if ($returnCode === 0) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Connection successful',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Connection failed - Device unreachable',
+        ], 500);
+    }
 }

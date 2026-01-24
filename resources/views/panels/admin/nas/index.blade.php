@@ -57,8 +57,14 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</button>
-                                    <button class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</button>
+                                    <a href="{{ route('panel.admin.network.nas.show', $device->id) }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">View</a>
+                                    <a href="{{ route('panel.admin.network.nas.edit', $device->id) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</a>
+                                    <button onclick="testNasConnection({{ $device->id }})" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-3">Test</button>
+                                    <form action="{{ route('panel.admin.network.nas.destroy', $device->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this NAS device?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
                             @endforeach
@@ -91,3 +97,29 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function testNasConnection(nasId) {
+    fetch(`/panel/admin/network/nas/${nasId}/test-connection`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ ' + data.message);
+        } else {
+            alert('✗ ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('✗ Connection test failed');
+        console.error('Error:', error);
+    });
+}
+</script>
+@endpush

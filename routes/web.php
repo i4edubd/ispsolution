@@ -419,8 +419,30 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
         Route::get('/templates/{templateId}', [RouterProvisioningController::class, 'getTemplate'])->name('templates.show');
     });
     
+    // NAS Device Management Routes
+    Route::get('/network/nas', [AdminController::class, 'nasList'])->name('network.nas');
+    Route::get('/network/nas/create', [AdminController::class, 'nasCreate'])->name('network.nas.create');
+    Route::post('/network/nas', [AdminController::class, 'nasStore'])->name('network.nas.store');
+    Route::get('/network/nas/{id}', [AdminController::class, 'nasShow'])->name('network.nas.show');
+    Route::get('/network/nas/{id}/edit', [AdminController::class, 'nasEdit'])->name('network.nas.edit');
+    Route::put('/network/nas/{id}', [AdminController::class, 'nasUpdate'])->name('network.nas.update');
+    Route::delete('/network/nas/{id}', [AdminController::class, 'nasDestroy'])->name('network.nas.destroy');
+    Route::post('/network/nas/{id}/test-connection', [AdminController::class, 'nasTestConnection'])->name('network.nas.test-connection');
+    
+    // OLT Device Management Routes (proper CRUD)
     Route::get('/network/olt', [AdminController::class, 'oltList'])->name('network.olt');
     Route::get('/network/olt/create', [AdminController::class, 'oltCreate'])->name('network.olt.create');
+    Route::post('/network/olt', [AdminController::class, 'oltStore'])->name('network.olt.store');
+    Route::get('/network/olt/{id}', [AdminController::class, 'oltShow'])->name('network.olt.show');
+    Route::get('/network/olt/{id}/edit', [AdminController::class, 'oltEdit'])->name('network.olt.edit');
+    Route::put('/network/olt/{id}', [AdminController::class, 'oltUpdate'])->name('network.olt.update');
+    Route::delete('/network/olt/{id}', [AdminController::class, 'oltDestroy'])->name('network.olt.destroy');
+    Route::post('/network/olt/{id}/test-connection', [AdminController::class, 'oltTestConnection'])->name('network.olt.test-connection');
+    
+    // Router Connection Test
+    Route::post('/network/routers/{id}/test-connection', [AdminController::class, 'routerTestConnection'])->name('network.routers.test-connection');
+    
+    // Existing OLT routes (kept for backward compatibility)
     Route::get('/olt/dashboard', [AdminController::class, 'oltDashboard'])->name('olt.dashboard');
     Route::get('/olt/{id}/monitor', [AdminController::class, 'oltMonitor'])->name('olt.monitor');
     Route::get('/olt/{id}/performance', [AdminController::class, 'oltPerformance'])->name('olt.performance');
