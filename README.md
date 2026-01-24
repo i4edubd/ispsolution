@@ -37,6 +37,7 @@ Choose the guide for your role:
 
 ### Core Documentation
 - **[Roles & Permissions Guide](docs/ROLES_AND_PERMISSIONS.md)** - Complete role hierarchy, permissions, and data isolation
+- **[Route Analysis](docs/ROUTE_ANALYSIS.md)** ⭐ NEW - Comparison with other ISP billing systems and role architecture
 - **[API Documentation](docs/API.md)** - Complete REST API reference with authentication and examples
 - **[Testing Guide](docs/TESTING.md)** - How to run and write tests
 - **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment instructions
