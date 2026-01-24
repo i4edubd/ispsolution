@@ -226,3 +226,22 @@ Route::prefix('v1')->middleware('rate_limit:public_api')->group(function () {
         Route::post('/onu/bulk-operations', [OltController::class, 'bulkOnuOperations'])->name('api.olt.onu.bulk-operations');
     });
 });
+
+// IP Pool Migration API Routes
+Route::prefix('v1/migrations')->middleware(['auth:sanctum'])->group(function () {
+    Route::post('/validate', [\App\Http\Controllers\Panel\IpPoolMigrationController::class, 'validate']);
+    Route::post('/start', [\App\Http\Controllers\Panel\IpPoolMigrationController::class, 'start']);
+    Route::get('/{migrationId}/progress', [\App\Http\Controllers\Panel\IpPoolMigrationController::class, 'progress']);
+    Route::post('/{migrationId}/rollback', [\App\Http\Controllers\Panel\IpPoolMigrationController::class, 'rollback']);
+});
+
+// Card Distributor Mobile API Routes
+Route::prefix('v1/distributor')
+    ->middleware(['distributor.api', 'throttle:distributor-api'])
+    ->name('api.v1.distributor.')
+    ->group(function () {
+        Route::get('mobiles', [\App\Http\Controllers\Api\V1\CardDistributorController::class, 'getMobiles']);
+        Route::get('cards', [\App\Http\Controllers\Api\V1\CardDistributorController::class, 'getCards']);
+        Route::get('sales', [\App\Http\Controllers\Api\V1\CardDistributorController::class, 'getSales']);
+        Route::post('sales', [\App\Http\Controllers\Api\V1\CardDistributorController::class, 'recordSale']);
+    });

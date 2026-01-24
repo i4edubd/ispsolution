@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'rate_limit' => \App\Http\Middleware\RateLimitMiddleware::class,
             'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
             'hotspot.auth' => \App\Http\Middleware\EnsureHotspotAuth::class,
+            'distributor.api' => \App\Http\Middleware\ValidateDistributorApiKey::class,
         ]);
 
         // Add global middleware
