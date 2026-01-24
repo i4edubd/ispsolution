@@ -99,6 +99,7 @@
                 'icon' => 'lightning',
                 'children' => [
                     ['label' => 'OLT Devices', 'route' => 'panel.admin.network.olt'],
+                    ['label' => 'ONU Devices', 'route' => 'panel.admin.network.onu.index'],
                     ['label' => 'OLT Dashboard', 'route' => 'panel.admin.olt.dashboard'],
                     ['label' => 'Templates', 'route' => 'panel.admin.olt.templates'],
                     ['label' => 'SNMP Traps', 'route' => 'panel.admin.olt.snmp-traps'],

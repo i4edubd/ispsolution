@@ -455,6 +455,15 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::delete('/network/olt/{id}', [AdminController::class, 'oltDestroy'])->name('network.olt.destroy');
     Route::post('/network/olt/{id}/test-connection', [AdminController::class, 'oltTestConnection'])->name('network.olt.test-connection');
     
+    // ONU Management Routes
+    Route::prefix('network/onu')->name('network.onu.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Panel\OnuController::class, 'index'])->name('index');
+        Route::get('/{onu}', [\App\Http\Controllers\Panel\OnuController::class, 'show'])->name('show');
+        Route::get('/{onu}/edit', [\App\Http\Controllers\Panel\OnuController::class, 'edit'])->name('edit');
+        Route::put('/{onu}', [\App\Http\Controllers\Panel\OnuController::class, 'update'])->name('update');
+        Route::delete('/{onu}', [\App\Http\Controllers\Panel\OnuController::class, 'destroy'])->name('destroy');
+    });
+    
     // Router Connection Test
     Route::post('/network/routers/{id}/test-connection', [AdminController::class, 'routerTestConnection'])->name('network.routers.test-connection');
     
