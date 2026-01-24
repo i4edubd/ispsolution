@@ -2994,7 +2994,7 @@ class AdminController extends Controller
      */
     public function nasList(): View
     {
-        $devices = Nas::where('tenant_id', tenant('id'))
+        $devices = Nas::where('tenant_id', getCurrentTenantId())
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -3023,7 +3023,7 @@ class AdminController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
 
-        $validated['tenant_id'] = tenant('id');
+        $validated['tenant_id'] = getCurrentTenantId();
 
         Nas::create($validated);
 
@@ -3036,7 +3036,7 @@ class AdminController extends Controller
      */
     public function nasShow($id): View
     {
-        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+        $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         return view('panels.admin.nas.show', compact('device'));
     }
@@ -3046,7 +3046,7 @@ class AdminController extends Controller
      */
     public function nasEdit($id): View
     {
-        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+        $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         return view('panels.admin.nas.edit', compact('device'));
     }
@@ -3056,7 +3056,7 @@ class AdminController extends Controller
      */
     public function nasUpdate(Request $request, $id)
     {
-        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+        $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -3078,7 +3078,7 @@ class AdminController extends Controller
      */
     public function nasDestroy($id)
     {
-        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+        $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
         $device->delete();
 
         return redirect()->route('panel.admin.network.nas')
@@ -3090,7 +3090,7 @@ class AdminController extends Controller
      */
     public function nasTestConnection($id)
     {
-        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+        $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         // Simple ping test with sanitized IP
         $output = [];
@@ -3129,7 +3129,7 @@ class AdminController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
 
-        $validated['tenant_id'] = tenant('id');
+        $validated['tenant_id'] = getCurrentTenantId();
 
         Olt::create($validated);
 
@@ -3142,7 +3142,7 @@ class AdminController extends Controller
      */
     public function oltShow($id): View
     {
-        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+        $olt = Olt::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         return view('panels.admin.olt.show', compact('olt'));
     }
@@ -3152,7 +3152,7 @@ class AdminController extends Controller
      */
     public function oltEdit($id): View
     {
-        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+        $olt = Olt::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         return view('panels.admin.olt.edit', compact('olt'));
     }
@@ -3162,7 +3162,7 @@ class AdminController extends Controller
      */
     public function oltUpdate(Request $request, $id)
     {
-        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+        $olt = Olt::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -3186,7 +3186,7 @@ class AdminController extends Controller
      */
     public function oltDestroy($id)
     {
-        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+        $olt = Olt::where('tenant_id', getCurrentTenantId())->findOrFail($id);
         $olt->delete();
 
         return redirect()->route('panel.admin.network.olt')
@@ -3198,7 +3198,7 @@ class AdminController extends Controller
      */
     public function oltTestConnection($id)
     {
-        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+        $olt = Olt::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         // Simple ping test with sanitized IP
         $output = [];
@@ -3224,7 +3224,7 @@ class AdminController extends Controller
      */
     public function routerTestConnection($id)
     {
-        $router = MikrotikRouter::where('tenant_id', tenant('id'))->findOrFail($id);
+        $router = MikrotikRouter::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         // Simple ping test with sanitized IP
         $output = [];
