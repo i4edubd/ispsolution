@@ -140,12 +140,11 @@ class MasterPackage extends Model
 
     /**
      * Get the count of customers using packages derived from this master package
+     * Note: This performs a database query. Consider eager loading or caching for performance.
      */
     public function getCustomerCountAttribute(): int
     {
-        return NetworkUser::whereHas('package', function ($query) {
-            $query->where('master_package_id', $this->id);
-        })->count();
+        return $this->packages()->withCount('networkUsers')->get()->sum('network_users_count');
     }
 
     /**

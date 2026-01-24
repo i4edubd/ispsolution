@@ -261,12 +261,12 @@ class OperatorPackageController extends Controller
                 ->withInput();
         }
 
-        // Check if sub-operator belongs to this operator
+        // Check if sub-operator belongs to this operator or is a sub-operator
         $subOperator = User::findOrFail($validated['sub_operator_id']);
-        if ($subOperator->created_by !== $user->id && $subOperator->operator_level !== User::OPERATOR_LEVEL_SUB_OPERATOR) {
+        if ($subOperator->created_by !== $user->id || $subOperator->operator_level !== User::OPERATOR_LEVEL_SUB_OPERATOR) {
             return redirect()
                 ->back()
-                ->withErrors(['sub_operator_id' => 'Invalid sub-operator.'])
+                ->withErrors(['sub_operator_id' => 'Invalid sub-operator. Must be created by you and have sub-operator level.'])
                 ->withInput();
         }
 
