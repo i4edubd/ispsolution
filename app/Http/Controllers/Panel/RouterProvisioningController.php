@@ -72,6 +72,9 @@ class RouterProvisioningController extends Controller
 
     /**
      * Preview configuration before applying.
+     *
+     * Security: Template access is restricted by tenant isolation (BelongsToTenant trait).
+     * Configuration is generated server-side with validated template and sanitized variables.
      */
     public function preview(Request $request): JsonResponse
     {

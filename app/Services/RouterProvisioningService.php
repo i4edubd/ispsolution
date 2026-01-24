@@ -17,6 +17,19 @@ use Illuminate\Support\Facades\Log;
  *
  * Provides zero-touch router provisioning with automated configuration
  * for RADIUS, Hotspot, PPPoE, NAT, Firewall, and System settings.
+ *
+ * SECURITY NOTES:
+ * 1. Communication: This service uses HTTP for router API communication, matching the existing
+ *    MikrotikService implementation. For production environments with routers on untrusted networks,
+ *    configure HTTPS with proper certificate validation. This is acceptable for routers on
+ *    internal/trusted networks.
+ * 2. Credentials: Router credentials are encrypted at rest in the database using Laravel's
+ *    encrypted casting but are decrypted when transmitted to the router API.
+ * 3. Configuration Data: Sensitive configuration data (RADIUS secrets, etc.) is stored in
+ *    router_configuration_templates.configuration JSON field. Access to this data should be
+ *    restricted to admin users only through proper role-based access control.
+ * 4. Audit Trail: All provisioning actions are logged in router_provisioning_logs for
+ *    compliance and security auditing.
  */
 class RouterProvisioningService
 {
