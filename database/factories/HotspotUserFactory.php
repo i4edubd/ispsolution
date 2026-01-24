@@ -19,13 +19,19 @@ class HotspotUserFactory extends Factory
     {
         return [
             'tenant_id' => Tenant::factory(),
+            'phone_number' => '017' . $this->faker->unique()->numerify('########'),
             'username' => 'hs_' . $this->faker->unique()->numerify('########'),
             'password' => Hash::make('password'),
-            'mobile' => '017' . $this->faker->unique()->numerify('########'),
+            'name' => $this->faker->name(),
             'email' => $this->faker->optional()->safeEmail(),
+            'address' => $this->faker->optional()->address(),
             'package_id' => Package::factory(),
             'status' => 'active',
-            'expired_at' => now()->addDays(30),
+            'is_verified' => true,
+            'verified_at' => now(),
+            'expires_at' => now()->addDays(30),
+            'mac_address' => null,
+            'active_session_id' => null,
             'last_login_at' => null,
         ];
     }
@@ -34,7 +40,7 @@ class HotspotUserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'active',
-            'expired_at' => now()->subDays(5),
+            'expires_at' => now()->subDays(5),
         ]);
     }
 
