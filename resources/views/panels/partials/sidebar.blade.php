@@ -50,6 +50,8 @@
                     ['label' => 'All Packages', 'route' => 'panel.admin.packages'],
                     ['label' => 'Create Package', 'route' => 'panel.admin.packages.create'],
                     ['label' => 'Package Profile Mapping', 'route' => 'panel.admin.packages.profile-mappings'],
+                    ['label' => 'Master Packages', 'route' => 'panel.admin.master-packages.index'],
+                    ['label' => 'Operator Packages', 'route' => 'panel.admin.operator-packages.index'],
                 ]
             ],
             [
@@ -130,6 +132,14 @@
                     ['label' => 'Sub Operators', 'route' => 'panel.admin.operators.sub-operators'],
                     ['label' => 'Staff', 'route' => 'panel.admin.operators.staff'],
                     ['label' => 'Manage Operator Funds', 'route' => 'panel.admin.operators.funds'],
+                ]
+            ],
+            [
+                'label' => 'Support',
+                'icon' => 'ticket',
+                'children' => [
+                    ['label' => 'All Tickets', 'route' => 'panel.tickets.index'],
+                    ['label' => 'Create Ticket', 'route' => 'panel.tickets.create'],
                 ]
             ],
             [

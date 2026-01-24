@@ -372,6 +372,21 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
         Route::post('/{operatorRate}/assign-sub-operator', [OperatorPackageController::class, 'assignToSubOperator'])->name('assign-sub-operator');
     });
 
+    // Master Package Management (3-tier hierarchy) - Admin access
+    Route::prefix('master-packages')->name('master-packages.')->group(function () {
+        Route::get('/', [MasterPackageController::class, 'index'])->name('index');
+        Route::get('/create', [MasterPackageController::class, 'create'])->name('create');
+        Route::post('/', [MasterPackageController::class, 'store'])->name('store');
+        Route::get('/{masterPackage}', [MasterPackageController::class, 'show'])->name('show');
+        Route::get('/{masterPackage}/edit', [MasterPackageController::class, 'edit'])->name('edit');
+        Route::put('/{masterPackage}', [MasterPackageController::class, 'update'])->name('update');
+        Route::delete('/{masterPackage}', [MasterPackageController::class, 'destroy'])->name('destroy');
+        Route::get('/{masterPackage}/assign', [MasterPackageController::class, 'assignToOperators'])->name('assign');
+        Route::post('/{masterPackage}/assign', [MasterPackageController::class, 'storeOperatorAssignment'])->name('store-assignment');
+        Route::delete('/{masterPackage}/operators/{operatorRate}', [MasterPackageController::class, 'removeOperatorAssignment'])->name('remove-operator');
+        Route::get('/{masterPackage}/stats', [MasterPackageController::class, 'stats'])->name('stats');
+    });
+
     // Operator SMS Rates
     Route::get('/operators/sms-rates', [AdminController::class, 'operatorSmsRates'])->name('operators.sms-rates');
     Route::get('/operators/{operator}/assign-sms-rate', [AdminController::class, 'assignOperatorSmsRate'])->name('operators.assign-sms-rate');
