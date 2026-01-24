@@ -1325,6 +1325,50 @@ class AdminController extends Controller
     }
 
     /**
+     * Store payment gateway.
+     */
+    public function paymentGatewaysStore(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|in:bkash,nagad,rocket,ssl_commerz,aamarpay,stripe,paypal',
+            'environment' => 'required|string|in:sandbox,production',
+            'status' => 'required|string|in:active,inactive,testing,maintenance',
+            'merchant_id' => 'required|string|max:255',
+            'api_key' => 'required|string|max:255',
+            'api_secret' => 'nullable|string|max:255',
+            'webhook_url' => 'nullable|url|max:255',
+        ]);
+
+        // Normalize type value to match PaymentGateway slug constants
+        $slug = $validated['type'];
+        if ($slug === 'ssl_commerz') {
+            $slug = PaymentGateway::TYPE_SSLCOMMERZ;
+        }
+
+        // Build configuration array
+        $configuration = [
+            'merchant_id' => $validated['merchant_id'],
+            'api_key' => $validated['api_key'],
+            'api_secret' => $validated['api_secret'] ?? null,
+            'webhook_url' => $validated['webhook_url'] ?? null,
+            'environment' => $validated['environment'],
+        ];
+
+        PaymentGateway::create([
+            'tenant_id' => getCurrentTenantId(),
+            'name' => $validated['name'],
+            'slug' => $slug,
+            'is_active' => $validated['status'] === 'active',
+            'test_mode' => $validated['environment'] === 'sandbox',
+            'configuration' => $configuration,
+        ]);
+
+        return redirect()->route('panel.admin.payment-gateways')
+            ->with('success', 'Payment gateway configured successfully.');
+    }
+
+    /**
      * Display network routers listing.
      */
     public function routers(): View
@@ -2994,7 +3038,7 @@ class AdminController extends Controller
      */
     public function nasList(): View
     {
-        $devices = Nas::where('tenant_id', tenant('id'))
+        $devices = Nas::where('tenant_id', getCurrentTenantId())
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -3015,15 +3059,19 @@ class AdminController extends Controller
     public function nasStore(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'ip_address' => 'required|ip|unique:nas,ip_address',
-            'secret' => 'required|string|max:255',
+            'name' => 'required|string|max:100',
+            'nas_name' => 'required|string|max:100',
+            'short_name' => 'required|string|max:50',
+            'server' => 'required|ip|max:100|unique:nas,server',
+            'secret' => 'required|string|max:100',
             'type' => 'required|string|max:50',
+            'ports' => 'nullable|integer|min:0',
+            'community' => 'nullable|string|max:100',
             'description' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:active,inactive,maintenance',
         ]);
 
-        $validated['tenant_id'] = tenant('id');
+        $validated['tenant_id'] = getCurrentTenantId();
 
         Nas::create($validated);
 
@@ -3036,7 +3084,7 @@ class AdminController extends Controller
      */
     public function nasShow($id): View
     {
-        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+        $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         return view('panels.admin.nas.show', compact('device'));
     }
@@ -3046,7 +3094,7 @@ class AdminController extends Controller
      */
     public function nasEdit($id): View
     {
-        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+        $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         return view('panels.admin.nas.edit', compact('device'));
     }
@@ -3056,16 +3104,25 @@ class AdminController extends Controller
      */
     public function nasUpdate(Request $request, $id)
     {
-        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+        $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'ip_address' => 'required|ip|unique:nas,ip_address,' . $id,
-            'secret' => 'nullable|string|max:255',
+            'name' => 'required|string|max:100',
+            'nas_name' => 'required|string|max:100',
+            'short_name' => 'required|string|max:50',
+            'server' => 'required|ip|max:100|unique:nas,server,' . $id,
+            'secret' => 'nullable|string|max:100',
             'type' => 'required|string|max:50',
+            'ports' => 'nullable|integer|min:0',
+            'community' => 'nullable|string|max:100',
             'description' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:active,inactive,maintenance',
         ]);
+
+        // Preserve existing secret if the field was left empty in the update form
+        if (array_key_exists('secret', $validated) && ($validated['secret'] === null || $validated['secret'] === '')) {
+            unset($validated['secret']);
+        }
 
         $device->update($validated);
 
@@ -3078,7 +3135,7 @@ class AdminController extends Controller
      */
     public function nasDestroy($id)
     {
-        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+        $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
         $device->delete();
 
         return redirect()->route('panel.admin.network.nas')
@@ -3090,12 +3147,20 @@ class AdminController extends Controller
      */
     public function nasTestConnection($id)
     {
-        $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
+        $device = Nas::where('tenant_id', getCurrentTenantId())->findOrFail($id);
+
+        // Validate server is a valid IP address before executing command
+        if (! filter_var($device->server, FILTER_VALIDATE_IP)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid IP address format',
+            ], 400);
+        }
 
         // Simple ping test with sanitized IP
         $output = [];
         $returnCode = 0;
-        $sanitizedIp = escapeshellarg($device->ip_address);
+        $sanitizedIp = escapeshellarg($device->server);
         exec("ping -c 1 -W 2 {$sanitizedIp}", $output, $returnCode);
 
         if ($returnCode === 0) {
@@ -3129,7 +3194,7 @@ class AdminController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
 
-        $validated['tenant_id'] = tenant('id');
+        $validated['tenant_id'] = getCurrentTenantId();
 
         Olt::create($validated);
 
@@ -3142,7 +3207,7 @@ class AdminController extends Controller
      */
     public function oltShow($id): View
     {
-        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+        $olt = Olt::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         return view('panels.admin.olt.show', compact('olt'));
     }
@@ -3152,7 +3217,7 @@ class AdminController extends Controller
      */
     public function oltEdit($id): View
     {
-        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+        $olt = Olt::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         return view('panels.admin.olt.edit', compact('olt'));
     }
@@ -3162,7 +3227,7 @@ class AdminController extends Controller
      */
     public function oltUpdate(Request $request, $id)
     {
-        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+        $olt = Olt::where('tenant_id', getCurrentTenantId())->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -3186,7 +3251,7 @@ class AdminController extends Controller
      */
     public function oltDestroy($id)
     {
-        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+        $olt = Olt::where('tenant_id', getCurrentTenantId())->findOrFail($id);
         $olt->delete();
 
         return redirect()->route('panel.admin.network.olt')
@@ -3198,7 +3263,15 @@ class AdminController extends Controller
      */
     public function oltTestConnection($id)
     {
-        $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
+        $olt = Olt::where('tenant_id', getCurrentTenantId())->findOrFail($id);
+
+        // Validate IP address format before executing command
+        if (! filter_var($olt->ip_address, FILTER_VALIDATE_IP)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid IP address format',
+            ], 400);
+        }
 
         // Simple ping test with sanitized IP
         $output = [];
@@ -3224,7 +3297,15 @@ class AdminController extends Controller
      */
     public function routerTestConnection($id)
     {
-        $router = MikrotikRouter::where('tenant_id', tenant('id'))->findOrFail($id);
+        $router = MikrotikRouter::where('tenant_id', getCurrentTenantId())->findOrFail($id);
+
+        // Validate IP address format before executing command
+        if (! filter_var($router->ip_address, FILTER_VALIDATE_IP)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid IP address format',
+            ], 400);
+        }
 
         // Simple ping test with sanitized IP
         $output = [];

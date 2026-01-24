@@ -39,7 +39,7 @@ class CustomerWizardController extends Controller
         if ($sessionId) {
             $tempCustomer = TempCustomer::where('session_id', $sessionId)
                 ->where('user_id', auth()->id())
-                ->where('tenant_id', tenant('id'))
+                ->where('tenant_id', getCurrentTenantId())
                 ->notExpired()
                 ->first();
 
@@ -54,7 +54,7 @@ class CustomerWizardController extends Controller
 
         $tempCustomer = TempCustomer::create([
             'user_id' => auth()->id(),
-            'tenant_id' => tenant('id'),
+            'tenant_id' => getCurrentTenantId(),
             'session_id' => $sessionId,
             'step' => 1,
             'data' => [],
@@ -79,7 +79,7 @@ class CustomerWizardController extends Controller
 
         $tempCustomer = TempCustomer::where('session_id', $sessionId)
             ->where('user_id', auth()->id())
-            ->where('tenant_id', tenant('id'))
+            ->where('tenant_id', getCurrentTenantId())
             ->notExpired()
             ->firstOrFail();
 
@@ -111,7 +111,7 @@ class CustomerWizardController extends Controller
 
         $tempCustomer = TempCustomer::where('session_id', $sessionId)
             ->where('user_id', auth()->id())
-            ->where('tenant_id', tenant('id'))
+            ->where('tenant_id', getCurrentTenantId())
             ->notExpired()
             ->firstOrFail();
 
@@ -216,7 +216,7 @@ class CustomerWizardController extends Controller
      */
     private function showStep3(TempCustomer $tempCustomer, array $data): View
     {
-        $packages = ServicePackage::where('tenant_id', tenant('id'))
+        $packages = ServicePackage::where('tenant_id', getCurrentTenantId())
             ->where('is_active', true)
             ->orderBy('price')
             ->get();
@@ -256,7 +256,7 @@ class CustomerWizardController extends Controller
      */
     private function showStep4(TempCustomer $tempCustomer, array $data): View
     {
-        $zones = Zone::where('tenant_id', tenant('id'))
+        $zones = Zone::where('tenant_id', getCurrentTenantId())
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
@@ -386,7 +386,7 @@ class CustomerWizardController extends Controller
 
             // Create customer user
             $customer = User::create([
-                'tenant_id' => tenant('id'),
+                'tenant_id' => getCurrentTenantId(),
                 'name' => $allData['name'],
                 'email' => $allData['email'],
                 'username' => $username,
@@ -410,7 +410,7 @@ class CustomerWizardController extends Controller
             // Create network user if connection type is pppoe, hotspot, or static_ip
             if (in_array($allData['connection_type'], ['pppoe', 'hotspot', 'static_ip'])) {
                 $networkUser = NetworkUser::create([
-                    'tenant_id' => tenant('id'),
+                    'tenant_id' => getCurrentTenantId(),
                     'user_id' => $customer->id,
                     'package_id' => $allData['package_id'],
                     'username' => $username,
@@ -438,7 +438,7 @@ class CustomerWizardController extends Controller
             $endDate = $startDate->copy()->addDays($validityDays);
 
             $invoice = Invoice::create([
-                'tenant_id' => tenant('id'),
+                'tenant_id' => getCurrentTenantId(),
                 'invoice_number' => $this->generateInvoiceNumber(),
                 'user_id' => $customer->id,
                 'package_id' => $allData['package_id'],
@@ -454,7 +454,7 @@ class CustomerWizardController extends Controller
             // Create payment if amount > 0
             if (isset($allData['payment_amount']) && $allData['payment_amount'] > 0) {
                 $payment = Payment::create([
-                    'tenant_id' => tenant('id'),
+                    'tenant_id' => getCurrentTenantId(),
                     'user_id' => $customer->id,
                     'invoice_id' => $invoice->id,
                     'amount' => $allData['payment_amount'],
