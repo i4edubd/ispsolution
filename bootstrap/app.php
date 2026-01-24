@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             '2fa' => \App\Http\Middleware\TwoFactorAuthentication::class,
             'rate_limit' => \App\Http\Middleware\RateLimitMiddleware::class,
             'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
+            'hotspot.auth' => \App\Http\Middleware\EnsureHotspotAuth::class,
         ]);
 
         // Add global middleware

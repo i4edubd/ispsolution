@@ -99,6 +99,7 @@
                                 <button
                                     type="button"
                                     id="resend-btn"
+                                    data-mobile="{{ $mobile_number }}"
                                     class="text-blue-600 hover:text-blue-700 font-semibold disabled:text-gray-400 disabled:cursor-not-allowed"
                                     disabled
                                 >
@@ -173,10 +174,11 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    mobile_number: '{{ $mobile_number }}'
+                    mobile_number: resendBtn.dataset.mobile
                 })
             })
             .then(response => response.json())
@@ -185,7 +187,14 @@
                     // Reset cooldown
                     resendCooldown = 60;
                     updateResendTimer();
-                    alert('OTP has been resent to your mobile number.');
+                    
+                    // Show success message (better UX than alert)
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded text-sm';
+                    messageDiv.textContent = 'OTP has been resent to your mobile number.';
+                    document.querySelector('form').insertBefore(messageDiv, document.querySelector('form').firstChild);
+                    
+                    setTimeout(() => messageDiv.remove(), 5000);
                 } else {
                     alert(data.message || 'Failed to resend OTP. Please try again.');
                     resendBtn.disabled = false;

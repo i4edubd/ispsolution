@@ -3,6 +3,7 @@
 namespace Tests\Integration;
 
 use App\Models\HotspotUser;
+use App\Models\Otp;
 use App\Models\Package;
 use App\Models\Tenant;
 use App\Services\OtpService;
@@ -113,7 +114,7 @@ class HotspotLoginFlowTest extends TestCase
         ]);
 
         // Get OTP from database (in debug mode)
-        $otpRecord = \App\Models\Otp::where('mobile_number', $this->hotspotUser->phone_number)
+        $otpRecord = Otp::where('mobile_number', $this->hotspotUser->phone_number)
             ->whereNull('verified_at')
             ->latest()
             ->first();
@@ -174,7 +175,7 @@ class HotspotLoginFlowTest extends TestCase
 
         // Get and update OTP
         $testOtp = '123456';
-        $otpRecord = \App\Models\Otp::where('mobile_number', $this->hotspotUser->phone_number)
+        $otpRecord = Otp::where('mobile_number', $this->hotspotUser->phone_number)
             ->whereNull('verified_at')
             ->latest()
             ->first();
@@ -272,7 +273,7 @@ class HotspotLoginFlowTest extends TestCase
         ]);
 
         $testOtp = '123456';
-        $otpRecord = \App\Models\Otp::where('mobile_number', $this->hotspotUser->phone_number)
+        $otpRecord = Otp::where('mobile_number', $this->hotspotUser->phone_number)
             ->whereNull('verified_at')
             ->latest()
             ->first();

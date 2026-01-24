@@ -8,6 +8,9 @@ use App\Http\Requests\HotspotLogin\RequestLoginOtpRequest;
 use App\Http\Requests\HotspotLogin\VerifyLoginOtpRequest;
 use App\Models\HotspotUser;
 use App\Services\OtpService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -25,7 +28,7 @@ class HotspotLoginController extends Controller
     /**
      * Show login form
      */
-    public function showLoginForm()
+    public function showLoginForm(): View
     {
         return view('hotspot-login.login-form');
     }
@@ -33,7 +36,7 @@ class HotspotLoginController extends Controller
     /**
      * Request OTP for login
      */
-    public function requestLoginOtp(RequestLoginOtpRequest $request)
+    public function requestLoginOtp(RequestLoginOtpRequest $request): RedirectResponse|JsonResponse
     {
         try {
             $mobileNumber = $request->validated()['mobile_number'];
@@ -45,6 +48,12 @@ class HotspotLoginController extends Controller
                 ->first();
 
             if (!$hotspotUser) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'This mobile number is not registered. Please sign up first.',
+                    ], 400);
+                }
                 return back()->withErrors([
                     'mobile_number' => 'This mobile number is not registered. Please sign up first.',
                 ])->withInput();
@@ -52,6 +61,12 @@ class HotspotLoginController extends Controller
 
             if ($hotspotUser->status !== 'active') {
                 $message = 'Your account is currently ' . $hotspotUser->status . '. Please contact support.';
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $message,
+                    ], 400);
+                }
                 return back()->withErrors([
                     'mobile_number' => $message,
                 ])->withInput();
@@ -59,8 +74,15 @@ class HotspotLoginController extends Controller
 
             // Check if account is expired
             if ($hotspotUser->expires_at && $hotspotUser->expires_at->isPast()) {
+                $message = 'Your account has expired. Please renew your subscription.';
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $message,
+                    ], 400);
+                }
                 return back()->withErrors([
-                    'mobile_number' => 'Your account has expired. Please renew your subscription.',
+                    'mobile_number' => $message,
                 ])->withInput();
             }
 
@@ -79,6 +101,15 @@ class HotspotLoginController extends Controller
                 ],
             ]);
 
+            // Return JSON response for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'OTP sent to your mobile number. Please check your SMS.',
+                    'expires_at' => $otpData['expires_at']->timestamp,
+                ]);
+            }
+
             return redirect()
                 ->route('hotspot.login.verify-otp')
                 ->with('success', 'OTP sent to your mobile number. Please check your SMS.');
@@ -87,10 +118,26 @@ class HotspotLoginController extends Controller
             Log::error('Login OTP request failed', [
                 'mobile_number' => $request->mobile_number,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
+            // Only show user-friendly errors, not technical details
+            $userMessage = 'Unable to send OTP at this time. Please try again later.';
+            
+            // If it's an OtpService exception, it's already user-friendly
+            if (str_contains($e->getMessage(), 'OTP') || str_contains($e->getMessage(), 'try again')) {
+                $userMessage = $e->getMessage();
+            }
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $userMessage,
+                ], 400);
+            }
+
             return back()
-                ->withErrors(['error' => $e->getMessage()])
+                ->withErrors(['error' => $userMessage])
                 ->withInput();
         }
     }
@@ -98,7 +145,7 @@ class HotspotLoginController extends Controller
     /**
      * Show OTP verification form for login
      */
-    public function showVerifyLoginOtp()
+    public function showVerifyLoginOtp(): View|RedirectResponse
     {
         $loginData = session('hotspot_login');
 
@@ -117,7 +164,7 @@ class HotspotLoginController extends Controller
     /**
      * Verify OTP and login user
      */
-    public function verifyLoginOtp(VerifyLoginOtpRequest $request)
+    public function verifyLoginOtp(VerifyLoginOtpRequest $request): RedirectResponse
     {
         try {
             $loginData = session('hotspot_login');
@@ -170,10 +217,19 @@ class HotspotLoginController extends Controller
             Log::error('Login OTP verification failed', [
                 'mobile_number' => $request->mobile_number ?? 'unknown',
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
+            // Only show user-friendly errors
+            $userMessage = 'Unable to verify OTP. Please try again.';
+            
+            // If it's an OtpService exception, it's already user-friendly
+            if (str_contains($e->getMessage(), 'OTP') || str_contains($e->getMessage(), 'attempts')) {
+                $userMessage = $e->getMessage();
+            }
+
             return back()
-                ->withErrors(['otp_code' => $e->getMessage()])
+                ->withErrors(['otp_code' => $userMessage])
                 ->withInput();
         }
     }
@@ -181,7 +237,7 @@ class HotspotLoginController extends Controller
     /**
      * Show device conflict page
      */
-    public function showDeviceConflict()
+    public function showDeviceConflict(): View|RedirectResponse
     {
         $loginData = session('hotspot_login');
 
@@ -201,7 +257,7 @@ class HotspotLoginController extends Controller
     /**
      * Force login by logging out from other device
      */
-    public function forceLogin(Request $request)
+    public function forceLogin(Request $request): RedirectResponse
     {
         $loginData = session('hotspot_login');
 
@@ -237,7 +293,7 @@ class HotspotLoginController extends Controller
     /**
      * Show dashboard for logged in users
      */
-    public function showDashboard(Request $request)
+    public function showDashboard(Request $request): View|RedirectResponse
     {
         $hotspotUser = $this->getAuthenticatedUser($request);
 
@@ -255,7 +311,7 @@ class HotspotLoginController extends Controller
     /**
      * Logout user
      */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         $hotspotUser = $this->getAuthenticatedUser($request);
 

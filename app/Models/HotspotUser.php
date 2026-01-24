@@ -135,6 +135,7 @@ class HotspotUser extends Model
     {
         $this->update([
             'active_session_id' => null,
+            'mac_address' => null,
         ]);
     }
 }

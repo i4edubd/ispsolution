@@ -91,7 +91,7 @@ Route::prefix('hotspot/login')->name('hotspot.login')->group(function () {
 });
 
 // Hotspot user dashboard and logout (requires hotspot session)
-Route::prefix('hotspot')->name('hotspot.')->group(function () {
+Route::prefix('hotspot')->name('hotspot.')->middleware(['hotspot.auth'])->group(function () {
     Route::get('/dashboard', [HotspotLoginController::class, 'showDashboard'])->name('dashboard');
     Route::post('/logout', [HotspotLoginController::class, 'logout'])->name('logout');
 });
