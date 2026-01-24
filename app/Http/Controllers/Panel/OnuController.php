@@ -67,10 +67,14 @@ class OnuController extends Controller
     public function edit(Onu $onu): View
     {
         $onu->load(['olt', 'networkUser']);
-        $olts = Olt::orderBy('name')->get();
-        $networkUsers = NetworkUser::orderBy('username')->get();
+        
+        // Load a limited set of network users for better performance
+        // In production, consider implementing a searchable dropdown instead
+        $networkUsers = NetworkUser::orderBy('username')
+            ->limit(100)
+            ->get();
 
-        return view('panels.admin.onu.edit', compact('onu', 'olts', 'networkUsers'));
+        return view('panels.admin.onu.edit', compact('onu', 'networkUsers'));
     }
 
     /**
