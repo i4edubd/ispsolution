@@ -1086,6 +1086,8 @@ class PPPoEProfilesIpAllocationModeChangeJob implements ShouldQueue
 namespace App\Services;
 
 use App\Models\IpPool;
+use App\Models\User;
+use App\Models\Radreply;
 use App\Jobs\ReAllocateIPv4ForProfileJob;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
@@ -1364,11 +1366,7 @@ use Illuminate\Console\Command;
 
 class MigrateRouterToRadiusCommand extends Command
 {
-    protected $signature = 'mikrotik:migrate-to-radius 
-                            {router_id : The ID of the router to migrate}
-                            {--force : Skip confirmation prompts}
-                            {--no-backup : Skip backup creation}
-                            {--test-user= : Username to test authentication}';
+    protected $signature = 'mikrotik:migrate-to-radius {router_id : The ID of the router to migrate} {--force : Skip confirmation prompts} {--no-backup : Skip backup creation} {--test-user= : Username to test authentication}';
 
     protected $description = 'Migrate a MikroTik router from local PPP authentication to RADIUS';
 
@@ -1603,6 +1601,7 @@ class RouterMigrationService
             // You might want to use radtest or similar tool
             
             // For now, we'll check if the user exists in radcheck
+            // Note: Add 'use App\Models\Radcheck;' at the top of the class
             $user = \App\Models\Radcheck::where('username', $username)->first();
             
             return $user !== null;
@@ -2153,7 +2152,14 @@ class CardDistributorController extends Controller
         }
         
         // Clear cache
-        Cache::tags("distributor:{$distributor->id}")->flush();
+        // Note: Cache tags require Redis or Memcached. For file/database cache, use:
+        // Cache::forget("distributor:{$distributor->id}:cards:*");
+        // Cache::forget("distributor:{$distributor->id}:mobiles:*");
+        if (config('cache.default') === 'redis' || config('cache.default') === 'memcached') {
+            Cache::tags("distributor:{$distributor->id}")->flush();
+        } else {
+            Cache::flush(); // Or implement custom cache key clearing
+        }
         
         return response()->json([
             'success' => true,
@@ -2289,8 +2295,13 @@ class ValidateDistributorApiKey
 **API Routes:**
 ```php
 // In routes/api.php
+// Note: Register the middleware alias in app/Http/Kernel.php:
+// protected $routeMiddleware = [
+//     'distributor.api' => \App\Http\Middleware\ValidateDistributorApiKey::class,
+// ];
+
 Route::prefix('v1/distributor')
-    ->middleware(['api.key.distributor', 'throttle:60,1'])
+    ->middleware(['distributor.api', 'throttle:60,1'])
     ->name('api.v1.distributor.')
     ->group(function () {
         Route::get('mobiles', [CardDistributorController::class, 'getMobiles']);
@@ -2303,6 +2314,10 @@ Route::prefix('v1/distributor')
 **Rate Limiting Configuration:**
 ```php
 // In app/Providers/RouteServiceProvider.php
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
+
 protected function configureRateLimiting()
 {
     RateLimiter::for('distributor-api', function (Request $request) {
