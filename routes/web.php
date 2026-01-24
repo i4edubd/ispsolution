@@ -79,15 +79,15 @@ Route::prefix('hotspot/signup')->name('hotspot.signup.')->group(function () {
 });
 
 // Public hotspot login routes (no authentication required)
-Route::prefix('hotspot/login')->name('hotspot.login.')->group(function () {
+Route::prefix('hotspot/login')->name('hotspot.login')->group(function () {
     Route::get('/', [HotspotLoginController::class, 'showLoginForm'])->name('');
-    Route::post('/request-otp', [HotspotLoginController::class, 'requestLoginOtp'])->name('request-otp');
+    Route::post('/request-otp', [HotspotLoginController::class, 'requestLoginOtp'])->name('.request-otp');
     
-    Route::get('/verify-otp', [HotspotLoginController::class, 'showVerifyLoginOtp'])->name('verify-otp');
-    Route::post('/verify-otp', [HotspotLoginController::class, 'verifyLoginOtp'])->name('verify-otp.post');
+    Route::get('/verify-otp', [HotspotLoginController::class, 'showVerifyLoginOtp'])->name('.verify-otp');
+    Route::post('/verify-otp', [HotspotLoginController::class, 'verifyLoginOtp'])->name('.verify-otp.post');
     
-    Route::get('/device-conflict', [HotspotLoginController::class, 'showDeviceConflict'])->name('device-conflict');
-    Route::post('/force-login', [HotspotLoginController::class, 'forceLogin'])->name('force-login');
+    Route::get('/device-conflict', [HotspotLoginController::class, 'showDeviceConflict'])->name('.device-conflict');
+    Route::post('/force-login', [HotspotLoginController::class, 'forceLogin'])->name('.force-login');
 });
 
 // Hotspot user dashboard and logout (requires hotspot session)
