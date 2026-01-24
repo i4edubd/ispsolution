@@ -70,6 +70,19 @@ class AdminController extends Controller
             'paid_invoices' => Invoice::where('status', 'paid')->count(),
             'unpaid_invoices' => Invoice::where('status', 'unpaid')->count(),
             'overdue_invoices' => Invoice::where('status', 'overdue')->count(),
+            // Today's Update statistics
+            'new_customers_today' => User::whereDate('created_at', today())
+                ->whereHas('roles', function ($query) {
+                    $query->where('slug', 'customer');
+                })->count(),
+            'payments_today' => Payment::whereDate('created_at', today())
+                ->where('status', 'success')
+                ->sum('amount'),
+            'tickets_today' => \App\Models\Ticket::whereDate('created_at', today())->count(),
+            'expiring_today' => User::whereDate('expiry_date', today())
+                ->whereHas('roles', function ($query) {
+                    $query->where('slug', 'customer');
+                })->count(),
         ];
 
         return view('panels.admin.dashboard', compact('stats'));
