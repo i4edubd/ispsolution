@@ -21,6 +21,9 @@ class HotspotUser extends Model
         'email',
         'address',
         'password',
+        'mac_address',
+        'active_session_id',
+        'last_login_at',
         'otp_code',
         'otp_expires_at',
         'is_verified',
@@ -33,6 +36,7 @@ class HotspotUser extends Model
     protected $casts = [
         'otp_expires_at' => 'datetime',
         'verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
         'is_verified' => 'boolean',
         'expires_at' => 'datetime',
     ];
@@ -100,5 +104,38 @@ class HotspotUser extends Model
     public function setMobileAttribute(?string $value): void
     {
         $this->attributes['phone_number'] = $value;
+    }
+
+    /**
+     * Check if user has an active session on a different device
+     */
+    public function hasActiveSessionOnDifferentDevice(string $currentMacAddress): bool
+    {
+        return $this->active_session_id !== null &&
+               $this->mac_address !== null &&
+               $this->mac_address !== $currentMacAddress;
+    }
+
+    /**
+     * Update login session information
+     */
+    public function updateLoginSession(string $macAddress, string $sessionId): void
+    {
+        $this->update([
+            'mac_address' => $macAddress,
+            'active_session_id' => $sessionId,
+            'last_login_at' => now(),
+        ]);
+    }
+
+    /**
+     * Clear active session
+     */
+    public function clearSession(): void
+    {
+        $this->update([
+            'active_session_id' => null,
+            'mac_address' => null,
+        ]);
     }
 }
