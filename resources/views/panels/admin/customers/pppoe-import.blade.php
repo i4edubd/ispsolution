@@ -36,9 +36,9 @@
                 <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Import Instructions</h3>
                 <div class="mt-2 text-sm text-blue-700 dark:text-blue-400">
                     <ul class="list-disc list-inside space-y-1">
-                        <li>Select a MikroTik router from your configured devices</li>
-                        <li>The system will fetch all PPPoE secrets from the selected router</li>
-                        <li>Choose a default package for imported customers</li>
+                        <li>Select a NAS device from your configured RADIUS servers</li>
+                        <li>The system will fetch all PPPoE accounts from the selected NAS</li>
+                        <li>Choose a default package for imported customers (optional)</li>
                         <li>Review and confirm before importing</li>
                     </ul>
                 </div>
@@ -48,26 +48,26 @@
 
     <!-- Import Form -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-        <form action="#" method="POST" class="p-6">
+        <form action="{{ route('panel.admin.customers.pppoe-import.store') }}" method="POST" class="p-6">
             @csrf
             
             <div class="space-y-6">
-                <!-- MikroTik Router Selection -->
+                <!-- NAS Device Selection -->
                 <div>
-                    <label for="router_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select MikroTik Router *</label>
-                    <select name="router_id" id="router_id" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="">Choose a router...</option>
-                        @foreach($routers ?? [] as $router)
-                            <option value="{{ $router->id }}">{{ $router->name }} ({{ $router->host }})</option>
+                    <label for="nas_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select NAS Device *</label>
+                    <select name="nas_id" id="nas_id" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="">Choose a NAS device...</option>
+                        @foreach($nasDevices ?? [] as $nas)
+                            <option value="{{ $nas->id }}">{{ $nas->nasname }} ({{ $nas->shortname }})</option>
                         @endforeach
                     </select>
-                    <p class="mt-1 text-sm text-gray-500">Select the router to import PPPoE secrets from</p>
+                    <p class="mt-1 text-sm text-gray-500">Select the NAS device to import PPPoE customers from</p>
                 </div>
 
                 <!-- Default Package -->
                 <div>
-                    <label for="default_package_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Default Package *</label>
-                    <select name="default_package_id" id="default_package_id" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <label for="package_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Default Package</label>
+                    <select name="package_id" id="package_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         <option value="">Choose a package...</option>
                         @foreach($packages ?? [] as $package)
                             <option value="{{ $package->id }}">{{ $package->name }} - {{ $package->speed ?? 'N/A' }}</option>
@@ -81,47 +81,25 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Import Options</h3>
                     
                     <div class="space-y-4">
-                        <!-- Skip Existing -->
+                        <!-- Filter Disabled -->
                         <div class="flex items-start">
                             <div class="flex items-center h-5">
-                                <input id="skip_existing" name="skip_existing" type="checkbox" checked class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                <input id="filter_disabled" name="filter_disabled" type="checkbox" checked class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
                             </div>
                             <div class="ml-3 text-sm">
-                                <label for="skip_existing" class="font-medium text-gray-700 dark:text-gray-300">Skip Existing Customers</label>
-                                <p class="text-gray-500 dark:text-gray-400">Don't import customers that already exist in the database</p>
+                                <label for="filter_disabled" class="font-medium text-gray-700 dark:text-gray-300">Filter Disabled Accounts</label>
+                                <p class="text-gray-500 dark:text-gray-400">Skip importing disabled PPPoE accounts</p>
                             </div>
                         </div>
 
-                        <!-- Set as Active -->
+                        <!-- Generate Bills -->
                         <div class="flex items-start">
                             <div class="flex items-center h-5">
-                                <input id="set_active" name="set_active" type="checkbox" checked class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                <input id="generate_bills" name="generate_bills" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
                             </div>
                             <div class="ml-3 text-sm">
-                                <label for="set_active" class="font-medium text-gray-700 dark:text-gray-300">Set All as Active</label>
-                                <p class="text-gray-500 dark:text-gray-400">Mark all imported customers as active</p>
-                            </div>
-                        </div>
-
-                        <!-- Sync Passwords -->
-                        <div class="flex items-start">
-                            <div class="flex items-center h-5">
-                                <input id="sync_passwords" name="sync_passwords" type="checkbox" checked class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                            </div>
-                            <div class="ml-3 text-sm">
-                                <label for="sync_passwords" class="font-medium text-gray-700 dark:text-gray-300">Import Passwords</label>
-                                <p class="text-gray-500 dark:text-gray-400">Import customer passwords from MikroTik</p>
-                            </div>
-                        </div>
-
-                        <!-- Import Profiles -->
-                        <div class="flex items-start">
-                            <div class="flex items-center h-5">
-                                <input id="import_profiles" name="import_profiles" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                            </div>
-                            <div class="ml-3 text-sm">
-                                <label for="import_profiles" class="font-medium text-gray-700 dark:text-gray-300">Import Profile Information</label>
-                                <p class="text-gray-500 dark:text-gray-400">Import additional profile data like IP addresses</p>
+                                <label for="generate_bills" class="font-medium text-gray-700 dark:text-gray-300">Generate Bills</label>
+                                <p class="text-gray-500 dark:text-gray-400">Automatically generate bills for imported customers</p>
                             </div>
                         </div>
                     </div>
@@ -132,7 +110,7 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Preview & Confirmation</h3>
                     <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                            Select a router and click "Preview Import" to see what will be imported.
+                            Select a NAS device and click "Preview Import" to see what will be imported.
                         </p>
                     </div>
                 </div>

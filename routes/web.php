@@ -275,7 +275,8 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/customers/create', [AdminController::class, 'customersCreate'])->name('customers.create');
     Route::post('/customers', [AdminController::class, 'customersStore'])->name('customers.store');
     Route::get('/customers/import-requests', [AdminController::class, 'customerImportRequests'])->name('customers.import-requests');
-    Route::get('/customers/pppoe-import', [AdminController::class, 'pppoeCustomerImport'])->name('customers.pppoe-import');
+    Route::get('/customers/pppoe-import', [\App\Http\Controllers\Panel\CustomerImportController::class, 'index'])->name('customers.pppoe-import');
+    Route::post('/customers/pppoe-import', [\App\Http\Controllers\Panel\CustomerImportController::class, 'store'])->name('customers.pppoe-import.store');
     Route::get('/customers/bulk-update', [AdminController::class, 'bulkUpdateUsers'])->name('customers.bulk-update');
     Route::get('/customers/{id}/edit', [AdminController::class, 'customersEdit'])->name('customers.edit');
     Route::put('/customers/{id}', [AdminController::class, 'customersUpdate'])->name('customers.update');
