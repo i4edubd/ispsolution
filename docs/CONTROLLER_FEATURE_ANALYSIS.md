@@ -668,7 +668,7 @@ ApiKeyController (Panel)
 
 ## Recommended Features to Adopt
 
-### Phase 1: Critical Customer Features (Weeks 1-4)
+### Phase 1: Critical Customer Features (Weeks 1-2)
 
 #### 1. MAC Address Binding Management
 **Why**: Essential ISP feature for preventing account sharing
@@ -739,7 +739,7 @@ Route::prefix('panel/admin/customers/search')->group(function () {
 - Search history
 - Export search results
 
-### Phase 2: Billing & Financial Features (Weeks 5-8)
+### Phase 2: Billing & Financial Features (Weeks 2-3)
 
 #### 5. Advance Payment System
 **Why**: Customers often pay in advance for multiple months
@@ -792,7 +792,7 @@ Route::prefix('panel/admin/vat')->group(function () {
 - Tax period summaries
 - Export for accounting
 
-### Phase 3: Communication & SMS (Weeks 9-10)
+### Phase 3: Communication & SMS (Weeks 3-4)
 
 #### 8. SMS History & Management
 **Why**: Track all SMS sent to customers
@@ -831,7 +831,7 @@ Route::prefix('panel/admin/sms/events')->group(function () {
 - Welcome messages
 - Template management
 
-### Phase 4: Operational Tools (Weeks 11-12)
+### Phase 4: Operational Tools (Weeks 4-5)
 
 #### 10. Expense Management with Categories
 **Why**: Proper expense tracking for business
@@ -877,9 +877,9 @@ Route::prefix('panel/admin/network/tools')->group(function () {
 | Priority | Features | Business Value | Development Effort | Timeline |
 |----------|----------|----------------|-------------------|----------|
 | **P0 - Critical** | MAC Binding, Data Limits, Time Limits | Very High | Medium | Weeks 1-2 |
-| **P1 - High** | Advanced Search, Advance Payments, Custom Pricing | High | Medium | Weeks 3-6 |
-| **P2 - Medium** | VAT Management, SMS History, SMS Broadcast | High | High | Weeks 7-9 |
-| **P3 - Low** | Event SMS, Expense Categories, Network Tools | Medium | Low-Medium | Weeks 10-12 |
+| **P1 - High** | Advanced Search, Advance Payments, Custom Pricing | High | Medium | Weeks 2-3 |
+| **P2 - Medium** | VAT Management, SMS History, SMS Broadcast | High | High | Weeks 3-4 |
+| **P3 - Low** | Event SMS, Expense Categories, Network Tools | Medium | Low-Medium | Weeks 4-5 |
 
 ### Recommended Implementation Order
 
@@ -888,27 +888,27 @@ Route::prefix('panel/admin/network/tools')->group(function () {
    - Prevents account sharing
    - Security enhancement
 
-2. **Week 3-4**: Data/Time Limits
+2. **Week 2-3**: Data/Time Limits
    - Essential for quota management
    - Automated enforcement
    - Reduces support load
 
-3. **Week 5-6**: Advanced Search + Advance Payments
+3. **Week 3-4**: Advanced Search + Advance Payments
    - Improves operator efficiency
    - Better cash flow management
    - Customer satisfaction
 
-4. **Week 7-8**: Custom Pricing + VAT
+4. **Week 5-6**: Custom Pricing + VAT
    - Flexible billing
    - Tax compliance
    - Competitive advantage
 
-5. **Week 9-10**: SMS System Enhancement
+5. **Week 6-7**: SMS System Enhancement
    - Better communication
    - Automation
    - Customer engagement
 
-6. **Week 11-12**: Expense Management + Tools
+6. **Week 7-8**: Expense Management + Tools
    - Financial tracking
    - Operational efficiency
    - Better diagnostics
