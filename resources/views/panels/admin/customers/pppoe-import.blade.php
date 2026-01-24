@@ -48,7 +48,7 @@
 
     <!-- Import Form -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-        <form action="#" method="POST" class="p-6">
+        <form action="{{ route('panel.admin.customers.pppoe-import.store') }}" method="POST" class="p-6">
             @csrf
             
             <div class="space-y-6">
