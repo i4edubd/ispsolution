@@ -43,6 +43,7 @@ class Olt extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'tenant_id',
         'name',
         'ip_address',
         'port',

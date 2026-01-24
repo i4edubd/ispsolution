@@ -1340,6 +1340,12 @@ class AdminController extends Controller
             'webhook_url' => 'nullable|url|max:255',
         ]);
 
+        // Normalize type value to match PaymentGateway slug constants
+        $slug = $validated['type'];
+        if ($slug === 'ssl_commerz') {
+            $slug = PaymentGateway::TYPE_SSLCOMMERZ;
+        }
+
         // Build configuration array
         $configuration = [
             'merchant_id' => $validated['merchant_id'],
@@ -1352,7 +1358,7 @@ class AdminController extends Controller
         PaymentGateway::create([
             'tenant_id' => getCurrentTenantId(),
             'name' => $validated['name'],
-            'slug' => $validated['type'],
+            'slug' => $slug,
             'is_active' => $validated['status'] === 'active',
             'test_mode' => $validated['environment'] === 'sandbox',
             'configuration' => $configuration,
@@ -3056,7 +3062,7 @@ class AdminController extends Controller
             'name' => 'required|string|max:100',
             'nas_name' => 'required|string|max:100',
             'short_name' => 'required|string|max:50',
-            'server' => 'required|string|max:100',
+            'server' => 'required|ip|max:100|unique:nas,server',
             'secret' => 'required|string|max:100',
             'type' => 'required|string|max:50',
             'ports' => 'nullable|integer|min:0',
@@ -3104,7 +3110,7 @@ class AdminController extends Controller
             'name' => 'required|string|max:100',
             'nas_name' => 'required|string|max:100',
             'short_name' => 'required|string|max:50',
-            'server' => 'required|string|max:100',
+            'server' => 'required|ip|max:100|unique:nas,server,' . $id,
             'secret' => 'nullable|string|max:100',
             'type' => 'required|string|max:50',
             'ports' => 'nullable|integer|min:0',
@@ -3112,6 +3118,11 @@ class AdminController extends Controller
             'description' => 'nullable|string',
             'status' => 'required|in:active,inactive,maintenance',
         ]);
+
+        // Preserve existing secret if the field was left empty in the update form
+        if (array_key_exists('secret', $validated) && ($validated['secret'] === null || $validated['secret'] === '')) {
+            unset($validated['secret']);
+        }
 
         $device->update($validated);
 
