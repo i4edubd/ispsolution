@@ -13,6 +13,12 @@ use Illuminate\View\View;
 class OnuController extends Controller
 {
     /**
+     * Maximum number of network users to load in edit form
+     * For large deployments, consider implementing a searchable dropdown
+     */
+    private const MAX_NETWORK_USERS_LIMIT = 100;
+
+    /**
      * Display a listing of ONUs.
      */
     public function index(Request $request): View
@@ -69,9 +75,8 @@ class OnuController extends Controller
         $onu->load(['olt', 'networkUser']);
         
         // Load a limited set of network users for better performance
-        // In production, consider implementing a searchable dropdown instead
         $networkUsers = NetworkUser::orderBy('username')
-            ->limit(100)
+            ->limit(self::MAX_NETWORK_USERS_LIMIT)
             ->get();
 
         return view('panels.admin.onu.edit', compact('onu', 'networkUsers'));

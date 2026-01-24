@@ -27,13 +27,9 @@ class MasterPackageController extends Controller
      */
     protected function getRoutePrefix(): string
     {
-        $currentRouteName = request()->route()->getName();
-        
-        if (str_starts_with($currentRouteName, 'panel.admin.')) {
-            return 'panel.admin.master-packages';
-        }
-        
-        return 'panel.developer.master-packages';
+        return $this->isAdminContext() 
+            ? 'panel.admin.master-packages' 
+            : 'panel.developer.master-packages';
     }
 
     /**
@@ -41,13 +37,18 @@ class MasterPackageController extends Controller
      */
     protected function getViewPrefix(): string
     {
+        return $this->isAdminContext()
+            ? 'panels.admin.master-packages'
+            : 'panels.developer.master-packages';
+    }
+
+    /**
+     * Check if current request is in admin context
+     */
+    protected function isAdminContext(): bool
+    {
         $currentRouteName = request()->route()->getName();
-        
-        if (str_starts_with($currentRouteName, 'panel.admin.')) {
-            return 'panels.admin.master-packages';
-        }
-        
-        return 'panels.developer.master-packages';
+        return str_starts_with($currentRouteName, 'panel.admin.');
     }
 
     /**
