@@ -394,6 +394,223 @@ To add API support:
 - [ ] Top-up/recharge functionality
 - [ ] Multi-language support
 
+## 🔐 Hotspot User Login System
+
+### Overview
+Complete passwordless login system for hotspot users using OTP verification and MAC address-based device restriction.
+
+### Features Implemented
+
+#### 1. Login Controller (`HotspotLoginController.php`)
+- ✅ OTP-based authentication (no password required)
+- ✅ MAC address tracking for device identification
+- ✅ Single device restriction (1 user = 1 active device)
+- ✅ Device conflict detection and resolution
+- ✅ Secure session management
+- ✅ User dashboard with account information
+
+#### 2. Database Changes
+Added to `hotspot_users` table:
+- `mac_address` - Stores device MAC address
+- `active_session_id` - Tracks active user session
+- `last_login_at` - Records last login timestamp
+
+Migration file: `2026_01_24_030000_add_mac_address_and_session_fields_to_hotspot_users_table.php`
+
+#### 3. Login Views (Mobile-First Design)
+
+**`login-form.blade.php`**
+- Mobile number input
+- Clean, modern interface
+- Link to signup page
+- Secure login indicator
+
+**`verify-otp.blade.php`**
+- 6-digit OTP input
+- Countdown timer
+- Resend OTP functionality
+- Auto-focus on input field
+
+**`device-conflict.blade.php`**
+- Device conflict warning
+- Current session information
+- Force login option
+- Security notices
+
+**`dashboard.blade.php`**
+- User account overview
+- Package details and expiration
+- Session information
+- Quick access to support
+
+#### 4. Login Routes
+
+```php
+GET  /hotspot/login                    - Show login form
+POST /hotspot/login/request-otp        - Request login OTP
+GET  /hotspot/login/verify-otp         - Show OTP verification
+POST /hotspot/login/verify-otp         - Verify OTP and login
+GET  /hotspot/login/device-conflict    - Show device conflict
+POST /hotspot/login/force-login        - Force login on new device
+GET  /hotspot/dashboard                - User dashboard
+POST /hotspot/logout                   - Logout user
+```
+
+### User Login Flow
+
+```
+1. User visits /hotspot/login
+   └─> Enters registered mobile number
+   
+2. System validates mobile number
+   └─> Checks if user exists and is active
+   └─> Checks account expiration
+   └─> Sends OTP via SMS
+   
+3. User enters OTP code
+   └─> System verifies OTP
+   └─> Checks for active session on different device
+   
+4a. If no device conflict:
+    └─> Creates new session
+    └─> Updates MAC address and session ID
+    └─> Redirects to dashboard
+    
+4b. If device conflict detected:
+    └─> Shows device conflict page
+    └─> User can force login (logs out other device)
+    └─> Or cancel and go back
+    
+5. Dashboard displays:
+    └─> Account status and details
+    └─> Package information
+    └─> Session information
+    └─> Days remaining
+    └─> Support options
+```
+
+### MAC Address Detection
+
+The system uses a device fingerprint based on:
+- IP address
+- User agent string
+
+This creates a unique identifier for each device. In production hotspot systems, the actual MAC address would be provided by the RADIUS server or router.
+
+Format: `XX:XX:XX:XX:XX:XX` (uppercase, colon-separated)
+
+### Device Restriction Logic
+
+1. **Single Device Policy**: Only one active session per user
+2. **Conflict Detection**: Checks MAC address on login
+3. **Auto Logout**: Logging in on new device logs out previous device
+4. **Session Validation**: Verifies session ID and MAC address on each request
+
+### Security Features
+
+#### Session Management
+- Unique session IDs using UUID
+- Session stored in encrypted Laravel session
+- MAC address verification on dashboard access
+- Automatic session invalidation when logged out
+
+#### OTP Security
+- Same security as signup (hashed, expiring, rate-limited)
+- 5-minute expiration
+- Max 3 verification attempts
+- 60-second resend cooldown
+
+#### Device Tracking
+- MAC address indexed in database
+- Session ID indexed for fast lookups
+- Last login timestamp tracked
+- Clear session on logout
+
+### API Methods
+
+#### HotspotUser Model Methods
+
+```php
+// Check if user has active session on different device
+hasActiveSessionOnDifferentDevice(string $currentMacAddress): bool
+
+// Update login session information
+updateLoginSession(string $macAddress, string $sessionId): void
+
+// Clear active session
+clearSession(): void
+```
+
+### Testing Login System
+
+#### 1. Normal Login
+```
+1. Go to /hotspot/login
+2. Enter registered mobile: 01712345678
+3. Receive OTP code
+4. Enter OTP
+5. Should redirect to dashboard
+```
+
+#### 2. Device Restriction
+```
+1. Login on Device A
+2. Try to login with same account on Device B
+3. Should see device conflict warning
+4. Choose "Force Login"
+5. Device A should be logged out
+6. Device B should be logged in
+```
+
+#### 3. Session Validation
+```
+1. Login successfully
+2. Open dashboard
+3. Manually clear active_session_id in database
+4. Refresh dashboard
+5. Should redirect to login (session invalidated)
+```
+
+#### 4. Expired Account
+```
+1. Set expires_at to past date
+2. Try to login
+3. Should see "account expired" error
+```
+
+### Configuration
+
+No additional configuration needed. The system uses existing:
+- OTP Service for OTP generation
+- SMS Service for OTP delivery
+- Session configuration for session storage
+
+### Monitoring
+
+Track these metrics:
+- Login success/failure rate
+- Device conflicts per day
+- Average session duration
+- Active concurrent users
+
+### Troubleshooting
+
+**User can't login:**
+- Check if account status is 'active'
+- Verify account hasn't expired
+- Check OTP rate limiting
+- Review SMS delivery logs
+
+**Device conflict issues:**
+- Verify MAC address generation logic
+- Check session storage (Redis/database)
+- Review session configuration
+
+**Session expires too quickly:**
+- Check Laravel session configuration
+- Verify session driver (file/database/redis)
+- Check session lifetime setting
+
 ## 📞 Support
 
 For issues or questions:
@@ -405,6 +622,8 @@ For issues or questions:
 ## ✅ Implementation Complete
 
 All components have been implemented and are ready for deployment:
+
+### Self-Signup System
 - ✅ OTP Service with full security
 - ✅ Database migrations
 - ✅ Form validation classes
@@ -416,6 +635,47 @@ All components have been implemented and are ready for deployment:
 - ✅ Security features
 - ✅ Error handling
 
-**Total Files Created:** 14
-**Total Lines of Code:** ~2,500+
+### Login System (NEW)
+- ✅ Passwordless OTP-based login
+- ✅ MAC address tracking
+- ✅ Single device restriction
+- ✅ Device conflict resolution
+- ✅ User dashboard
+- ✅ Session management
+- ✅ 4 responsive login views
+- ✅ Login routes configured
+
+**Total Files Created:** 25+
+**Total Lines of Code:** ~5,000+
 **Test Coverage:** Ready for manual and automated testing
+
+### Quick Deployment Steps
+
+1. Run migrations:
+   ```bash
+   php artisan migrate
+   ```
+
+2. Configure environment:
+   ```env
+   SMS_ENABLED=true
+   SMS_GATEWAY=...
+   CACHE_DRIVER=redis
+   ```
+
+3. Test signup flow:
+   - Visit `/hotspot/signup`
+   - Complete registration
+   - Make payment
+   - Receive credentials
+
+4. Test login flow:
+   - Visit `/hotspot/login`
+   - Enter mobile number
+   - Verify OTP
+   - Access dashboard
+
+5. Test device restriction:
+   - Login on one device
+   - Try login on another
+   - Verify device conflict handling

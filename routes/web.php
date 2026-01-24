@@ -55,6 +55,7 @@ Route::post('webhooks/payment/{gateway}', [PaymentController::class, 'webhook'])
 */
 
 use App\Http\Controllers\HotspotController;
+use App\Http\Controllers\HotspotLoginController;
 use App\Http\Controllers\HotspotSelfSignupController;
 
 // Public hotspot self-signup routes (no authentication required)
@@ -75,6 +76,24 @@ Route::prefix('hotspot/signup')->name('hotspot.signup.')->group(function () {
 
     Route::get('/success', [HotspotSelfSignupController::class, 'showSuccess'])->name('success');
     Route::get('/error', [HotspotSelfSignupController::class, 'showError'])->name('error');
+});
+
+// Public hotspot login routes (no authentication required)
+Route::prefix('hotspot/login')->name('hotspot.login.')->group(function () {
+    Route::get('/', [HotspotLoginController::class, 'showLoginForm'])->name('');
+    Route::post('/request-otp', [HotspotLoginController::class, 'requestLoginOtp'])->name('request-otp');
+    
+    Route::get('/verify-otp', [HotspotLoginController::class, 'showVerifyLoginOtp'])->name('verify-otp');
+    Route::post('/verify-otp', [HotspotLoginController::class, 'verifyLoginOtp'])->name('verify-otp.post');
+    
+    Route::get('/device-conflict', [HotspotLoginController::class, 'showDeviceConflict'])->name('device-conflict');
+    Route::post('/force-login', [HotspotLoginController::class, 'forceLogin'])->name('force-login');
+});
+
+// Hotspot user dashboard and logout (requires hotspot session)
+Route::prefix('hotspot')->name('hotspot.')->group(function () {
+    Route::get('/dashboard', [HotspotLoginController::class, 'showDashboard'])->name('dashboard');
+    Route::post('/logout', [HotspotLoginController::class, 'logout'])->name('logout');
 });
 
 // Admin hotspot management routes
