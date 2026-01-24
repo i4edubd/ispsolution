@@ -3092,10 +3092,11 @@ class AdminController extends Controller
     {
         $device = Nas::where('tenant_id', tenant('id'))->findOrFail($id);
 
-        // Simple ping test
+        // Simple ping test with sanitized IP
         $output = [];
         $returnCode = 0;
-        exec("ping -c 1 -W 2 {$device->ip_address}", $output, $returnCode);
+        $sanitizedIp = escapeshellarg($device->ip_address);
+        exec("ping -c 1 -W 2 {$sanitizedIp}", $output, $returnCode);
 
         if ($returnCode === 0) {
             return response()->json([
@@ -3199,10 +3200,11 @@ class AdminController extends Controller
     {
         $olt = Olt::where('tenant_id', tenant('id'))->findOrFail($id);
 
-        // Simple ping test
+        // Simple ping test with sanitized IP
         $output = [];
         $returnCode = 0;
-        exec("ping -c 1 -W 2 {$olt->ip_address}", $output, $returnCode);
+        $sanitizedIp = escapeshellarg($olt->ip_address);
+        exec("ping -c 1 -W 2 {$sanitizedIp}", $output, $returnCode);
 
         if ($returnCode === 0) {
             return response()->json([
@@ -3224,10 +3226,11 @@ class AdminController extends Controller
     {
         $router = MikrotikRouter::where('tenant_id', tenant('id'))->findOrFail($id);
 
-        // Simple ping test
+        // Simple ping test with sanitized IP
         $output = [];
         $returnCode = 0;
-        exec("ping -c 1 -W 2 {$router->ip_address}", $output, $returnCode);
+        $sanitizedIp = escapeshellarg($router->ip_address);
+        exec("ping -c 1 -W 2 {$sanitizedIp}", $output, $returnCode);
 
         if ($returnCode === 0) {
             return response()->json([
