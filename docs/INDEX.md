@@ -37,6 +37,9 @@ Comprehensive guides for each user role in the system:
 - **[Multi-Tenancy Architecture](technical/MULTI_TENANCY_ISOLATION.md)** - Tenant isolation overview
 - **[Security Enhancements](technical/PHASE_6_SECURITY_ENHANCEMENTS.md)** - Security features
 - **[Roles & Permissions](ROLES_AND_PERMISSIONS.md)** - Detailed permissions guide
+- **[Route Analysis](ROUTE_ANALYSIS.md)** ⭐ NEW - Route structure and role system comparison
+- **[Controller Feature Analysis](CONTROLLER_FEATURE_ANALYSIS.md)** ⭐ NEW - Detailed feature comparison with external ISP system
+- **[Security Improvements (Recommended)](SECURITY_IMPROVEMENTS_RECOMMENDED.md)** ⭐ NEW - Recommended security enhancements
 
 ### Network Services
 - **[Network Services Guide](NETWORK_SERVICES.md)** - RADIUS, MikroTik, IPAM integration
