@@ -67,6 +67,7 @@ class BillingService
                 'payment_method' => $paymentData['method'] ?? 'cash',
                 'payment_data' => $paymentData['data'] ?? null,
                 'paid_at' => now(),
+                'collected_by' => auth()->id(),
                 'notes' => $paymentData['notes'] ?? null,
             ]);
 
