@@ -8,7 +8,6 @@
     if ($userRole === 'super-admin') {
         $menus = [
             ['label' => 'Dashboard', 'route' => 'panel.super-admin.dashboard', 'icon' => 'home'],
-            ['label' => 'Users', 'route' => 'panel.super-admin.users', 'icon' => 'users'],
             ['label' => 'Roles', 'route' => 'panel.super-admin.roles', 'icon' => 'shield'],
             [
                 'label' => 'ISP Management',
