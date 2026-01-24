@@ -8,6 +8,7 @@ use App\Http\Controllers\Panel\CardDistributorController;
 use App\Http\Controllers\Panel\CustomerController;
 use App\Http\Controllers\Panel\DeveloperController;
 use App\Http\Controllers\Panel\ManagerController;
+use App\Http\Controllers\Panel\RouterProvisioningController;
 use App\Http\Controllers\Panel\StaffController;
 use App\Http\Controllers\Panel\SuperAdminController;
 use App\Http\Controllers\Panel\TicketController;
@@ -369,6 +370,26 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/network/routers/{id}/edit', [AdminController::class, 'routersEdit'])->name('network.routers.edit');
     Route::put('/network/routers/{id}', [AdminController::class, 'routersUpdate'])->name('network.routers.update');
     Route::delete('/network/routers/{id}', [AdminController::class, 'routersDestroy'])->middleware('password.confirm')->name('network.routers.destroy');
+    
+    // Router Provisioning Routes
+    Route::prefix('routers/provision')->name('routers.provision.')->group(function () {
+        Route::get('/', [RouterProvisioningController::class, 'index'])->name('index');
+        Route::get('/{routerId}', [RouterProvisioningController::class, 'show'])->name('show');
+        Route::post('/preview', [RouterProvisioningController::class, 'preview'])->name('preview');
+        Route::post('/execute', [RouterProvisioningController::class, 'provision'])->name('execute');
+        Route::post('/test-connection', [RouterProvisioningController::class, 'testConnection'])->name('test-connection');
+        Route::post('/backup', [RouterProvisioningController::class, 'backup'])->name('backup');
+        Route::post('/rollback', [RouterProvisioningController::class, 'rollback'])->name('rollback');
+        Route::get('/{routerId}/logs', [RouterProvisioningController::class, 'logs'])->name('logs');
+        Route::get('/{routerId}/backups', [RouterProvisioningController::class, 'backups'])->name('backups');
+        
+        // Template Management
+        Route::get('/templates/manage', [RouterProvisioningController::class, 'templates'])->name('templates');
+        Route::get('/templates/create', [RouterProvisioningController::class, 'createTemplate'])->name('templates.create');
+        Route::post('/templates', [RouterProvisioningController::class, 'storeTemplate'])->name('templates.store');
+        Route::get('/templates/{templateId}', [RouterProvisioningController::class, 'getTemplate'])->name('templates.show');
+    });
+    
     Route::get('/network/olt', [AdminController::class, 'oltList'])->name('network.olt');
     Route::get('/network/olt/create', [AdminController::class, 'oltCreate'])->name('network.olt.create');
     Route::get('/olt/dashboard', [AdminController::class, 'oltDashboard'])->name('olt.dashboard');
