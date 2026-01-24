@@ -53,8 +53,13 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</button>
-                                    <button class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</button>
+                                    <a href="{{ route('panel.admin.network.routers.edit', $router->id) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</a>
+                                    <button onclick="testConnection({{ $router->id }})" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 mr-3">Test</button>
+                                    <form action="{{ route('panel.admin.network.routers.destroy', $router->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this router?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
                             @endforeach
@@ -87,3 +92,29 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function testConnection(routerId) {
+    fetch(`/panel/admin/network/routers/${routerId}/test-connection`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ ' + data.message);
+        } else {
+            alert('✗ ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('✗ Connection test failed');
+        console.error('Error:', error);
+    });
+}
+</script>
+@endpush
