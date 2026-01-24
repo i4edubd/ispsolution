@@ -45,7 +45,12 @@ class ImportPppSecretsJob implements ShouldQueue
         ]);
 
         try {
-            $result = $importService->importPppSecrets($this->routerId, $this->options);
+            $result = $importService->importPppSecrets(
+                $this->routerId,
+                $this->options,
+                $this->tenantId,
+                $this->userId
+            );
 
             if ($result['success']) {
                 Log::info('PPP secrets import completed successfully', [

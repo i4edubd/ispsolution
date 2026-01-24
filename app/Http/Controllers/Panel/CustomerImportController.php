@@ -33,7 +33,7 @@ class CustomerImportController extends Controller
             ->take(10)
             ->get();
 
-        return view('panels.admin.customers.import', compact('routers', 'nasDevices', 'packages', 'recentImports'));
+        return view('panels.admin.customers.pppoe-import', compact('routers', 'nasDevices', 'packages', 'recentImports'));
     }
 
     /**

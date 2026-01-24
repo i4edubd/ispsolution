@@ -82,7 +82,7 @@ class CustomerCacheService
         try {
             return NetworkUser::where('tenant_id', $tenantId)
                 ->with([
-                    'package:id,name,price,speed_download,speed_upload',
+                    'package:id,name,price,bandwidth_download,bandwidth_upload',
                     'user:id,name,mobile,email,zone_id,created_at',
                     'user.zone:id,name',
                 ])
@@ -128,9 +128,9 @@ class CustomerCacheService
         }
 
         try {
-            // Query radacct table for active sessions
+            // Query radacct table for active sessions using radius connection
             // Note: This assumes you have a radacct table. Adjust based on your schema.
-            $activeSessions = DB::table('radacct')
+            $activeSessions = DB::connection('radius')->table('radacct')
                 ->select('username')
                 ->whereIn('username', function ($query) use ($customerIds) {
                     $query->select('username')

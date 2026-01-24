@@ -17,7 +17,7 @@ trait HasOnlineStatus
     {
         try {
             // Check if there's an active session in radacct
-            $activeSession = DB::table('radacct')
+            $activeSession = DB::connection('radius')->table('radacct')
                 ->where('username', $this->username)
                 ->whereNull('acctstoptime')
                 ->exists();
@@ -39,6 +39,14 @@ trait HasOnlineStatus
      */
     public function getOnlineStatusAttribute(): bool
     {
+        // If a cached / pre-attached value exists, use it to avoid extra queries
+        if (property_exists($this, 'attributes')
+            && is_array($this->attributes)
+            && array_key_exists('online_status', $this->attributes)) {
+            return (bool) $this->attributes['online_status'];
+        }
+
+        // Fallback: compute the status by querying the database
         return $this->isOnline();
     }
 
@@ -48,7 +56,7 @@ trait HasOnlineStatus
     public function getCurrentSession(): ?object
     {
         try {
-            return DB::table('radacct')
+            return DB::connection('radius')->table('radacct')
                 ->where('username', $this->username)
                 ->whereNull('acctstoptime')
                 ->orderBy('acctstarttime', 'desc')
@@ -85,7 +93,7 @@ trait HasOnlineStatus
     {
         return $query->whereIn('username', function ($subQuery) {
             $subQuery->select('username')
-                ->from('radacct')
+                ->from('radius.radacct')
                 ->whereNull('acctstoptime');
         });
     }
@@ -97,7 +105,7 @@ trait HasOnlineStatus
     {
         return $query->whereNotIn('username', function ($subQuery) {
             $subQuery->select('username')
-                ->from('radacct')
+                ->from('radius.radacct')
                 ->whereNull('acctstoptime');
         });
     }

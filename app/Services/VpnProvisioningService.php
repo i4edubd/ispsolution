@@ -243,8 +243,8 @@ class VpnProvisioningService
      */
     private function addRadiusAttributes(string $username, string $password, string $ipAddress): void
     {
-        // Add to radcheck (authentication)
-        DB::table('radcheck')->insert([
+        // Add to radcheck (authentication) using radius connection
+        DB::connection('radius')->table('radcheck')->insert([
             [
                 'username' => $username,
                 'attribute' => 'Cleartext-Password',
@@ -259,11 +259,11 @@ class VpnProvisioningService
             ],
         ]);
 
-        // Add to radreply (rate limit)
-        DB::table('radreply')->insert([
+        // Add to radreply (rate limit) using radius connection and correct operator
+        DB::connection('radius')->table('radreply')->insert([
             'username' => $username,
             'attribute' => 'Mikrotik-Rate-Limit',
-            'op' => ':=',
+            'op' => '=',
             'value' => self::DEFAULT_RATE_LIMIT,
         ]);
     }
@@ -273,8 +273,8 @@ class VpnProvisioningService
      */
     private function removeRadiusAttributes(string $username): void
     {
-        DB::table('radcheck')->where('username', $username)->delete();
-        DB::table('radreply')->where('username', $username)->delete();
+        DB::connection('radius')->table('radcheck')->where('username', $username)->delete();
+        DB::connection('radius')->table('radreply')->where('username', $username)->delete();
     }
 
     /**

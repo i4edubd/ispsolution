@@ -85,6 +85,13 @@ class ImportPppCustomersJob implements ShouldQueue
             
             $import->update(['total_count' => count($secrets)]);
 
+            // Resolve tenant from operator
+            $operator = User::find($this->operatorId);
+            if (!$operator) {
+                throw new \Exception('Operator not found');
+            }
+            $tenantId = $operator->tenant_id;
+
             $successCount = 0;
             $failedCount = 0;
             $errors = [];
@@ -92,7 +99,7 @@ class ImportPppCustomersJob implements ShouldQueue
             // Process each secret
             foreach ($secrets as $secret) {
                 try {
-                    $this->processSecret($secret, $this->operatorId);
+                    $this->processSecret($secret, $tenantId);
                     $successCount++;
                 } catch (\Exception $e) {
                     $failedCount++;

@@ -234,9 +234,11 @@ class MikrotikImportService
     /**
      * Import PPP secrets (customers) from router.
      */
-    public function importPppSecrets(int $routerId, array $options = []): array
+    public function importPppSecrets(int $routerId, array $options = [], ?int $tenantId = null, ?int $userId = null): array
     {
-        $tenantId = auth()->user()->tenant_id;
+        // Use provided tenant_id or fall back to auth user (for web requests)
+        $tenantId = $tenantId ?? auth()->user()->tenant_id;
+        $userId = $userId ?? auth()->id();
         $filterDisabled = $options['filter_disabled'] ?? true;
         $generateBills = $options['generate_bills'] ?? false;
 
