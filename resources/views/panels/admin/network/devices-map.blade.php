@@ -63,21 +63,6 @@
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
             <div id="map" class="h-[600px] bg-gray-100 dark:bg-gray-900 rounded-lg relative overflow-hidden">
-                <!-- Leaflet.js Map Integration Placeholder -->
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <div class="text-center">
-                        <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                        </svg>
-                        <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">Leaflet.js Map Integration</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">Add Leaflet.js library to display interactive map</p>
-                        <div class="mt-4 text-xs text-gray-400 dark:text-gray-500">
-                            <code class="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
-                                &lt;link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" /&gt;
-                            </code>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -88,7 +73,11 @@
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Devices with Location Data</h3>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @forelse($devices as $device)
-                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-indigo-500 cursor-pointer transition">
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-indigo-500 cursor-pointer transition"
+                         @if($device->latitude && $device->longitude)
+                         data-device-lat="{{ $device->latitude }}" 
+                         data-device-lng="{{ $device->longitude }}"
+                         @endif>
                         <div class="flex items-center justify-between mb-2">
                             <div class="flex items-center space-x-2">
                                 @php
@@ -132,25 +121,90 @@
     </div>
 </div>
 
-<script nonce="{{ $cspNonce }}">
-// Leaflet.js Map Initialization (when library is included)
-/*
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+    crossorigin=""/>
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+    crossorigin=""></script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Default to Dhaka, Bangladesh coordinates
     const map = L.map('map').setView([23.8103, 90.4125], 12);
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19,
     }).addTo(map);
     
     // Add device markers
-    const devices = @json($devices);
-    devices.forEach(device => {
-        if (device.latitude && device.longitude) {
-            const marker = L.marker([device.latitude, device.longitude]).addTo(map);
-            marker.bindPopup(`<b>${device.name}</b><br>${device.ip_address}<br>Status: ${device.status}`);
+    const devices = @json($devices ?? []);
+    
+    if (devices.length > 0) {
+        const bounds = [];
+        
+        devices.forEach(device => {
+            if (device.latitude && device.longitude) {
+                const lat = parseFloat(device.latitude);
+                const lng = parseFloat(device.longitude);
+                
+                // Determine marker color based on status
+                let markerColor = 'gray';
+                if (device.status === 'online') markerColor = 'green';
+                else if (device.status === 'warning') markerColor = 'orange';
+                else if (device.status === 'critical') markerColor = 'red';
+                
+                // Create custom icon
+                const icon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background-color: ${markerColor}; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+                
+                const marker = L.marker([lat, lng], { icon }).addTo(map);
+                
+                // Create popup content
+                const popupContent = `
+                    <div style="min-width: 200px;">
+                        <h4 style="font-weight: bold; margin-bottom: 8px;">${device.name}</h4>
+                        <p style="margin: 4px 0;"><strong>Type:</strong> ${device.type?.toUpperCase() || 'N/A'}</p>
+                        <p style="margin: 4px 0;"><strong>IP:</strong> ${device.ip_address}</p>
+                        <p style="margin: 4px 0;"><strong>Location:</strong> ${device.location || 'Not set'}</p>
+                        <p style="margin: 4px 0;"><strong>Status:</strong> <span style="color: ${markerColor};">${device.status?.toUpperCase() || 'UNKNOWN'}</span></p>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+                
+                bounds.push([lat, lng]);
+            }
+        });
+        
+        // Fit map to show all markers
+        if (bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [50, 50] });
         }
+    } else {
+        // Show message if no devices
+        const popup = L.popup()
+            .setLatLng([23.8103, 90.4125])
+            .setContent('<p>No devices with location data found.</p>')
+            .openOn(map);
+    }
+    
+    // Handle device card clicks to center map on device
+    document.querySelectorAll('[data-device-lat]').forEach(card => {
+        card.addEventListener('click', function() {
+            const lat = parseFloat(this.dataset.deviceLat);
+            const lng = parseFloat(this.dataset.deviceLng);
+            map.setView([lat, lng], 15);
+        });
     });
 });
-*/
 </script>
+@endpush
 @endsection
