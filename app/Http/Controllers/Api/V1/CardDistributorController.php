@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\NetworkUser;
 use App\Models\Card;
 use App\Models\CardSale;
 use App\Services\DistributorService;
@@ -341,13 +342,23 @@ class CardDistributorController extends Controller
         
         // Activate customer account if exists
         $customer = User::where('mobile', $normalizedMobile)->first();
+        $expiresAt = now()->addDays($card->validity_days);
+        
         if ($customer) {
-            $expiresAt = now()->addDays($card->validity_days);
+            // Update user's package
             $customer->update([
-                'package_id' => $card->package_id,
-                'expiry_date' => $expiresAt,
-                'status' => 'active',
+                'service_package_id' => $card->package_id,
             ]);
+            
+            // Update network user's expiry date if exists
+            $networkUser = NetworkUser::where('user_id', $customer->id)->first();
+            if ($networkUser) {
+                $networkUser->update([
+                    'package_id' => $card->package_id,
+                    'expiry_date' => $expiresAt,
+                    'status' => 'active',
+                ]);
+            }
         }
         
         // Clear cache
@@ -365,7 +376,7 @@ class CardDistributorController extends Controller
                 'package_name' => $card->package->name,
                 'price' => $card->price,
                 'validity_days' => $card->validity_days,
-                'expires_at' => $customer ? $customer->expiry_date->format('Y-m-d') : null,
+                'expires_at' => $expiresAt->format('Y-m-d'),
             ],
         ], 201);
     }
