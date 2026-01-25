@@ -185,11 +185,6 @@
         addOutput(`Executing: ${command}`, 'info');
         
         try {
-            // Split command and args
-            const parts = command.split(' ');
-            const baseCommand = parts[0];
-            const args = parts.slice(1).join(' ');
-
             const response = await fetch('{{ route('panel.developer.commands.execute-system') }}', {
                 method: 'POST',
                 headers: {
@@ -197,7 +192,7 @@
                     'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ command, args: '' })
+                body: JSON.stringify({ command })
             });
 
             const data = await response.json();

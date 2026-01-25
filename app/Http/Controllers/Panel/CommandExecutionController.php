@@ -191,23 +191,32 @@ class CommandExecutionController extends Controller
     {
         $request->validate([
             'command' => 'required|string',
-            'args' => 'nullable|string',
         ]);
 
-        $command = $request->input('command');
-        $args = $request->input('args', '');
+        $fullCommand = $request->input('command');
+
+        // Extract base command (first word)
+        $parts = explode(' ', trim($fullCommand));
+        $baseCommand = $parts[0];
 
         // Check if base command is in whitelist
-        if (! array_key_exists($command, self::ALLOWED_SYSTEM_COMMANDS)) {
+        $isWhitelisted = false;
+        foreach (self::ALLOWED_SYSTEM_COMMANDS as $allowed => $desc) {
+            $allowedBase = explode(' ', $allowed)[0];
+            if ($baseCommand === $allowedBase || $allowed === $fullCommand) {
+                $isWhitelisted = true;
+                break;
+            }
+        }
+
+        if (! $isWhitelisted) {
             return response()->json([
                 'success' => false,
                 'error' => 'Command not allowed. Only whitelisted commands can be executed.',
             ], 403);
         }
 
-        $fullCommand = trim($command.' '.$args);
-
-        // Check for blacklisted patterns
+        // Check full command for blacklisted patterns
         if ($this->isBlacklisted($fullCommand)) {
             return response()->json([
                 'success' => false,
@@ -215,8 +224,16 @@ class CommandExecutionController extends Controller
             ], 403);
         }
 
+        // Additional security: check for shell injection characters
+        if ($this->containsShellInjection($fullCommand)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Command contains potentially dangerous characters.',
+            ], 403);
+        }
+
         try {
-            // Execute command with timeout
+            // Execute command with timeout - use array format to prevent shell injection
             $process = SymfonyProcess::fromShellCommandline($fullCommand);
             $process->setTimeout(30); // 30 seconds timeout
             $process->run();
@@ -252,19 +269,36 @@ class CommandExecutionController extends Controller
     }
 
     /**
+     * Check for shell injection characters.
+     */
+    private function containsShellInjection(string $command): bool
+    {
+        // Check for common shell injection characters
+        $dangerousChars = [';', '&&', '||', '|', '`', '$', '(', ')', '<', '>', '&', "\n", "\r"];
+
+        foreach ($dangerousChars as $char) {
+            if (str_contains($command, $char)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Get available commands list.
      */
     public function getCommands(): JsonResponse
     {
         return response()->json([
-            'artisan' => array_map(fn ($desc, $cmd) => [
+            'artisan' => array_map(fn ($cmd, $desc) => [
                 'command' => $cmd,
                 'description' => $desc,
-            ], self::ALLOWED_ARTISAN_COMMANDS, array_keys(self::ALLOWED_ARTISAN_COMMANDS)),
-            'system' => array_map(fn ($desc, $cmd) => [
+            ], array_keys(self::ALLOWED_ARTISAN_COMMANDS), self::ALLOWED_ARTISAN_COMMANDS),
+            'system' => array_map(fn ($cmd, $desc) => [
                 'command' => $cmd,
                 'description' => $desc,
-            ], self::ALLOWED_SYSTEM_COMMANDS, array_keys(self::ALLOWED_SYSTEM_COMMANDS)),
+            ], array_keys(self::ALLOWED_SYSTEM_COMMANDS), self::ALLOWED_SYSTEM_COMMANDS),
         ]);
     }
 }
