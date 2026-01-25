@@ -207,7 +207,9 @@
                                         </div>
                                         <div class="ml-4">
                                             <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                {{ $customer->username }}
+                                                <a href="{{ route('panel.admin.customers.show', $customer->id) }}" class="hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline">
+                                                    {{ $customer->username }}
+                                                </a>
                                             </div>
                                         </div>
                                     </div>

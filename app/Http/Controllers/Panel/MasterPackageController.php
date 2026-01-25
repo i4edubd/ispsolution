@@ -18,10 +18,39 @@ use Illuminate\View\View;
  * Master Package Controller
  * 
  * Handles CRUD operations for master packages
- * Only accessible by developer and super-admin roles
+ * Accessible by developer, super-admin, and admin roles
  */
 class MasterPackageController extends Controller
 {
+    /**
+     * Determine the route prefix based on current route
+     */
+    protected function getRoutePrefix(): string
+    {
+        return $this->isAdminContext() 
+            ? 'panel.admin.master-packages' 
+            : 'panel.developer.master-packages';
+    }
+
+    /**
+     * Determine the view prefix based on current route
+     */
+    protected function getViewPrefix(): string
+    {
+        return $this->isAdminContext()
+            ? 'panels.admin.master-packages'
+            : 'panels.developer.master-packages';
+    }
+
+    /**
+     * Check if current request is in admin context
+     */
+    protected function isAdminContext(): bool
+    {
+        $currentRouteName = request()->route()->getName();
+        return str_starts_with($currentRouteName, 'panel.admin.');
+    }
+
     /**
      * Display a listing of master packages
      */
@@ -60,7 +89,7 @@ class MasterPackageController extends Controller
 
         $masterPackages = $query->orderBy('created_at', 'desc')->paginate(15);
 
-        return view('panels.developer.master-packages.index', compact('masterPackages'));
+        return view($this->getViewPrefix() . '.index', compact('masterPackages'));
     }
 
     /**
@@ -68,7 +97,7 @@ class MasterPackageController extends Controller
      */
     public function create(): View
     {
-        return view('panels.developer.master-packages.create');
+        return view($this->getViewPrefix() . '.create');
     }
 
     /**
@@ -102,7 +131,7 @@ class MasterPackageController extends Controller
         MasterPackage::create($validated);
 
         return redirect()
-            ->route('panel.developer.master-packages.index')
+            ->route($this->getRoutePrefix() . '.index')
             ->with('success', 'Master package created successfully.');
     }
 
@@ -120,7 +149,7 @@ class MasterPackageController extends Controller
             'total_revenue' => $masterPackage->packages()->sum('price'),
         ];
 
-        return view('panels.developer.master-packages.show', compact('masterPackage', 'stats'));
+        return view($this->getViewPrefix() . '.show', compact('masterPackage', 'stats'));
     }
 
     /**
@@ -128,7 +157,7 @@ class MasterPackageController extends Controller
      */
     public function edit(MasterPackage $masterPackage): View
     {
-        return view('panels.developer.master-packages.edit', compact('masterPackage'));
+        return view($this->getViewPrefix() . '.edit', compact('masterPackage'));
     }
 
     /**
@@ -158,7 +187,7 @@ class MasterPackageController extends Controller
         $masterPackage->update($validated);
 
         return redirect()
-            ->route('panel.developer.master-packages.index')
+            ->route($this->getRoutePrefix() . '.index')
             ->with('success', 'Master package updated successfully.');
     }
 
@@ -177,7 +206,7 @@ class MasterPackageController extends Controller
         $masterPackage->delete();
 
         return redirect()
-            ->route('panel.developer.master-packages.index')
+            ->route($this->getRoutePrefix() . '.index')
             ->with('success', 'Master package deleted successfully.');
     }
 
@@ -196,7 +225,7 @@ class MasterPackageController extends Controller
         // Get already assigned operators
         $assignedOperatorIds = $masterPackage->operatorRates()->pluck('operator_id')->toArray();
 
-        return view('panels.developer.master-packages.assign', compact('masterPackage', 'operators', 'assignedOperatorIds'));
+        return view($this->getViewPrefix() . '.assign', compact('masterPackage', 'operators', 'assignedOperatorIds'));
     }
 
     /**
@@ -252,7 +281,7 @@ class MasterPackageController extends Controller
         }
 
         return redirect()
-            ->route('panel.developer.master-packages.show', $masterPackage)
+            ->route($this->getRoutePrefix() . '.show', $masterPackage)
             ->with('success', $message);
     }
 
