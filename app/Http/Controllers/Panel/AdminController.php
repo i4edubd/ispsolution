@@ -2058,17 +2058,31 @@ class AdminController extends Controller
      */
     public function radiusLogs(): View
     {
-        // Get RADIUS accounting logs
-        $logs = \App\Models\RadAcct::with('user')
-            ->latest('acctstarttime')
-            ->paginate(50);
+        try {
+            // Get RADIUS accounting logs
+            $logs = \App\Models\RadAcct::with('user')
+                ->latest('acctstarttime')
+                ->paginate(50);
 
-        $stats = [
-            'total' => \App\Models\RadAcct::count(),
-            'today' => \App\Models\RadAcct::whereDate('acctstarttime', today())->count(),
-            'active_sessions' => \App\Models\RadAcct::whereNull('acctstoptime')->count(),
-            'total_bandwidth' => \App\Models\RadAcct::sum('acctinputoctets') + \App\Models\RadAcct::sum('acctoutputoctets'),
-        ];
+            $stats = [
+                'total' => \App\Models\RadAcct::count(),
+                'today' => \App\Models\RadAcct::whereDate('acctstarttime', today())->count(),
+                'active_sessions' => \App\Models\RadAcct::whereNull('acctstoptime')->count(),
+                'total_bandwidth' => \App\Models\RadAcct::sum('acctinputoctets') + \App\Models\RadAcct::sum('acctoutputoctets'),
+            ];
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle missing RADIUS tables gracefully
+            session()->flash('error', 'RADIUS database table not found. Please ensure RADIUS is properly configured and migrations have been run. See RADIUS_SETUP_GUIDE.md for instructions.');
+
+            // Return empty data
+            $logs = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 50);
+            $stats = [
+                'total' => 0,
+                'today' => 0,
+                'active_sessions' => 0,
+                'total_bandwidth' => 0,
+            ];
+        }
 
         return view('panels.admin.logs.radius', compact('logs', 'stats'));
     }
