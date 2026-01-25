@@ -83,12 +83,21 @@ class CustomerFilterService
         // Filter by expiry date range
         if (!empty($filters['expiry_date_from']) || !empty($filters['expiry_date_to'])) {
             $filtered = $filtered->filter(function ($customer) use ($filters) {
-                $expiryDate = $customer->expiry_date ?? $customer->user?->expiry_date;
-                if (!$expiryDate) {
+                // Get expiry date from the latest invoice's due_date
+                if (!$customer->user_id) {
                     return false;
                 }
 
-                $expiry = \Carbon\Carbon::parse($expiryDate);
+                $latestInvoice = \App\Models\Invoice::where('user_id', $customer->user_id)
+                    ->whereNotNull('due_date')
+                    ->orderBy('due_date', 'desc')
+                    ->first();
+
+                if (!$latestInvoice || !$latestInvoice->due_date) {
+                    return false;
+                }
+
+                $expiry = \Carbon\Carbon::parse($latestInvoice->due_date);
 
                 if (!empty($filters['expiry_date_from'])) {
                     $from = \Carbon\Carbon::parse($filters['expiry_date_from']);
