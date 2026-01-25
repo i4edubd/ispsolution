@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Contracts\RadiusServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Models\NetworkUser;
+use App\Models\RadAcct;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -322,7 +323,7 @@ class RadiusController extends Controller
             }
 
             // Get active session data from radacct
-            $activeSession = \App\Models\RadAcct::where('username', $user->username)
+            $activeSession = RadAcct::where('username', $user->username)
                 ->whereNull('acctstoptime')
                 ->orderByDesc('acctstarttime')
                 ->first();

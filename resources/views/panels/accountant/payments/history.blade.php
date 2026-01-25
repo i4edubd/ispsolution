@@ -273,10 +273,23 @@ function setDateFilter(period) {
     }
 }
 
-// Export to Excel function (placeholder)
+// Export to Excel function
 function exportToExcel() {
     const params = new URLSearchParams(window.location.search);
-    window.location.href = '{{ route("accountant.payments.export") }}?' + params.toString();
+    const exportUrl = '{{ route("accountant.payments.history") }}/export';
+    
+    // Check if export functionality is available
+    fetch(exportUrl + '?' + params.toString(), {
+        method: 'HEAD'
+    }).then(response => {
+        if (response.ok) {
+            window.location.href = exportUrl + '?' + params.toString();
+        } else {
+            alert('Export functionality is not yet available');
+        }
+    }).catch(() => {
+        alert('Export functionality is not yet available');
+    });
 }
 
 // View payment details (placeholder)

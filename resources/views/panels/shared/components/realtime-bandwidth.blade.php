@@ -161,7 +161,7 @@
 
     // Fetch bandwidth data
     function fetchBandwidthData() {
-        fetch(`/api/v1/radius/users/${customerId}/stats`, {
+        fetch(`/api/v1/radius/users/${customerId}/realtime-stats`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
