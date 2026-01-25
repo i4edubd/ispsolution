@@ -15,78 +15,120 @@
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Total Users -->
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Users</dt>
-                            <dd class="text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['total_users'] }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-info-box 
+            title="Total Users" 
+            :value="$stats['total_users']" 
+            icon="users" 
+            color="indigo"
+            link="{{ route('panel.admin.users.index') }}"
+        />
 
         <!-- Total Network Users -->
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Network Users</dt>
-                            <dd class="text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['total_network_users'] }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-info-box 
+            title="Network Users" 
+            :value="$stats['total_network_users']" 
+            icon="network" 
+            color="green"
+            link="{{ route('panel.admin.customers') }}"
+        />
 
         <!-- Active Users -->
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Active Users</dt>
-                            <dd class="text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['active_users'] }}</dd>
-                        </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-info-box 
+            title="Active Users" 
+            :value="$stats['active_users']" 
+            icon="check" 
+            color="yellow"
+            link="{{ route('panel.admin.customers', ['status' => 'active']) }}"
+        />
 
         <!-- Total Packages -->
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
-                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dl>
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Packages</dt>
-                            <dd class="text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $stats['total_packages'] }}</dd>
-                        </dl>
-                    </div>
-                </div>
+        <x-info-box 
+            title="Total Packages" 
+            :value="$stats['total_packages']" 
+            icon="package" 
+            color="red"
+            link="{{ route('panel.admin.packages') }}"
+        />
+    </div>
+
+    <!-- Customer Statistics Detail -->
+    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Customer Statistics</h2>
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                <!-- Online Customers -->
+                <x-info-box 
+                    title="Online Now" 
+                    :value="$stats['online_customers']" 
+                    icon="wifi" 
+                    color="green"
+                    link="{{ route('panel.admin.customers-online') }}"
+                    subtitle="Active sessions"
+                />
+
+                <!-- Offline Customers -->
+                <x-info-box 
+                    title="Offline" 
+                    :value="$stats['offline_customers']" 
+                    icon="alert" 
+                    color="gray"
+                    subtitle="No active session"
+                />
+
+                <!-- Suspended Customers -->
+                <x-info-box 
+                    title="Suspended" 
+                    :value="$stats['suspended_customers']" 
+                    icon="alert" 
+                    color="yellow"
+                    subtitle="Account suspended"
+                />
+
+                <!-- PPPoE Customers -->
+                <x-info-box 
+                    title="PPPoE Users" 
+                    :value="$stats['pppoe_customers']" 
+                    icon="network" 
+                    color="purple"
+                    subtitle="PPPoE connection type"
+                />
+
+                <!-- Hotspot Customers -->
+                <x-info-box 
+                    title="Hotspot Users" 
+                    :value="$stats['hotspot_customers']" 
+                    icon="wifi" 
+                    color="orange"
+                    subtitle="Hotspot connection type"
+                />
+
+                <!-- Expiring Today -->
+                <x-info-box 
+                    title="Expiring Today" 
+                    :value="$stats['expiring_today'] ?? 0" 
+                    icon="clock" 
+                    color="red"
+                    subtitle="Needs renewal"
+                />
+
+                <!-- New Customers Today -->
+                <x-info-box 
+                    title="New Today" 
+                    :value="$stats['new_customers_today'] ?? 0" 
+                    icon="users" 
+                    color="teal"
+                    subtitle="Registered today"
+                />
+
+                <!-- Tickets Today -->
+                <x-info-box 
+                    title="Tickets Today" 
+                    :value="$stats['tickets_today'] ?? 0" 
+                    icon="alert" 
+                    color="blue"
+                    link="{{ route('panel.tickets.index', ['date' => today()->format('Y-m-d')]) }}"
+                    subtitle="Support requests"
+                />
             </div>
         </div>
     </div>

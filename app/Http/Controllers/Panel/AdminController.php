@@ -84,6 +84,12 @@ class AdminController extends Controller
                     $query->where('slug', 'customer');
                 })
                 ->count(),
+            // Additional customer statistics
+            'online_customers' => NetworkUser::has('sessions')->count(),
+            'offline_customers' => NetworkUser::doesntHave('sessions')->count(),
+            'suspended_customers' => NetworkUser::where('status', 'suspended')->count(),
+            'pppoe_customers' => NetworkUser::where('service_type', 'pppoe')->count(),
+            'hotspot_customers' => NetworkUser::where('service_type', 'hotspot')->count(),
         ];
 
         return view('panels.admin.dashboard', compact('stats'));
