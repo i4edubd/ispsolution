@@ -1,6 +1,7 @@
 /**
  * Form Validation Utility
  * Provides client-side validation for ISP Solution forms
+ * Feature 2.1: Added real-time duplicate validation
  */
 
 class FormValidator {
@@ -8,10 +9,22 @@ class FormValidator {
         this.form = document.querySelector(formSelector);
         if (!this.form) return;
 
+        this.debounceTimers = {};
+        this.validationEndpoints = {
+            mobile: '/api/validate/mobile',
+            username: '/api/validate/username',
+            email: '/api/validate/email',
+            national_id: '/api/validate/national-id',
+            ip_address: '/api/validate/static-ip'
+        };
+
         this.init();
     }
 
     init() {
+        // Get exclude ID for edit forms
+        this.excludeId = this.form.dataset.excludeId || null;
+
         this.form.addEventListener('submit', (e) => {
             if (!this.validateForm()) {
                 e.preventDefault();
@@ -28,7 +41,111 @@ class FormValidator {
                     this.validateField(field);
                 }
             });
+
+            // Real-time duplicate validation for specific fields
+            if (this.validationEndpoints[field.name]) {
+                this.attachDuplicateValidation(field);
+            }
         });
+    }
+
+    /**
+     * Attach duplicate validation to a field (Feature 2.1)
+     */
+    attachDuplicateValidation(field) {
+        const fieldName = field.name;
+        
+        // Validation on blur
+        field.addEventListener('blur', () => {
+            const value = field.value.trim();
+            if (value) {
+                this.checkDuplicate(field, fieldName, value);
+            }
+        });
+
+        // Validation on input with debounce
+        field.addEventListener('input', () => {
+            this.debounce(() => {
+                const value = field.value.trim();
+                if (value) {
+                    this.checkDuplicate(field, fieldName, value);
+                }
+            }, fieldName, 800);
+        });
+    }
+
+    /**
+     * Check for duplicates via API (Feature 2.1)
+     */
+    async checkDuplicate(field, fieldName, value) {
+        const feedbackEl = this.getOrCreateFeedback(field);
+        
+        // Show loading state
+        this.setLoadingState(field, feedbackEl);
+
+        try {
+            const endpoint = this.validationEndpoints[fieldName];
+            const params = new URLSearchParams({
+                [fieldName]: value
+            });
+            
+            if (this.excludeId) {
+                params.append('exclude_id', this.excludeId);
+            }
+
+            const response = await fetch(`${endpoint}?${params.toString()}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.exists) {
+                this.updateFieldState(field, false, data.message);
+            } else {
+                // Only show success indicator for duplicate check
+                field.classList.remove('is-invalid', 'border-red-500');
+                field.classList.add('border-green-500');
+                feedbackEl.className = 'validation-feedback text-sm mt-1 text-green-600';
+                feedbackEl.innerHTML = `<i class="fas fa-check-circle me-1"></i>${data.message}`;
+            }
+        } catch (error) {
+            console.error('Duplicate validation error:', error);
+            // Clear validation state on error
+            field.classList.remove('is-invalid', 'is-valid', 'border-green-500', 'border-red-500');
+        }
+    }
+
+    /**
+     * Set loading state (Feature 2.1)
+     */
+    setLoadingState(field, feedbackEl) {
+        field.classList.remove('is-valid', 'is-invalid', 'border-green-500', 'border-red-500');
+        feedbackEl.className = 'validation-feedback text-sm mt-1 text-gray-500';
+        feedbackEl.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Checking...';
+    }
+
+    /**
+     * Get or create feedback element (Feature 2.1)
+     */
+    getOrCreateFeedback(field) {
+        let feedback = field.parentElement.querySelector('.validation-feedback');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.className = 'validation-feedback text-sm mt-1';
+            field.parentNode.insertBefore(feedback, field.nextSibling);
+        }
+        return feedback;
+    }
+
+    /**
+     * Debounce function (Feature 2.1)
+     */
+    debounce(func, key, delay = 500) {
+        clearTimeout(this.debounceTimers[key]);
+        this.debounceTimers[key] = setTimeout(func, delay);
     }
 
     validateForm() {
