@@ -34,4 +34,52 @@ class IpPool extends Model
     {
         return $this->hasMany(IpSubnet::class, 'pool_id');
     }
+
+    /**
+     * Calculate the total number of IPs in this pool
+     */
+    public function getTotalIpsAttribute(): int
+    {
+        if (empty($this->start_ip) || empty($this->end_ip)) {
+            return 0;
+        }
+
+        return (int) abs(ip2long($this->end_ip) - ip2long($this->start_ip)) + 1;
+    }
+
+    /**
+     * Calculate the number of used IPs
+     */
+    public function getUsedIpsAttribute(): int
+    {
+        // Count allocated IPs from subnets or allocations
+        return $this->subnets()->count();
+    }
+
+    /**
+     * Get utilization percentage
+     */
+    public function utilizationPercent(): float
+    {
+        $total = $this->total_ips;
+        if ($total === 0) {
+            return 0;
+        }
+
+        return round(($this->used_ips / $total) * 100, 1);
+    }
+
+    /**
+     * Get CSS class for utilization display
+     */
+    public function utilizationClass(): string
+    {
+        $percent = $this->utilizationPercent();
+
+        return match (true) {
+            $percent >= 90 => 'bg-danger',
+            $percent >= 70 => 'bg-warning',
+            default => 'bg-success',
+        };
+    }
 }
