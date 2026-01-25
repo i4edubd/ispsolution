@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Contracts\RadiusServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Models\NetworkUser;
+use App\Models\RadAcct;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -302,5 +303,81 @@ class RadiusController extends Controller
             'username' => $username,
             'stats' => $stats,
         ]);
+    }
+
+    /**
+     * Get real-time bandwidth stats for a user (by customer ID)
+     */
+    public function getRealTimeStats(int $customerId): JsonResponse
+    {
+        try {
+            // Ensure user is authenticated
+            if (!auth()->check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated',
+                ], 401);
+            }
+
+            // Get the network user by ID
+            $user = NetworkUser::findOrFail($customerId);
+            
+            // Check tenant isolation
+            if ($user->tenant_id !== auth()->user()->tenant_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access to customer data',
+                ], 403);
+            }
+
+            // Get active session data from radacct
+            $activeSession = RadAcct::where('username', $user->username)
+                ->whereNull('acctstoptime')
+                ->orderByDesc('acctstarttime')
+                ->first();
+
+            if (!$activeSession) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'status' => 'offline',
+                        'upload' => 0,
+                        'download' => 0,
+                        'session_time' => 0,
+                        'ip_address' => null,
+                        'nas_identifier' => null,
+                    ],
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'status' => 'online',
+                    'upload' => (int) $activeSession->acctinputoctets,
+                    'download' => (int) $activeSession->acctoutputoctets,
+                    'session_time' => (int) $activeSession->acctsessiontime,
+                    'ip_address' => $activeSession->framedipaddress,
+                    'nas_identifier' => $activeSession->nasipaddress,
+                    'session_id' => $activeSession->acctsessionid,
+                    'started_at' => $activeSession->acctstarttime,
+                ],
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found',
+            ], 404);
+        } catch (\Exception $e) {
+            \Log::error('Failed to get real-time bandwidth stats', [
+                'customer_id' => $customerId,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching bandwidth data',
+            ], 500);
+        }
     }
 }
