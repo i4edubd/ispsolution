@@ -12,7 +12,7 @@
                         <i class="fas fa-cogs me-2"></i>Zero-Touch Router Provisioning
                     </h5>
                     <div>
-                        <a href="{{ route('admin.routers.provision.templates') }}" class="btn btn-sm btn-outline-primary">
+                        <a href="{{ route('panel.admin.routers.provision.templates') }}" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-file-code me-1"></i>Manage Templates
                         </a>
                     </div>
@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Testing...';
 
         try {
-            const response = await fetch('{{ route("admin.routers.provision.test-connection") }}', {
+            const response = await fetch('{{ route("panel.admin.routers.provision.test-connection") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const variables = getVariables();
         
         try {
-            const response = await fetch('{{ route("admin.routers.provision.preview") }}', {
+            const response = await fetch('{{ route("panel.admin.routers.provision.preview") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
         executeBtn.disabled = true;
 
         try {
-            const response = await fetch('{{ route("admin.routers.provision.execute") }}', {
+            const response = await fetch('{{ route("panel.admin.routers.provision.execute") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -461,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.disabled = true;
 
         try {
-            const response = await fetch('{{ route("admin.routers.provision.backup") }}', {
+            const response = await fetch('{{ route("panel.admin.routers.provision.backup") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                const response = await fetch('{{ route("admin.routers.provision.rollback") }}', {
+                const response = await fetch('{{ route("panel.admin.routers.provision.rollback") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
