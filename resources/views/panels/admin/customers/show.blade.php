@@ -25,6 +25,12 @@
                         </svg>
                         Edit
                     </a>
+                    <button id="checkUsageBtn" class="inline-flex items-center px-3 py-2 bg-teal-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-teal-700 focus:bg-teal-700 active:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Check Usage
+                    </button>
                     <a href="{{ route('panel.tickets.create', ['customer_id' => $customer->id]) }}" class="inline-flex items-center px-3 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
@@ -341,6 +347,20 @@
 @push('scripts')
 <script nonce="{{ $cspNonce }}">
     document.addEventListener('DOMContentLoaded', function() {
+        // Handle real-time usage checking
+        document.getElementById('checkUsageBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            this.disabled = true;
+            this.innerHTML = '<svg class="w-4 h-4 mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Checking...';
+            
+            // Simulate API call to check real-time usage
+            setTimeout(() => {
+                this.disabled = false;
+                this.innerHTML = '<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Check Usage';
+                alert('Real-time usage check functionality - Integration pending with RADIUS server');
+            }, 2000);
+        });
+
         // Handle action buttons for features not yet implemented
         document.querySelectorAll('.action-button').forEach(button => {
             button.addEventListener('click', function(e) {
