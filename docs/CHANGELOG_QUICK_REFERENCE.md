@@ -34,9 +34,24 @@ BREAKING CHANGE: API responses now use metadata wrapper"
 
 ## Generate Changelog
 
-### Using npm scripts (recommended)
+### Automatic (on every commit)
+
+The changelog is automatically updated when you push to main:
 
 ```bash
+# Just commit using conventional format and push
+git commit -m "feat(auth): add two-factor authentication"
+git push origin main
+
+# Changelog updates automatically via GitHub Actions
+```
+
+### Using npm scripts (manual)
+
+```bash
+# Auto-update [Unreleased] section (recommended)
+npm run changelog:auto
+
 # Generate changelog for recent changes
 npm run changelog
 

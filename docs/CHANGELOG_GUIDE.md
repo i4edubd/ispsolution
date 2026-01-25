@@ -81,32 +81,57 @@ Update your API clients from `/auth/login` to `/v1/auth/login`.
 
 ## Automatic Changelog Generation
 
+### On Every Commit (Automatic)
+
+The changelog is automatically updated on every push to the main/master branch:
+
+```bash
+# Simply commit and push your changes using conventional commits
+git commit -m "feat(billing): add PayPal integration"
+git push origin main
+```
+
+The GitHub Actions workflow will:
+1. Detect the new commit
+2. Parse conventional commit messages
+3. Add entries to the [Unreleased] section
+4. Commit and push the updated CHANGELOG.md back to the repository
+
+**Note:** The auto-update skips documentation-only commits and commits with `[skip ci]` to avoid noise.
+
 ### GitHub Actions Workflow
 
 A GitHub Actions workflow automatically generates changelog entries when:
-- A new release is created or published
+- New commits are pushed to main/master branch
 - Manually triggered via workflow dispatch
 
 The workflow:
 1. Fetches all git history
-2. Generates changelog from commits
-3. Fetches pull request information from GitHub API
-4. Updates CHANGELOG.md
-5. Commits and pushes changes back to the repository
+2. Identifies new commits since last tag (or all commits if no tags)
+3. Parses conventional commit messages
+4. Updates the [Unreleased] section in CHANGELOG.md
+5. Commits and pushes changes back (with [skip ci] to avoid loops)
 
 ### Manual Trigger
 
 You can manually trigger the changelog generation workflow from GitHub:
 
 1. Go to the "Actions" tab in the repository
-2. Select "Generate Changelog" workflow
+2. Select "Auto-Update Changelog" workflow
 3. Click "Run workflow"
-4. Optionally specify a tag name
-5. Click "Run workflow" button
+4. Click "Run workflow" button
 
 ## Manual Changelog Generation
 
 You can also generate changelogs manually using npm scripts:
+
+### Auto-Update Unreleased Section
+
+```bash
+npm run changelog:auto
+```
+
+This updates the [Unreleased] section with new commits since the last tag, preserving all existing changelog content.
 
 ### Generate Changelog for Recent Changes
 
@@ -123,6 +148,8 @@ npm run changelog:all
 ```
 
 This regenerates the entire changelog from all commits in the repository history.
+
+**⚠️ Warning:** This will overwrite the entire changelog. Use with caution!
 
 ### Using the Custom Script
 
