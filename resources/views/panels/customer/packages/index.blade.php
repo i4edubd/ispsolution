@@ -21,7 +21,7 @@
                 <h3 class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ $currentPackage->name }}</h3>
                 <p class="text-blue-700 dark:text-blue-300 mt-2">{{ $currentPackage->price }} BDT/month</p>
                 <p class="text-sm text-blue-600 dark:text-blue-400 mt-1">
-                    Speed: {{ $currentPackage->bandwidth_download ?? 'N/A' }} Mbps Download / {{ $currentPackage->bandwidth_upload ?? 'N/A' }} Mbps Upload
+                    Speed: {{ number_format($currentPackage->bandwidth_download / 1024, 0) }} Mbps Download / {{ number_format($currentPackage->bandwidth_upload / 1024, 0) }} Mbps Upload
                 </p>
             </div>
         </div>
@@ -53,10 +53,10 @@
                     
                     <div class="mt-4 space-y-2">
                         <p class="text-sm text-gray-700 dark:text-gray-300">
-                            <span class="font-semibold">Download:</span> {{ $package->bandwidth_download ?? 'N/A' }} Mbps
+                            <span class="font-semibold">Download:</span> {{ number_format($package->bandwidth_download / 1024, 0) }} Mbps
                         </p>
                         <p class="text-sm text-gray-700 dark:text-gray-300">
-                            <span class="font-semibold">Upload:</span> {{ $package->bandwidth_upload ?? 'N/A' }} Mbps
+                            <span class="font-semibold">Upload:</span> {{ number_format($package->bandwidth_upload / 1024, 0) }} Mbps
                         </p>
                     </div>
                     

@@ -50,8 +50,11 @@ class HistoryController extends Controller
     {
         $user = auth()->user();
 
-        $query = SmsLog::where('recipient', $user->company_phone)
-            ->orWhere('user_id', $user->id);
+        $query = SmsLog::where('tenant_id', $user->tenant_id)
+            ->where(function ($q) use ($user) {
+                $q->where('phone_number', $user->company_phone)
+                  ->orWhere('user_id', $user->id);
+            });
 
         if ($request->filled('start_date')) {
             $query->whereDate('created_at', '>=', $request->start_date);

@@ -17,7 +17,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\Support\Facades\Storage;
 
 class CustomerController extends Controller
 {
@@ -93,7 +92,7 @@ class CustomerController extends Controller
         $user = auth()->user();
         $networkUser = NetworkUser::where('user_id', $user->id)->first();
 
-        $sessions = [];
+        $sessions = collect();
         $bandwidthData = [
             'daily' => [],
             'weekly' => [],
@@ -107,6 +106,15 @@ class CustomerController extends Controller
 
             // Get bandwidth data from RadAcct for graphs
             $bandwidthData = $this->getBandwidthData($networkUser->username);
+        } else {
+            // Return empty paginator when no network user
+            $sessions = new \Illuminate\Pagination\LengthAwarePaginator(
+                [],
+                0,
+                20,
+                1,
+                ['path' => request()->url()]
+            );
         }
 
         return view('panels.customer.usage', compact('sessions', 'networkUser', 'bandwidthData'));
@@ -285,14 +293,20 @@ class CustomerController extends Controller
      */
     public function requestUpgrade(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        
         $request->validate([
-            'package_id' => 'required|exists:packages,id',
+            'package_id' => [
+                'required',
+                'exists:packages,id,tenant_id,' . $user->tenant_id . ',is_active,1'
+            ],
             'reason' => 'nullable|string|max:500',
         ]);
 
-        $user = auth()->user();
         $currentPackage = $user->currentPackage();
-        $requestedPackage = Package::findOrFail($request->package_id);
+        $requestedPackage = Package::where('tenant_id', $user->tenant_id)
+            ->where('is_active', true)
+            ->findOrFail($request->package_id);
 
         if (!$currentPackage) {
             return back()->with('error', 'You do not have a current package.');
@@ -300,6 +314,16 @@ class CustomerController extends Controller
 
         if ($requestedPackage->price <= $currentPackage->price) {
             return back()->with('error', 'Selected package is not an upgrade.');
+        }
+
+        // Check for existing pending request
+        $existingRequest = PackageChangeRequest::where('user_id', $user->id)
+            ->where('tenant_id', $user->tenant_id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingRequest) {
+            return back()->with('error', 'You already have a pending package change request.');
         }
 
         PackageChangeRequest::create([
@@ -319,14 +343,20 @@ class CustomerController extends Controller
      */
     public function requestDowngrade(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        
         $request->validate([
-            'package_id' => 'required|exists:packages,id',
+            'package_id' => [
+                'required',
+                'exists:packages,id,tenant_id,' . $user->tenant_id . ',is_active,1'
+            ],
             'reason' => 'nullable|string|max:500',
         ]);
 
-        $user = auth()->user();
         $currentPackage = $user->currentPackage();
-        $requestedPackage = Package::findOrFail($request->package_id);
+        $requestedPackage = Package::where('tenant_id', $user->tenant_id)
+            ->where('is_active', true)
+            ->findOrFail($request->package_id);
 
         if (!$currentPackage) {
             return back()->with('error', 'You do not have a current package.');
@@ -334,6 +364,16 @@ class CustomerController extends Controller
 
         if ($requestedPackage->price >= $currentPackage->price) {
             return back()->with('error', 'Selected package is not a downgrade.');
+        }
+
+        // Check for existing pending request
+        $existingRequest = PackageChangeRequest::where('user_id', $user->id)
+            ->where('tenant_id', $user->tenant_id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingRequest) {
+            return back()->with('error', 'You already have a pending package change request.');
         }
 
         PackageChangeRequest::create([

@@ -129,7 +129,10 @@ class TicketController extends Controller
 
         // Customer ID is required for non-customers creating tickets
         if ($user->operator_level < User::OPERATOR_LEVEL_CUSTOMER) {
-            $rules['customer_id'] = 'required|exists:users,id';
+            $rules['customer_id'] = [
+                'required',
+                'exists:users,id,tenant_id,' . $user->tenant_id
+            ];
         } else {
             $rules['customer_id'] = 'nullable|exists:users,id';
         }
@@ -144,8 +147,8 @@ class TicketController extends Controller
             $customerId = $validated['customer_id'];
         }
 
-        // Auto-populate customer data
-        $customer = User::with(['currentPackage', 'payments'])->find($customerId);
+        // Auto-populate customer data - use find instead of eager loading with non-relationship
+        $customer = User::where('tenant_id', $user->tenant_id)->find($customerId);
         
         // Handle case where customer is not found
         if (!$customer) {

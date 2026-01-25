@@ -7,7 +7,6 @@ use App\Models\CableTvSubscription;
 use App\Models\CableTvPackage;
 use App\Models\IpAllocation;
 use App\Models\MikrotikPppoeUser;
-use App\Models\NetworkUser;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -78,20 +77,37 @@ class ServiceController extends Controller
      */
     public function submitOrder(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        
         $request->validate([
             'service_type' => 'required|in:cable-tv,static-ip,pppoe',
-            'package_id' => 'required_if:service_type,cable-tv',
+            'package_id' => 'required_if:service_type,cable-tv|exists:cable_tv_packages,id,tenant_id,' . $user->tenant_id . ',is_active,1',
             'notes' => 'nullable|string|max:500',
         ]);
 
-        $user = auth()->user();
+        // Build ticket message with service details
+        $message = $request->notes ?? 'Customer requested ' . $request->service_type . ' service.';
+        
+        // Add package details for Cable TV orders
+        if ($request->service_type === 'cable-tv' && $request->filled('package_id')) {
+            $package = CableTvPackage::where('tenant_id', $user->tenant_id)
+                ->where('id', $request->package_id)
+                ->where('is_active', true)
+                ->first();
+            
+            if ($package) {
+                $message .= "\n\n--- Service Details ---\n";
+                $message .= "Package: " . $package->name . "\n";
+                $message .= "Price: " . $package->price . " BDT/month\n";
+            }
+        }
 
         // Create ticket for service request
         \App\Models\Ticket::create([
             'tenant_id' => $user->tenant_id,
             'customer_id' => $user->id,
             'subject' => 'Service Order: ' . strtoupper(str_replace('-', ' ', $request->service_type)),
-            'message' => $request->notes ?? 'Customer requested ' . $request->service_type . ' service.',
+            'message' => $message,
             'priority' => 'medium',
             'status' => 'open',
             'category' => 'general',
