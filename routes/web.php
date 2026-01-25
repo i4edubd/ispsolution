@@ -266,7 +266,7 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
 
     // IP Pool Migration
     Route::get('/ip-pools/migrate', [\App\Http\Controllers\Panel\IpPoolMigrationController::class, 'index'])->name('ip-pools.migrate');
-    Route::post('/ip-pools/migrate/validate', [\App\Http\Controllers\Panel\IpPoolMigrationController::class, 'validate'])->name('ip-pools.migrate.validate');
+    Route::post('/ip-pools/migrate/validate', [\App\Http\Controllers\Panel\IpPoolMigrationController::class, 'validateMigration'])->name('ip-pools.migrate.validate');
     Route::get('/ip-pools/migration-progress/{migrationId}', [\App\Http\Controllers\Panel\IpPoolMigrationController::class, 'index'])->name('ip-pools.migration-progress');
 
     // Network Device Management - Legacy routes (kept for backward compatibility)
@@ -454,7 +454,7 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/network/olt/{id}', [AdminController::class, 'oltShow'])->name('network.olt.show');
     Route::get('/network/olt/{id}/edit', [AdminController::class, 'oltEdit'])->name('network.olt.edit');
     Route::put('/network/olt/{id}', [AdminController::class, 'oltUpdate'])->name('network.olt.update');
-    Route::delete('/network/olt/{id}', [AdminController::class, 'oltDestroy'])->name('network.olt.destroy');
+    Route::delete('/network/olt/{id}', [AdminController::class, 'oltDestroy'])->middleware('password.confirm')->name('network.olt.destroy');
     Route::post('/network/olt/{id}/test-connection', [AdminController::class, 'oltTestConnection'])->name('network.olt.test-connection');
     
     // ONU Management Routes
@@ -485,13 +485,13 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::post('/network/ipv4-pools', [AdminController::class, 'ipv4PoolsStore'])->name('network.ipv4-pools.store');
     Route::get('/network/ipv4-pools/{id}/edit', [AdminController::class, 'ipv4PoolsEdit'])->name('network.ipv4-pools.edit');
     Route::put('/network/ipv4-pools/{id}', [AdminController::class, 'ipv4PoolsUpdate'])->name('network.ipv4-pools.update');
-    Route::delete('/network/ipv4-pools/{id}', [AdminController::class, 'ipv4PoolsDestroy'])->name('network.ipv4-pools.destroy');
+    Route::delete('/network/ipv4-pools/{id}', [AdminController::class, 'ipv4PoolsDestroy'])->middleware('password.confirm')->name('network.ipv4-pools.destroy');
     Route::get('/network/ipv6-pools', [AdminController::class, 'ipv6Pools'])->name('network.ipv6-pools');
     Route::get('/network/ipv6-pools/create', [AdminController::class, 'ipv6PoolsCreate'])->name('network.ipv6-pools.create');
     Route::post('/network/ipv6-pools', [AdminController::class, 'ipv6PoolsStore'])->name('network.ipv6-pools.store');
     Route::get('/network/ipv6-pools/{id}/edit', [AdminController::class, 'ipv6PoolsEdit'])->name('network.ipv6-pools.edit');
     Route::put('/network/ipv6-pools/{id}', [AdminController::class, 'ipv6PoolsUpdate'])->name('network.ipv6-pools.update');
-    Route::delete('/network/ipv6-pools/{id}', [AdminController::class, 'ipv6PoolsDestroy'])->name('network.ipv6-pools.destroy');
+    Route::delete('/network/ipv6-pools/{id}', [AdminController::class, 'ipv6PoolsDestroy'])->middleware('password.confirm')->name('network.ipv6-pools.destroy');
     Route::get('/network/pppoe-profiles', [AdminController::class, 'pppoeProfiles'])->name('network.pppoe-profiles');
     Route::post('/network/pppoe-profiles', [AdminController::class, 'pppoeProfilesStore'])->name('network.pppoe-profiles.store');
     Route::delete('/network/pppoe-profiles/{id}', [AdminController::class, 'pppoeProfilesDestroy'])->middleware('password.confirm')->name('network.pppoe-profiles.destroy');

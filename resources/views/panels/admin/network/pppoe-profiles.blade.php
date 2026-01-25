@@ -114,8 +114,7 @@
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">Active</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ route('panel.admin.network.pppoe-profiles') }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">View</a>
-                                    <a href="{{ route('panel.admin.network.pppoe-profiles') }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">Edit</a>
+                                    <span class="text-gray-400 dark:text-gray-500 mr-3">View / Edit</span>
                                     <form action="{{ route('panel.admin.network.pppoe-profiles.destroy', $profile->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this PPPoE profile?');">
                                         @csrf
                                         @method('DELETE')

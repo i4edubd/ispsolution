@@ -122,13 +122,13 @@
 </div>
 
 @push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" 
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
     crossorigin=""/>
 @endpush
 
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" 
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
     crossorigin=""></script>
 <script>
@@ -168,14 +168,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const marker = L.marker([lat, lng], { icon }).addTo(map);
                 
-                // Create popup content
+                // Create popup content with proper HTML escaping
+                const escapeHtml = (text) => {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                };
+                
                 const popupContent = `
                     <div style="min-width: 200px;">
-                        <h4 style="font-weight: bold; margin-bottom: 8px;">${device.name}</h4>
-                        <p style="margin: 4px 0;"><strong>Type:</strong> ${device.type?.toUpperCase() || 'N/A'}</p>
-                        <p style="margin: 4px 0;"><strong>IP:</strong> ${device.ip_address}</p>
-                        <p style="margin: 4px 0;"><strong>Location:</strong> ${device.location || 'Not set'}</p>
-                        <p style="margin: 4px 0;"><strong>Status:</strong> <span style="color: ${markerColor};">${device.status?.toUpperCase() || 'UNKNOWN'}</span></p>
+                        <h4 style="font-weight: bold; margin-bottom: 8px;">${escapeHtml(device.name || '')}</h4>
+                        <p style="margin: 4px 0;"><strong>Type:</strong> ${escapeHtml(device.type?.toUpperCase() || 'N/A')}</p>
+                        <p style="margin: 4px 0;"><strong>IP:</strong> ${escapeHtml(device.ip_address || '')}</p>
+                        <p style="margin: 4px 0;"><strong>Location:</strong> ${escapeHtml(device.location || 'Not set')}</p>
+                        <p style="margin: 4px 0;"><strong>Status:</strong> <span style="color: ${markerColor};">${escapeHtml(device.status?.toUpperCase() || 'UNKNOWN')}</span></p>
                     </div>
                 `;
                 marker.bindPopup(popupContent);
