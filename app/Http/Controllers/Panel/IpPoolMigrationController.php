@@ -37,7 +37,7 @@ class IpPoolMigrationController extends Controller
     /**
      * Validate the migration before starting.
      */
-    public function validate(Request $request): JsonResponse
+    public function validateMigration(Request $request): JsonResponse
     {
         $request->validate([
             'old_pool_id' => 'required|exists:ip_pools,id',

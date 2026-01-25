@@ -107,7 +107,7 @@
             <div class="p-6">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Bandwidth Usage</h3>
                 <div class="h-64 bg-gray-100 dark:bg-gray-900 rounded flex items-center justify-center">
-                    <p class="text-gray-500 dark:text-gray-400">Chart.js / ApexCharts integration here</p>
+                    <canvas id="bandwidthChart"></canvas>
                 </div>
             </div>
         </div>
@@ -117,7 +117,7 @@
             <div class="p-6">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Average Response Times</h3>
                 <div class="h-64 bg-gray-100 dark:bg-gray-900 rounded flex items-center justify-center">
-                    <p class="text-gray-500 dark:text-gray-400">Chart.js / ApexCharts integration here</p>
+                    <canvas id="responseTimeChart"></canvas>
                 </div>
             </div>
         </div>
@@ -213,3 +213,99 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Bandwidth Usage Chart
+    const bandwidthCtx = document.getElementById('bandwidthChart');
+    if (bandwidthCtx) {
+        new Chart(bandwidthCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                datasets: [{
+                    label: 'Download (Mbps)',
+                    data: [120, 190, 300, 500, 420, 380, 290],
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Upload (Mbps)',
+                    data: [80, 120, 180, 250, 220, 180, 150],
+                    borderColor: 'rgb(16, 185, 129)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // Response Time Chart
+    const responseCtx = document.getElementById('responseTimeChart');
+    if (responseCtx) {
+        new Chart(responseCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Router 1', 'Router 2', 'OLT 1', 'Switch 1', 'Switch 2'],
+                datasets: [{
+                    label: 'Response Time (ms)',
+                    data: [12, 19, 8, 15, 10],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(251, 191, 36, 0.7)',
+                        'rgba(139, 92, 246, 0.7)',
+                        'rgba(236, 72, 153, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(16, 185, 129)',
+                        'rgb(251, 191, 36)',
+                        'rgb(139, 92, 246)',
+                        'rgb(236, 72, 153)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Milliseconds'
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+@endpush

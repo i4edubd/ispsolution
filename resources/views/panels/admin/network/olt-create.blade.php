@@ -24,14 +24,15 @@
 
     <!-- OLT Form -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-        <form class="p-6 space-y-6">
+        <form action="{{ route('panel.admin.network.olt.store') }}" method="POST" class="p-6 space-y-6">
+            @csrf
             <!-- Basic Information -->
             <div>
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Basic Information</h3>
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div>
-                        <label for="olt_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">OLT Name</label>
-                        <input type="text" id="olt_name" name="olt_name" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">OLT Name</label>
+                        <input type="text" id="name" name="name" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                     </div>
 
                     <div>
@@ -83,8 +84,22 @@
                     </div>
 
                     <div>
+                        <label for="snmp_version" class="block text-sm font-medium text-gray-700 dark:text-gray-300">SNMP Version</label>
+                        <select id="snmp_version" name="snmp_version" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                            <option value="v2c">SNMP v2c</option>
+                            <option value="v1">SNMP v1</option>
+                            <option value="v3">SNMP v3</option>
+                        </select>
+                    </div>
+
+                    <div>
                         <label for="snmp_community" class="block text-sm font-medium text-gray-700 dark:text-gray-300">SNMP Community</label>
                         <input type="text" id="snmp_community" name="snmp_community" placeholder="public" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="snmp_port" class="block text-sm font-medium text-gray-700 dark:text-gray-300">SNMP Port</label>
+                        <input type="number" id="snmp_port" name="snmp_port" value="161" placeholder="161" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
 
                     <div>
