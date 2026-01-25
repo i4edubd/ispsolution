@@ -122,9 +122,10 @@ class CustomerController extends Controller
         // Last 24 hours (hourly)
         $daily = RadAcct::where('username', $username)
             ->where('acctstarttime', '>=', $now->copy()->subDay())
+            ->whereNotNull('acctstarttime')
             ->orderBy('acctstarttime')
             ->get()
-            ->groupBy(fn($session) => $session->acctstarttime->format('H:00'))
+            ->groupBy(fn($session) => $session->acctstarttime ? $session->acctstarttime->format('H:00') : 'Unknown')
             ->map(fn($group) => [
                 'upload' => $group->sum('acctinputoctets') / (1024 * 1024), // Convert to MB
                 'download' => $group->sum('acctoutputoctets') / (1024 * 1024),
@@ -133,9 +134,10 @@ class CustomerController extends Controller
         // Last 7 days (daily)
         $weekly = RadAcct::where('username', $username)
             ->where('acctstarttime', '>=', $now->copy()->subDays(7))
+            ->whereNotNull('acctstarttime')
             ->orderBy('acctstarttime')
             ->get()
-            ->groupBy(fn($session) => $session->acctstarttime->format('Y-m-d'))
+            ->groupBy(fn($session) => $session->acctstarttime ? $session->acctstarttime->format('Y-m-d') : 'Unknown')
             ->map(fn($group) => [
                 'upload' => $group->sum('acctinputoctets') / (1024 * 1024),
                 'download' => $group->sum('acctoutputoctets') / (1024 * 1024),
@@ -144,9 +146,10 @@ class CustomerController extends Controller
         // Last 30 days (daily)
         $monthly = RadAcct::where('username', $username)
             ->where('acctstarttime', '>=', $now->copy()->subDays(30))
+            ->whereNotNull('acctstarttime')
             ->orderBy('acctstarttime')
             ->get()
-            ->groupBy(fn($session) => $session->acctstarttime->format('Y-m-d'))
+            ->groupBy(fn($session) => $session->acctstarttime ? $session->acctstarttime->format('Y-m-d') : 'Unknown')
             ->map(fn($group) => [
                 'upload' => $group->sum('acctinputoctets') / (1024 * 1024),
                 'download' => $group->sum('acctoutputoctets') / (1024 * 1024),

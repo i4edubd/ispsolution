@@ -147,12 +147,6 @@
     </div>
 </div>
 @endsection
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Current Package</h3>
-                            <a href="#" class="text-sm text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">
-                                Upgrade Package
-                            </a>
-                        </div>
-                        <div class="border-2 border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
                             <div class="flex justify-between items-start">
                                 <div>
                                     <h4 class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ $customer->package->name ?? 'N/A' }}</h4>

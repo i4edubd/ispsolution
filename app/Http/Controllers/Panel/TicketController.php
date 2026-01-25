@@ -147,6 +147,11 @@ class TicketController extends Controller
         // Auto-populate customer data
         $customer = User::with(['currentPackage', 'payments'])->find($customerId);
         
+        // Handle case where customer is not found
+        if (!$customer) {
+            return redirect()->back()->withErrors(['customer_id' => 'Customer not found.'])->withInput();
+        }
+        
         $customerInfo = "\n\n--- Customer Information ---\n";
         $customerInfo .= "Name: " . $customer->name . "\n";
         $customerInfo .= "Email: " . $customer->email . "\n";
