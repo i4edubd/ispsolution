@@ -1030,6 +1030,7 @@ Route::prefix('panel/expenses/categories')->name('panel.expenses.categories.')->
 // Modal Routes (Feature 1.5: Enhanced Modal System)
 Route::prefix('panel')->name('panel.')->middleware(['auth'])->group(function () {
     use App\Http\Controllers\Panel\ModalController;
+    use App\Http\Controllers\Panel\BulkCustomerController;
     
     // Package FUP Modal
     Route::get('/packages/{package}/fup', [ModalController::class, 'showFup'])->name('packages.fup');
@@ -1045,5 +1046,9 @@ Route::prefix('panel')->name('panel.')->middleware(['auth'])->group(function () 
     Route::post('/customers/{customer}/quick-action/{action}', [ModalController::class, 'executeQuickAction'])
         ->whereIn('action', ['activate', 'suspend', 'recharge'])
         ->name('customers.quick-action.execute');
+    
+    // Bulk Customer Actions (Feature 6.1)
+    Route::post('/customers/bulk-action', [BulkCustomerController::class, 'executeBulkAction'])
+        ->name('customers.bulk-action');
 });
 

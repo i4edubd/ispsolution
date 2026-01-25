@@ -3,6 +3,7 @@ import Alpine from 'alpinejs';
 import AnalyticsManager from './analytics';
 import ApexCharts from 'apexcharts';
 import './modal-helper';
+import './bulk-actions';
 
 // Start Alpine.js
 window.Alpine = Alpine;
