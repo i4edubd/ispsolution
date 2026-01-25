@@ -79,10 +79,11 @@ class AdminController extends Controller
                 ->where('status', 'success')
                 ->sum('amount'),
             'tickets_today' => \App\Models\Ticket::whereDate('created_at', today())->count(),
-            'expiring_today' => User::whereDate('expiry_date', today())
-                ->whereHas('roles', function ($query) {
+            'expiring_today' => NetworkUser::whereDate('expiry_date', today())
+                ->whereHas('user.roles', function ($query) {
                     $query->where('slug', 'customer');
-                })->count(),
+                })
+                ->count(),
         ];
 
         return view('panels.admin.dashboard', compact('stats'));

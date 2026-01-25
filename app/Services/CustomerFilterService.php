@@ -83,12 +83,12 @@ class CustomerFilterService
         // Filter by expiry date range
         if (!empty($filters['expiry_date_from']) || !empty($filters['expiry_date_to'])) {
             $filtered = $filtered->filter(function ($customer) use ($filters) {
-                $expiryDate = $customer->expiry_date ?? $customer->user?->expiry_date;
-                if (!$expiryDate) {
+                // Get expiry date from network_user
+                if (!$customer->expiry_date) {
                     return false;
                 }
 
-                $expiry = \Carbon\Carbon::parse($expiryDate);
+                $expiry = \Carbon\Carbon::parse($customer->expiry_date);
 
                 if (!empty($filters['expiry_date_from'])) {
                     $from = \Carbon\Carbon::parse($filters['expiry_date_from']);
