@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('mikrotik_routers', function (Blueprint $table) {
-            $table->enum('api_status', ['online', 'offline', 'warning', 'unknown'])->default('unknown')->after('api_password');
+            $table->enum('api_status', ['online', 'offline', 'warning', 'unknown'])->default('unknown')->after('password');
             $table->timestamp('last_checked_at')->nullable()->after('api_status');
             $table->text('last_error')->nullable()->after('last_checked_at');
             $table->integer('response_time_ms')->nullable()->after('last_error')->comment('API response time in milliseconds');
