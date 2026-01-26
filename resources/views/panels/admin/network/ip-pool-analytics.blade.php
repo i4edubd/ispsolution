@@ -260,8 +260,8 @@
         <div class="p-6">
             <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Export Analytics</h3>
             
-            <!-- Note: Export routes need to be implemented in routes/web.php:
-                 Route::get('panel/admin/network/ip-analytics/export', [NetworkController::class, 'exportIpAnalytics'])
+            <!-- Note: Export routes implemented in routes/web.php:
+                 Route::get('panel/admin/network/ip-analytics/export', [AdminController::class, 'exportIpAnalytics'])
                       ->name('panel.admin.network.ip-analytics.export');
             -->
             

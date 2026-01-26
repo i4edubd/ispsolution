@@ -3686,7 +3686,7 @@ class AdminController extends Controller
      */
     protected function getIpPoolAnalytics(): array
     {
-        $pools = IpPool::where('tenant_id', getCurrentTenantId())->get();
+        $pools = IpPool::all();
         
         $totalIps = $pools->sum('total_ips');
         $allocatedIps = $pools->sum('used_ips');
@@ -3709,7 +3709,7 @@ class AdminController extends Controller
      */
     protected function getPoolStats(): array
     {
-        $pools = IpPool::where('tenant_id', getCurrentTenantId())->get();
+        $pools = IpPool::all();
         
         return $pools->map(function ($pool) {
             $totalIps = $pool->total_ips;
@@ -3779,18 +3779,23 @@ class AdminController extends Controller
      */
     protected function getRecentAllocations(): array
     {
-        $allocations = IpAllocation::where('tenant_id', getCurrentTenantId())
-            ->with(['pool', 'networkUser'])
+        $allocations = IpAllocation::with('subnet.pool')
             ->latest()
             ->take(20)
             ->get();
         
         return $allocations->map(function ($allocation) {
+            // Get pool name from subnet relationship
+            $poolName = 'N/A';
+            if ($allocation->subnet && $allocation->subnet->pool) {
+                $poolName = $allocation->subnet->pool->name;
+            }
+            
             return [
                 'ip_address' => $allocation->ip_address,
-                'pool_name' => $allocation->pool->name ?? 'N/A',
-                'assigned_to' => $allocation->networkUser->username ?? 'N/A',
-                'allocated_at' => $allocation->created_at,
+                'pool_name' => $poolName,
+                'assigned_to' => $allocation->username ?? 'N/A',
+                'allocated_at' => $allocation->allocated_at ?? $allocation->created_at,
             ];
         })->toArray();
     }

@@ -59,18 +59,13 @@ class RouterController extends Controller
             // Disconnect first
             $router->disconnect();
             
-            // Brief delay to allow proper disconnection
-            sleep(2);
+            // Brief delay to allow proper disconnection (reduced from 2s)
+            usleep(200000); // 200 ms instead of a full 2-second block
             
             // Attempt to reconnect
             $connected = $router->connect();
             
             if ($connected) {
-                $router->update([
-                    'status' => 'online',
-                    'last_seen' => now()
-                ]);
-                
                 // Refresh stats after reconnecting
                 $router->refreshStats();
                 
