@@ -11,10 +11,10 @@
 
 ### Overall Progress
 - **Phase 1 (Database & Models):** 60% Complete (3/5 items fully done, 2/5 partial)
-- **Phase 2 (Core Services):** 43% Complete (2/7 items fully done, 4/7 partial, 1/7 missing)
-- **Phase 3 (Controllers & Routes):** 40% Complete (1/6 items fully done, 2/6 partial, 3/6 missing)
+- **Phase 2 (Core Services):** 29% Complete (1/7 items fully done, 3/7 partial, 3/7 missing)
+- **Phase 3 (Controllers & Routes):** 20% Complete (0/6 items fully done, 2/6 partial, 4/6 missing)
 - **Phase 4 (Console Commands):** 20% Complete (1/5 items done, 4/5 missing)
-- **Phase 5 (Jobs & Queues):** 25% Complete (1/4 items partial, 3/4 missing)
+- **Phase 5 (Jobs & Queues):** 0% Complete (0/4 items done, 4/4 missing)
 
 ### Key Achievements ✅
 - ✅ NAS table and model created with encryption
@@ -28,12 +28,14 @@
 ### Remaining Work 🚧
 - 🚧 Complete MikrotikRouter model enhancement (nas_id, radius_secret, public_ip, primary_auth)
 - 🚧 Add model relationships (Nas ↔ MikrotikRouter)
-- 🚧 Extract RouterConfigurationService from RouterProvisioningService
+- 🚧 Create RouterConfigurationService (functionality exists in RouterProvisioningService)
+- 🚧 Create RouterBackupService (functionality exists in RouterProvisioningService + model)
 - 🚧 Create RouterRadiusFailoverService
 - 🚧 Implement user provisioning methods (provisionUser, deprovisionUser)
-- 🚧 Create dedicated controllers (RouterBackupController, RouterFailoverController)
+- 🚧 Create dedicated NasController (functionality exists in AdminController)
+- 🚧 Create dedicated controllers (RouterConfigurationController, RouterBackupController, RouterFailoverController)
 - 🚧 Implement remaining console commands (backup, failover, mirror)
-- 🚧 Create remaining jobs (ProvisionUserJob, BackupRouterJob, MirrorUsersJob)
+- 🚧 Create job classes (ProvisionUserJob, ImportRouterDataJob, BackupRouterJob, MirrorUsersJob)
 
 ---
 
@@ -68,7 +70,7 @@
   ```
 
 ### 1.2 Enhance MikrotikRouter Table 🔴
-- [x] Create migration: `add_nas_fields_to_mikrotik_routers.php` (Partial - has tenant_id and host, needs nas_id, radius_secret, public_ip, primary_auth)
+- [x] Create migration: `2026_01_23_042743_add_missing_columns_to_mikrotik_routers_table.php` (Partial - has tenant_id and host, needs nas_id, radius_secret, public_ip, primary_auth)
   ```php
   Schema::table('mikrotik_routers', function (Blueprint $table) {
       $table->foreignId('nas_id')->nullable()->after('id')
@@ -94,7 +96,7 @@
 - [ ] Add encrypted casting for radius_secret (Missing)
 
 ### 1.5 Create RouterConfigurationBackup Model 🟡
-- [x] Create migration: `create_router_configuration_backups_table.php` (Exists in merged router configuration tables)
+- [x] Create migration: `2026_01_24_152806_create_router_configuration_templates_table.php` (includes `router_configuration_backups` table)
   ```php
   Schema::create('router_configuration_backups', function (Blueprint $table) {
       $table->id();
@@ -133,8 +135,8 @@
   - [ ] `updateRouterComment(NetworkUser $user, MikrotikRouter $router, $api): bool`
 
 ### 2.3 Create RouterConfigurationService 🔴
-- [x] Create `app/Services/RouterConfigurationService.php` (Partial - functionality exists in RouterProvisioningService)
-  - [x] `configureRadius(MikrotikRouter $router): array` (In RouterProvisioningService)
+- [ ] Create `app/Services/RouterConfigurationService.php` (Not created yet — related logic currently in RouterProvisioningService)
+  - [ ] `configureRadius(MikrotikRouter $router): array` (Currently implemented in RouterProvisioningService::configureRadius)
   - [ ] `configureRadiusClient($api, MikrotikRouter $router): void` (Missing)
   - [ ] `configurePppAaa($api): void` (Missing)
   - [ ] `configureRadiusIncoming($api): void` (Missing)
@@ -142,10 +144,10 @@
 
 ### 2.4 Enhance MikrotikImportService 🔴
 - [x] Add/enhance methods in `app/Services/MikrotikImportService.php`:
-  - [x] `importIpPools(MikrotikRouter $router, int $userId): array`
-  - [x] `importPppProfiles(MikrotikRouter $router, int $userId): array`
-  - [x] `importPppSecrets(MikrotikRouter $router, int $userId, bool $includeDisabled): array`
-  - [x] `parseIpPoolRanges(string $ranges): string` (Implemented with different approach)
+  - [x] `importIpPools(array $data): array` (Implemented; expects IP pool data already fetched from router or other source)
+  - [x] `importPppProfiles(int $routerId): array` (Implemented; imports profiles for a given router ID using provided data/context)
+  - [x] `importPppSecrets(int $routerId, array $options = [], ?int $tenantId = null, ?int $userId = null): array` (Implemented; options/tenant/user control scoping)
+  - [ ] Router-side fetching/normalization helpers for IP pools, PPP profiles, and PPP secrets (Missing; current API assumes pre-fetched data and does not expose a `parseIpPoolRanges` helper)
 
 ### 2.5 Enhance RouterProvisioningService 🔴
 - [x] Add/enhance methods in `app/Services/RouterProvisioningService.php`: (Exists with extensive implementation)
@@ -164,8 +166,8 @@
   - [ ] `getRadiusStatus(MikrotikRouter $router): array`
 
 ### 2.7 Create RouterBackupService 🟡
-- [x] Create `app/Services/RouterBackupService.php` (Partial - functionality in RouterProvisioningService and model)
-  - [x] `createPreChangeBackup(MikrotikRouter $router, string $reason): ?RouterConfigurationBackup` (In RouterProvisioningService)
+- [ ] Create `app/Services/RouterBackupService.php` (Not implemented – backup logic currently lives in RouterProvisioningService + RouterConfigurationBackup model)
+  - [x] `createPreChangeBackup(MikrotikRouter $router, string $reason): ?RouterConfigurationBackup` (Implemented in RouterProvisioningService/RouterConfigurationBackup)
   - [ ] `backupPppSecrets(MikrotikRouter $router): ?string` (Missing)
   - [ ] `mirrorCustomersToRouter(MikrotikRouter $router): array` (Missing)
   - [ ] `restoreFromBackup(MikrotikRouter $router, string $backupName): bool` (Missing)
@@ -176,14 +178,14 @@
 ## Phase 3: Controllers & Routes (Week 2)
 
 ### 3.1 Create NasController 🔴
-- [x] Create `app/Http/Controllers/Panel/NasController.php` (Implemented in AdminController)
-  - [x] `index()` - List all NAS devices (nasDevices/nasList in AdminController)
-  - [x] `create()` - Show create form (nasCreate in AdminController)
-  - [x] `store(Request $request)` - Create NAS with router connectivity test (nasStore in AdminController)
-  - [x] `edit(Nas $nas)` - Show edit form (nasEdit in AdminController)
-  - [x] `update(Request $request, Nas $nas)` - Update NAS (nasUpdate in AdminController)
-  - [x] `destroy(Nas $nas)` - Delete NAS (nasDestroy in AdminController)
-  - [x] `testConnection(Request $request)` - AJAX connectivity test (nasTestConnection in AdminController)
+- [ ] Create `app/Http/Controllers/Panel/NasController.php` (Not created yet — NAS actions are currently handled in `AdminController`)
+  - [ ] `index()` - List all NAS devices (implemented as `nasDevices`/`nasList` in `AdminController`, no dedicated `NasController` method yet)
+  - [ ] `create()` - Show create form (implemented as `nasCreate` in `AdminController`, no dedicated `NasController` method yet)
+  - [ ] `store(Request $request)` - Create NAS with router connectivity test (implemented as `nasStore` in `AdminController`, no dedicated `NasController` method yet)
+  - [ ] `edit(Nas $nas)` - Show edit form (implemented as `nasEdit` in `AdminController`, no dedicated `NasController` method yet)
+  - [ ] `update(Request $request, Nas $nas)` - Update NAS (implemented as `nasUpdate` in `AdminController`, no dedicated `NasController` method yet)
+  - [ ] `destroy(Nas $nas)` - Delete NAS (implemented as `nasDestroy` in `AdminController`, no dedicated `NasController` method yet)
+  - [ ] `testConnection(Request $request)` - AJAX connectivity test (implemented as `nasTestConnection` in `AdminController`, no dedicated `NasController` method yet)
 
 ### 3.2 Create/Enhance RouterConfigurationController 🔴
 - [ ] Create `app/Http/Controllers/Panel/RouterConfigurationController.php` (Not implemented - functionality in RouterProvisioningController)
@@ -197,9 +199,9 @@
 ### 3.3 Enhance MikrotikImportController 🟡
 - [x] Add methods to existing controller or create new: (Controller exists at app/Http/Controllers/Panel/MikrotikImportController.php)
   - [x] `importForm(MikrotikRouter $router)` - Show import form (index method exists)
-  - [x] `importPools(Request $request, MikrotikRouter $router)` - Import IP pools (Returns 501 - needs implementation)
+  - [x] `importIpPools(Request $request, MikrotikRouter $router)` - Import IP pools (Returns 501 - needs implementation)
   - [x] `importProfiles(Request $request, MikrotikRouter $router)` - Import profiles (Implemented)
-  - [ ] `importSecrets(Request $request, MikrotikRouter $router)` - Import secrets (Missing)
+  - [x] `importSecrets(Request $request, MikrotikRouter $router)` - Import secrets (Implemented)
   - [ ] `importAll(Request $request, MikrotikRouter $router)` - Import everything (Missing)
 
 ### 3.4 Create RouterBackupController 🟡
@@ -219,9 +221,9 @@
 ### 3.6 Add Routes 🔴
 - [x] Add to `routes/web.php` in admin panel group: (Partial - NAS routes exist)
   ```php
-  // NAS Management
-  Route::resource('nas', NasController::class); // ✅ Exists via AdminController
-  Route::post('nas/test-connection', [NasController::class, 'testConnection']); // ✅ Exists
+  // NAS Management - ✅ Exists via AdminController at /network/nas
+  Route::get('/network/nas', [AdminController::class, 'nasList'])->name('network.nas');
+  Route::post('/network/nas/{id}/test-connection', [AdminController::class, 'nasTestConnection']);
   
   // Router Configuration - ❌ Missing
   Route::prefix('routers/{router}')->group(function () {
@@ -296,7 +298,7 @@
   - Used when user is created/updated
 
 ### 5.2 Create ImportRouterDataJob 🟡
-- [x] Create `app/Jobs/ImportRouterDataJob.php` (Similar functionality exists in ImportPppSecretsJob.php and ImportPppCustomersJob.php)
+- [ ] Create `app/Jobs/ImportRouterDataJob.php` (Not implemented – similar functionality currently in ImportPppSecretsJob.php and ImportPppCustomersJob.php)
   - Handles bulk import in background
   - Reports progress via events
 
