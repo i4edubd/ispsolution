@@ -66,7 +66,6 @@ class CustomerSpeedLimitController extends Controller
         $request->validate([
             'upload_speed' => 'required|integer|min:0',
             'download_speed' => 'required|integer|min:0',
-            'use_package_default' => 'boolean',
         ]);
 
         $networkUser = NetworkUser::where('user_id', $customer->id)->firstOrFail();
@@ -75,7 +74,6 @@ class CustomerSpeedLimitController extends Controller
         try {
             $uploadSpeed = $request->input('upload_speed');
             $downloadSpeed = $request->input('download_speed');
-            $usePackageDefault = $request->boolean('use_package_default');
 
             // If "0 = managed by router" option is selected
             if ($uploadSpeed === 0 && $downloadSpeed === 0) {
@@ -88,12 +86,6 @@ class CustomerSpeedLimitController extends Controller
 
                 DB::commit();
                 return back()->with('success', 'Speed limit removed. Now managed by router/package settings.');
-            }
-
-            // Use package default speeds if requested
-            if ($usePackageDefault && $networkUser->package) {
-                $uploadSpeed = $networkUser->package->bandwidth_upload;
-                $downloadSpeed = $networkUser->package->bandwidth_download;
             }
 
             // Validate speeds

@@ -258,29 +258,6 @@ This document tracks the implementation status of all customer detail page actio
 - [ ] Support FUP integration (future enhancement)
 
 ---
-**Status:** Complete (existing implementation)  
-**Files:**
-- Controller: `app/Http/Controllers/Panel/CustomerVolumeLimitController.php` ✅
-- Policy: Uses `editSpeedLimit()` permission
-- UI: `resources/views/panel/customers/volume-limit/show.blade.php`
-
-**Implementation Notes:**
-- Monthly and daily data limits (in MB)
-- Auto-suspend on limit exceeded
-- Rollover functionality
-- Reset functionality (daily, monthly, or both)
-- Full CRUD operations
-
-**Enhancements Completed:**
-- [x] Add UI button on customer details page
-- [x] Create comprehensive UI view for volume limit management
-- [x] Quick presets for common data limits (10GB, 20GB, 50GB, etc.)
-- [x] Visual progress bars for usage tracking
-- [ ] Update RADIUS attributes when volume limits change (future enhancement)
-- [ ] Show real-time usage vs limit (future enhancement)
-- [ ] Support FUP integration (future enhancement)
-
----
 
 ### 3.4 Activate FUP (Fair Usage Policy) ⚪
 **Status:** Planned  
