@@ -363,11 +363,9 @@ class CheckUnusedComponents extends Command
             $lastPart = end($parts);
             // Check for dynamic patterns with the last part
             $dynamicPatterns = [
-                // Matches: $this->getViewPrefix() . '.index'
-                "/getViewPrefix\(\)\s*\.\s*['\"]" . preg_quote($lastPart, '/') . "['\"]/",
-                // Matches: $this->getViewPrefix() . '.index' (with optional dot prefix)
+                // Matches: $this->getViewPrefix() . '.index' or getViewPrefix() . 'index'
                 "/getViewPrefix\(\)\s*\.\s*['\"]\.?" . preg_quote($lastPart, '/') . "['\"]/",
-                // Matches: $variable . '.index' (variable concatenation)
+                // Matches: $variable . '.index' or $variable . 'index'
                 "/\\\$\w+\s*\.\s*['\"]\.?" . preg_quote($lastPart, '/') . "['\"]/",
                 // Matches: view('index') (just the action name)
                 "/['\"]" . preg_quote($lastPart, '/') . "['\"]\s*\)/",
@@ -1140,7 +1138,7 @@ class CheckUnusedComponents extends Command
             "/\b{$escapedClassName}::/",                         // Static calls
             "/new\s+{$escapedClassName}\s*\(/",                  // Instantiation
             "/\b{$escapedClassName}\s+\$/",                      // Type hints
-            "/use\s+" . str_replace('\\\\', '\\\\', $escapedFullClassName) . ';/',  // Use statements
+            "/use\s+{$escapedFullClassName};/",                  // Use statements
             "/@var\s+{$escapedClassName}/",                      // PHPDoc
             "/@param\s+{$escapedClassName}/",                    // PHPDoc
             "/@return\s+{$escapedClassName}/",                   // PHPDoc
