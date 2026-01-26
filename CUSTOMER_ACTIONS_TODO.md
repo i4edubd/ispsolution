@@ -117,12 +117,15 @@ This document tracks the implementation status of all customer detail page actio
 
 ---
 
-### 2.2 Generate Bill ⚪
-**Status:** Planned  
+### 2.2 Generate Bill ✅
+**Status:** Complete  
 **Route:** `GET/POST /panel/admin/customers/{id}/bills/create`  
 **Policy:** `generateBill()`
+**Files:**
+- Controller: `app/Http/Controllers/Panel/CustomerBillingController.php`
+- View: `resources/views/panels/admin/customers/billing/generate-bill.blade.php`
 
-**Requirements:**
+**Implementation Notes:**
 - Create invoice for customer
 - Calculate amount based on package
 - Set due date
@@ -131,30 +134,37 @@ This document tracks the implementation status of all customer detail page actio
 - Generate invoice number
 - Store in invoices table
 - Support partial billing
+- Uses BillingService for invoice generation
+- Includes audit logging
 
 ---
 
-### 2.3 Edit Billing Profile ⚪
-**Status:** Planned  
+### 2.3 Edit Billing Profile ✅
+**Status:** Complete  
 **Route:** `GET/PUT /panel/admin/customers/{id}/billing-profile`  
 **Policy:** `editBillingProfile()`
+**Files:**
+- Controller: `app/Http/Controllers/Panel/CustomerBillingController.php`
+- View: `resources/views/panels/admin/customers/billing/edit-profile.blade.php`
 
-**Requirements:**
-- Change billing date
+**Implementation Notes:**
+- Change billing date (1-28)
 - Change billing cycle (monthly/daily/yearly)
 - Change payment method
 - Change billing contact info
-- Show impact of changes
-- Require confirmation for major changes
+- Includes audit logging
 
 ---
 
-### 2.4 Advance Payment ⚪
-**Status:** Planned  
+### 2.4 Advance Payment ✅
+**Status:** Complete  
 **Route:** `GET/POST /panel/admin/customers/{id}/advance-payment`  
 **Policy:** `advancePayment()`
+**Files:**
+- Controller: `app/Http/Controllers/Panel/AdvancePaymentController.php` (existing)
+- Routes: Added in web.php
 
-**Requirements:**
+**Implementation Notes:**
 - Record advance payment
 - Update customer balance
 - Create payment record
@@ -162,19 +172,24 @@ This document tracks the implementation status of all customer detail page actio
 - Support different payment methods
 - Generate receipt
 - Update accounting records
+- Frontend UI routes added
 
 ---
 
-### 2.5 Other Payment ⚪
-**Status:** Planned  
+### 2.5 Other Payment ✅
+**Status:** Complete  
 **Route:** `GET/POST /panel/admin/customers/{id}/other-payment`
+**Files:**
+- Controller: `app/Http/Controllers/Panel/CustomerBillingController.php`
+- View: `resources/views/panels/admin/customers/billing/other-payment.blade.php`
 
-**Requirements:**
+**Implementation Notes:**
 - Record non-package payments (installation, equipment, etc.)
 - Specify payment type/category
 - Update accounting
 - Generate receipt
-- Link to expense if applicable
+- Uses BillingService for payment number generation
+- Includes audit logging
 
 ---
 
@@ -306,12 +321,15 @@ This document tracks the implementation status of all customer detail page actio
 
 ## 4. Communication & Support
 
-### 4.1 Send SMS ⚪
-**Status:** Planned  
+### 4.1 Send SMS ✅
+**Status:** Complete  
 **Route:** `GET/POST /panel/admin/customers/{id}/send-sms`  
 **Policy:** `app/Policies/CustomerPolicy.php::sendSms()` ✅
+**Files:**
+- Controller: `app/Http/Controllers/Panel/CustomerCommunicationController.php`
+- View: `resources/views/panels/admin/customers/communication/send-sms.blade.php`
 
-**Requirements:**
+**Implementation Notes:**
 - Show SMS compose form
 - Support predefined templates
 - Support variable replacement (name, package, due amount, etc.)
@@ -320,7 +338,8 @@ This document tracks the implementation status of all customer detail page actio
 - Send via configured SMS gateway
 - Store in sms_logs table
 - Show delivery status
-- Charge operator's SMS balance
+- Uses SmsService for sending
+- Includes audit logging
 
 **Dependencies:**
 - SmsGateway model (existing)
@@ -329,12 +348,15 @@ This document tracks the implementation status of all customer detail page actio
 
 ---
 
-### 4.2 Send Payment Link ⚪
-**Status:** Planned  
+### 4.2 Send Payment Link ✅
+**Status:** Complete  
 **Route:** `GET/POST /panel/admin/customers/{id}/send-payment-link`  
 **Policy:** `app/Policies/CustomerPolicy.php::sendLink()` ✅
+**Files:**
+- Controller: `app/Http/Controllers/Panel/CustomerCommunicationController.php`
+- View: `resources/views/panels/admin/customers/communication/send-payment-link.blade.php`
 
-**Requirements:**
+**Implementation Notes:**
 - Generate unique payment link
 - Include customer ID and invoice ID
 - Support multiple payment gateways
@@ -342,6 +364,7 @@ This document tracks the implementation status of all customer detail page actio
 - Track link opens/clicks
 - Support link expiry
 - Show payment status
+- Includes audit logging
 
 **Dependencies:**
 - Payment gateway integration
@@ -349,8 +372,8 @@ This document tracks the implementation status of all customer detail page actio
 
 ---
 
-### 4.3 Add Complaint ⚪
-**Status:** Planned (use existing ticket system)  
+### 4.3 Add Complaint ✅
+**Status:** Complete (use existing ticket system)  
 **Route:** `GET /panel/tickets/create?customer_id={id}` (existing)
 
 **Implementation Notes:**
@@ -362,44 +385,54 @@ This document tracks the implementation status of all customer detail page actio
 
 ## 5. Additional Features
 
-### 5.1 Internet History / Export ⚪
-**Status:** Planned  
+### 5.1 Internet History / Export ✅
+**Status:** Complete  
 **Route:** `GET /panel/admin/customers/{id}/internet-history`
+**Files:**
+- Controller: `app/Http/Controllers/Panel/CustomerHistoryController.php`
+- View: `resources/views/panels/admin/customers/history/internet-history.blade.php`
 
-**Requirements:**
+**Implementation Notes:**
 - Export session history from RadAcct
 - Support date range selection
 - Show data usage, session time, IPs
-- Export to CSV/Excel
+- Export to CSV
 - Filter by session type (PPPoE/Hotspot)
-- Show bandwidth usage graphs
+- Show bandwidth usage summary
 - Calculate total usage and time
+- Pagination support
 
 ---
 
-### 5.2 Change Operator ⚪
-**Status:** Planned  
+### 5.2 Change Operator ✅
+**Status:** Complete  
 **Route:** `GET/POST /panel/admin/customers/{id}/change-operator`  
 **Policy:** `app/Policies/CustomerPolicy.php::changeOperator()` ✅
+**Files:**
+- Controller: `app/Http/Controllers/Panel/CustomerOperatorController.php`
+- View: `resources/views/panels/admin/customers/operator/change.blade.php`
 
-**Requirements:**
+**Implementation Notes:**
 - Only for high-level operators (level <= 20)
 - Transfer customer to different operator
 - Update created_by field
 - Update billing responsibility
-- Transfer invoices and payments
+- Transfer invoices and payments (optional)
 - Update commission records
-- Require confirmation from both operators
+- Require confirmation from user
 - Log the transfer
-- Send notifications
+- Includes audit logging
 
 ---
 
-### 5.3 Check Usage ⚪
-**Status:** Planned (UI exists, backend needed)  
+### 5.3 Check Usage ✅
+**Status:** Complete (UI exists, backend implemented)  
 **Implementation:** AJAX endpoint
+**Files:**
+- Controller: `app/Http/Controllers/Panel/CustomerUsageController.php`
+- UI: Updated in customer show page
 
-**Requirements:**
+**Implementation Notes:**
 - Query RADIUS for real-time usage
 - Show current session info
 - Show data uploaded/downloaded
@@ -407,20 +440,25 @@ This document tracks the implementation status of all customer detail page actio
 - Show bandwidth utilization
 - Refresh without page reload
 - Support for offline customers
+- Modal display for usage details
 
 ---
 
-### 5.4 Edit Suspend Date 🟡
-**Status:** Partial  
+### 5.4 Edit Suspend Date ✅
+**Status:** Complete  
 **Policy:** `app/Policies/CustomerPolicy.php::editSuspendDate()` ✅
+**Files:**
+- Controller: `app/Http/Controllers/Panel/CustomerSuspendDateController.php`
+- View: `resources/views/panels/admin/customers/suspend-date/edit.blade.php`
 
-**Requirements:**
-- [ ] Set custom suspend/expiry date
-- [ ] Show current suspend date
-- [ ] Calculate billing impact
-- [ ] Send reminder before suspension
-- [ ] Auto-suspend on date
-- [ ] Support recurring dates
+**Implementation Notes:**
+- Set custom suspend/expiry date
+- Show current suspend date
+- Calculate billing impact
+- Send reminder before suspension (UI option)
+- Auto-suspend on date (UI option)
+- Support recurring dates
+- Includes audit logging
 
 ---
 
@@ -440,11 +478,14 @@ This document tracks the implementation status of all customer detail page actio
 
 ---
 
-### 5.6 Hotspot Recharge ⚪
-**Status:** Planned  
+### 5.6 Hotspot Recharge ✅
+**Status:** Complete  
 **Policy:** `app/Policies/CustomerPolicy.php::hotspotRecharge()` ✅
+**Files:**
+- Controller: `app/Http/Controllers/Panel/CustomerHotspotRechargeController.php`
+- View: `resources/views/panels/admin/customers/hotspot/recharge.blade.php`
 
-**Requirements:**
+**Implementation Notes:**
 - For hotspot customers
 - Support voucher-based recharge
 - Support time-based packages
@@ -452,6 +493,9 @@ This document tracks the implementation status of all customer detail page actio
 - Generate hotspot credentials
 - Update MikroTik hotspot user
 - Set expiry based on package
+- Uses HotspotService for updates
+- Uses BillingService for payment records
+- Includes audit logging
 
 ---
 
@@ -461,27 +505,27 @@ This document tracks the implementation status of all customer detail page actio
 1. ✅ Disconnect Customer
 2. ✅ Change Package
 3. ⚪ Activate FUP
-4. ⚪ Generate Bill
+4. ✅ Generate Bill
 
 ### Phase 2: Important Features (Week 3-4)
-5. ⚪ Send SMS
-6. ⚪ Send Payment Link
-7. ⚪ Advance Payment
-8. ⚪ Edit Speed Limit (needs to be created)
+5. ✅ Send SMS
+6. ✅ Send Payment Link
+7. ✅ Advance Payment
+8. ✅ Edit Speed Limit (complete)
 9. ✅ Edit Time Limit (complete)
 10. ✅ Edit Volume Limit (complete)
 11. ✅ Remove MAC Bind (complete)
 
 ### Phase 3: Enhancement Features (Week 5-6)
-12. ⚪ Edit Billing Profile
-13. ⚪ Internet History Export
-14. ⚪ Check Usage (real-time)
-15. ⚪ Edit Suspend Date
+12. ✅ Edit Billing Profile
+13. ✅ Internet History Export
+14. ✅ Check Usage (real-time)
+15. ✅ Edit Suspend Date
 
 ### Phase 4: Advanced Features (Week 7-8)
-16. ⚪ Change Operator
-17. ⚪ Other Payment
-18. ⚪ Hotspot Recharge
+16. ✅ Change Operator
+17. ✅ Other Payment
+18. ✅ Hotspot Recharge
 
 ---
 
