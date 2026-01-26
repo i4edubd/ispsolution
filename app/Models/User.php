@@ -166,6 +166,11 @@ class User extends Authenticatable
 
     /**
      * Alias for servicePackage() for convenience.
+     * 
+     * Note: This returns the User's subscription/billing package (service_package_id).
+     * For the NetworkUser's active network service package, use $user->currentPackage instead.
+     * - package: User's subscription package (for billing, subscription management)
+     * - currentPackage: NetworkUser's active package (for network service details, bandwidth, etc.)
      */
     public function package(): BelongsTo
     {
@@ -195,6 +200,14 @@ class User extends Authenticatable
     public function radiusSessions(): HasMany
     {
         return $this->hasMany(RadiusSession::class);
+    }
+
+    /**
+     * Get the network user for this customer.
+     */
+    public function networkUser(): HasOne
+    {
+        return $this->hasOne(NetworkUser::class, 'user_id');
     }
 
     /**
@@ -773,5 +786,126 @@ class User extends Authenticatable
     public function customPrices(): HasMany
     {
         return $this->hasMany(CustomPrice::class);
+    }
+
+    /**
+     * Get username from network user (for backward compatibility)
+     * Note: Users table doesn't have a username column, this accessor
+     * provides it from the networkUser relationship or falls back to email.
+     * The null check catches programmatically set values only, not database values.
+     */
+    public function getUsernameAttribute($value)
+    {
+        // If value is explicitly set programmatically (not from database), use it
+        if (!is_null($value)) {
+            return $value;
+        }
+        
+        // Try to get from networkUser if it exists and is loaded
+        if ($this->relationLoaded('networkUser') && $this->networkUser) {
+            return $this->networkUser->username;
+        }
+        
+        // Final fallback to email
+        return $this->email;
+    }
+
+    /**
+     * Get status from network user (for backward compatibility)
+     * Note: Users table doesn't have a status column for customers,
+     * this accessor provides it from the networkUser relationship.
+     * The null check catches programmatically set values only, not database values.
+     */
+    public function getStatusAttribute($value)
+    {
+        // If value is explicitly set programmatically (not from database), use it
+        if (!is_null($value)) {
+            return $value;
+        }
+        
+        // Try to get from networkUser if it exists and is loaded
+        if ($this->relationLoaded('networkUser') && $this->networkUser) {
+            return $this->networkUser->status;
+        }
+        
+        // Default status
+        return null;
+    }
+
+    /**
+     * Get current active package (from networkUser if available, otherwise servicePackage)
+     * 
+     * Note: This differs from the package() relationship method (line 175):
+     * - package() returns User's subscription/billing package (service_package_id)
+     * - currentPackage returns NetworkUser's active network service package
+     * Use currentPackage when displaying the customer's actual network service details.
+     */
+    public function getCurrentPackageAttribute()
+    {
+        if ($this->relationLoaded('networkUser') && $this->networkUser) {
+            return $this->networkUser->package;
+        }
+        
+        return $this->servicePackage;
+    }
+
+    /**
+     * Get sessions from network user (for backward compatibility)
+     * 
+     * Note: Returns empty collection if networkUser relationship isn't loaded.
+     * Ensure networkUser.sessions is eager-loaded in controller to avoid N+1 queries.
+     */
+    public function getSessionsAttribute()
+    {
+        return $this->relationLoaded('networkUser') && $this->networkUser 
+            ? $this->networkUser->sessions 
+            : collect();
+    }
+
+    /**
+     * Get service type from network user (for backward compatibility)
+     * 
+     * Note: Returns null if networkUser relationship isn't loaded.
+     * Ensure networkUser is eager-loaded in controller to avoid N+1 queries.
+     */
+    public function getServiceTypeAttribute()
+    {
+        return $this->relationLoaded('networkUser') && $this->networkUser 
+            ? $this->networkUser->service_type 
+            : null;
+    }
+
+    /**
+     * Get customer name (alias for name)
+     */
+    public function getCustomerNameAttribute()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Get IP address (needs to be fetched from network user or IP allocations)
+     * 
+     * Note: Returns null if ipAllocations relationship isn't loaded.
+     * Ensure ipAllocations is eager-loaded in controller to avoid N+1 queries.
+     */
+    public function getIpAddressAttribute()
+    {
+        return $this->relationLoaded('ipAllocations') && $this->ipAllocations->isNotEmpty()
+            ? $this->ipAllocations->first()->ip_address
+            : null;
+    }
+
+    /**
+     * Get MAC address (needs to be fetched from MAC addresses)
+     * 
+     * Note: Returns null if macAddresses relationship isn't loaded.
+     * Ensure macAddresses is eager-loaded in controller to avoid N+1 queries.
+     */
+    public function getMacAddressAttribute()
+    {
+        return $this->relationLoaded('macAddresses') && $this->macAddresses->isNotEmpty()
+            ? $this->macAddresses->first()->mac_address
+            : null;
     }
 }

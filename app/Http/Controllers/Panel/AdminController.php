@@ -863,11 +863,41 @@ class AdminController extends Controller
      */
     public function customersShow($id): View
     {
-        // Eager load relationships to avoid N+1 queries
-        $customer = NetworkUser::with(['package', 'sessions', 'user'])->findOrFail($id);
+        // Load the User model which is what all customer actions expect
+        // The $id could be either User ID or NetworkUser ID, so we need to handle both cases
+        $customer = User::with([
+            'networkUser.package', 
+            'networkUser.sessions',
+            'ipAllocations',
+            'macAddresses'
+        ])->find($id);
         
-        // Load ONU information if exists
-        $onu = \App\Models\Onu::where('network_user_id', $id)->with('olt')->first();
+        // If not found as User, try finding as NetworkUser and get the related User
+        if (!$customer) {
+            // Mirror the eager loading done above by loading the same User relations via NetworkUser
+            $networkUser = NetworkUser::with([
+                'user.ipAllocations',
+                'user.macAddresses',
+                'package',
+                'sessions',
+            ])->find($id);
+            
+            if ($networkUser && $networkUser->user) {
+                $customer = $networkUser->user;
+                $customer->setRelation('networkUser', $networkUser);
+            } else {
+                if ($networkUser && !$networkUser->user) {
+                    \Log::warning('NetworkUser found without associated User', ['network_user_id' => $id]);
+                }
+                abort(404, 'Customer not found');
+            }
+        }
+        
+        // Load ONU information if the customer has an associated NetworkUser
+        $onu = null;
+        if ($customer->networkUser) {
+            $onu = \App\Models\Onu::where('network_user_id', $customer->networkUser->id)->with('olt')->first();
+        }
 
         return view('panels.admin.customers.show', compact('customer', 'onu'));
     }
