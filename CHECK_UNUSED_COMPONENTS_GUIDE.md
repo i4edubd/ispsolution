@@ -46,7 +46,7 @@ php artisan app:check-unused-components --suggest-links
 Use the `--suggest-links` flag to see:
 - Detailed suggestions for linking unused panel views
 - Controller existence checks for each unused panel view
-- Suggested routes and controller methods for unlinking views
+- Suggested routes and controller methods for linking views
 - Dynamic view detection results
 - Grouped suggestions by panel type (Admin, Developer, Customer, etc.)
 
@@ -467,6 +467,14 @@ For issues or questions about this command:
 3. Check Laravel logs: `storage/logs/laravel.log`
 
 ## Version History
+
+- **v2.0.0** - Enhanced release
+  - Dynamic view detection for `getViewPrefix()` patterns
+  - View categorization by type (Panel, PDF, Email, Error, Other)
+  - Panel linkage suggestions with `--suggest-links` option
+  - Controller mapping from view paths
+  - Ready-to-use route and method generation
+  - Enhanced statistics with view breakdown
 
 - **v1.0.0** - Initial release
   - Controller analysis

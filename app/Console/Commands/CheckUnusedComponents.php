@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
@@ -367,8 +369,8 @@ class CheckUnusedComponents extends Command
                 "/getViewPrefix\(\)\s*\.\s*['\"]\.?" . preg_quote($lastPart, '/') . "['\"]/",
                 // Matches: $variable . '.index' or $variable . 'index'
                 "/\\\$\w+\s*\.\s*['\"]\.?" . preg_quote($lastPart, '/') . "['\"]/",
-                // Matches: view('index') (just the action name)
-                "/['\"]" . preg_quote($lastPart, '/') . "['\"]\s*\)/",
+                // Matches: view($variable . '.index') - context-aware
+                "/view\s*\([^)]*\.\s*['\"]" . preg_quote($lastPart, '/') . "['\"]\s*\)/i",
             ];
 
             foreach ($dynamicPatterns as $pattern) {
@@ -566,9 +568,19 @@ class CheckUnusedComponents extends Command
      */
     private function getHttpMethodForAction(string $action): string
     {
-        $postActions = ['store', 'update', 'destroy', 'delete'];
+        $postActions = ['store'];
+        $putPatchActions = ['update'];
+        $deleteActions = ['destroy'];
         
-        return in_array($action, $postActions) ? 'post' : 'get';
+        if (in_array($action, $postActions)) {
+            return 'post';
+        } elseif (in_array($action, $putPatchActions)) {
+            return 'put';
+        } elseif (in_array($action, $deleteActions)) {
+            return 'delete';
+        }
+        
+        return 'get';
     }
 
     /**
@@ -591,7 +603,7 @@ class CheckUnusedComponents extends Command
 
             foreach ($lines as $lineNumber => $line) {
                 // Match Route::method([Controller::class, 'method'])
-                if (preg_match('/Route::\w+\([^,]+,\s*\[\\\\?([^:]+)::class,\s*[\'"](\w+)[\'"]\]/', $line, $matches)) {
+                if (preg_match('/Route::\w+\([^,]+,\s*\[\\\\?([A-Za-z0-9_\\\\]+)::class,\s*[\'"](\w+)[\'"]\]/', $line, $matches)) {
                     $this->stats['routes']['total']++;
                     $controllerClass = trim($matches[1]);
                     $method = $matches[2];
@@ -778,12 +790,16 @@ class CheckUnusedComponents extends Command
             app_path('Console/Commands'),
             app_path('Services'),
             app_path('Listeners'),
+            app_path('Models'),
+            base_path('routes'),
         ];
 
         $unusedJobs = [];
 
         foreach ($jobs as $job) {
             $className = $this->getClassName($job);
+            // Construct full class name for jobs
+            $fullClassName = 'App\\Jobs\\' . $className;
             $isUsed = false;
 
             foreach ($searchPaths as $searchPath) {
@@ -799,11 +815,26 @@ class CheckUnusedComponents extends Command
 
                     $content = File::get($file);
 
-                    // Check for dispatch() calls or job class usage
-                    if (preg_match("/\b{$className}\b/", $content) ||
-                        preg_match("/dispatch\s*\(\s*new\s+{$className}/", $content)) {
+                    // Use comprehensive class usage check with proper parameters
+                    if ($this->isClassUsed($className, $fullClassName, $content)) {
                         $isUsed = true;
                         break 2;
+                    }
+                    
+                    // Additional check for static dispatch methods
+                    $dispatchPatterns = [
+                        "/{$className}::dispatch\b/",
+                        "/{$className}::dispatchSync\b/",
+                        "/{$className}::dispatchIf\b/",
+                        "/{$className}::dispatchUnless\b/",
+                        "/{$className}::dispatchAfterResponse\b/",
+                    ];
+                    
+                    foreach ($dispatchPatterns as $pattern) {
+                        if (preg_match($pattern, $content)) {
+                            $isUsed = true;
+                            break 3;
+                        }
                     }
                 }
             }
@@ -1038,7 +1069,8 @@ class CheckUnusedComponents extends Command
     {
         $content = File::get($filePath);
 
-        if (preg_match('/class\s+(\w+)/', $content, $matches)) {
+        // Extract class name from content, handling abstract and final classes
+        if (preg_match('/\b(?:abstract\s+|final\s+)?class\s+(\w+)/', $content, $matches)) {
             return $matches[1];
         }
 
@@ -1064,13 +1096,15 @@ class CheckUnusedComponents extends Command
      */
     private function isControllerUsedInRoutes(string $className, string $fullClassName, string $routeContent): bool
     {
-        // Check for [ClassName::class usage
-        if (preg_match("/\[{$className}::class/", $routeContent)) {
+        $escapedClassName = preg_quote($className, '/');
+
+        // Check for [ClassName::class] usage with word boundaries
+        if (preg_match('/\[\s*' . $escapedClassName . '\s*::class\b/', $routeContent)) {
             return true;
         }
 
         // Check for 'ClassName@method' usage (old Laravel style)
-        if (preg_match("/['\"].*{$className}@/", $routeContent)) {
+        if (preg_match('/[\'\"][^\'\"\n]*\b' . $escapedClassName . '@/', $routeContent)) {
             return true;
         }
 
@@ -1096,17 +1130,23 @@ class CheckUnusedComponents extends Command
         $methods = $matches[1];
 
         // Filter out magic methods and common Laravel methods
-        $excludeMethods = ['__construct', '__invoke', 'middleware', 'authorize', 'callAction'];
+        $excludeMethods = [
+            '__construct', '__invoke', '__call', '__callStatic', '__get', '__set',
+            'middleware', 'authorize', 'callAction', 'validateWith',
+            'dispatchNow', 'dispatchSync', 'dispatch', 'dispatchAfterResponse',
+            'getMiddleware', 'authorizeResource'
+        ];
 
         foreach ($methods as $method) {
             if (in_array($method, $excludeMethods)) {
                 continue;
             }
 
-            // Check if method is referenced in routes
+            // Check if method is referenced in routes for this specific controller
+            $controllerBaseName = class_basename($controllerPath);
             $patterns = [
+                // Match method name in quotes (e.g., 'methodName')
                 "/['\"]" . preg_quote($method, '/') . "['\"]/",
-                "/{$method}\s*\(/",
             ];
 
             $isUsed = false;
