@@ -497,16 +497,12 @@ All core functionality has been implemented and is accessible through the Admin 
 #### Unified Router Management
 **Location:** `/panel/admin/network/routers`
 
-The router management interface provides a single unified page for all router and device types:
-- **MikroTik Routers** - MikroTik router management
-- **NAS Devices** - Network Access Server configuration (MikroTik and Cisco routers function as NAS devices)
-- **Cisco Devices** - Cisco network device management
+The router management interface provides a single unified page for all network devices:
+- **Router/NAS Management** - MikroTik, Cisco, and other network devices (routers function as NAS devices)
 
 **Navigation:** Admin Panel → Network Devices → Routers
 
 All device types are shown on a single page with filtering capabilities. Use the "Router Type" filter dropdown to view specific device types (MikroTik, NAS, Cisco, etc.) or view all types together.
-
-**Note:** MikroTik and Cisco routers are also NAS devices, so the interface treats them as unified router management rather than separate categories.
 
 #### 1. Router Management (All Types Unified)
 **Location:** `/panel/admin/network/routers`
