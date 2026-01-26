@@ -97,4 +97,84 @@ class MikrotikRouter extends Model
     {
         return $query->where('tenant_id', $tenantId);
     }
+
+    /**
+     * Test connectivity to the router
+     */
+    public function testConnectivity(): bool
+    {
+        try {
+            // Use MikroTik API service to test connection
+            $service = app(\App\Services\MikrotikService::class);
+            return $service->testConnection($this);
+        } catch (\Exception $e) {
+            \Log::error("Router connectivity test failed: " . $e->getMessage(), [
+                'router_id' => $this->id,
+                'router_name' => $this->name
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Disconnect from the router
+     */
+    public function disconnect(): void
+    {
+        $this->update(['status' => 'offline']);
+        // Additional cleanup can be added here if needed
+    }
+
+    /**
+     * Connect to the router
+     */
+    public function connect(): bool
+    {
+        try {
+            $service = app(\App\Services\MikrotikService::class);
+            $connected = $service->connect($this);
+            
+            if ($connected) {
+                $this->update([
+                    'status' => 'online',
+                    'last_seen' => now()
+                ]);
+                return true;
+            }
+            
+            return false;
+        } catch (\Exception $e) {
+            \Log::error("Router connection failed: " . $e->getMessage(), [
+                'router_id' => $this->id,
+                'router_name' => $this->name
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Refresh router statistics
+     */
+    public function refreshStats(): void
+    {
+        try {
+            $service = app(\App\Services\MikrotikService::class);
+            $stats = $service->getSystemResources($this);
+            
+            if ($stats) {
+                $this->update([
+                    'cpu_usage' => $stats['cpu_load'] ?? 0,
+                    'memory_usage' => $stats['memory_usage'] ?? 0,
+                    'uptime' => $stats['uptime'] ?? null,
+                    'status' => 'online',
+                    'last_seen' => now(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error("Failed to refresh router stats: " . $e->getMessage(), [
+                'router_id' => $this->id,
+                'router_name' => $this->name
+            ]);
+        }
+    }
 }

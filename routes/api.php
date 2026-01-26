@@ -260,3 +260,9 @@ Route::prefix('validate')->middleware(['auth'])->group(function () {
     Route::get('/static-ip', [\App\Http\Controllers\Api\ValidationController::class, 'checkStaticIp'])->name('api.validate.static-ip');
 });
 
+// Router Management API Routes
+Route::prefix('routers')->middleware(['auth'])->group(function () {
+    Route::post('{router}/test', [\App\Http\Controllers\Api\RouterController::class, 'testConnection'])->name('api.routers.test');
+    Route::post('{router}/reconnect', [\App\Http\Controllers\Api\RouterController::class, 'reconnect'])->name('api.routers.reconnect');
+});
+
