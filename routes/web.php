@@ -264,6 +264,9 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::resource('custom-fields', \App\Http\Controllers\Panel\CustomerCustomFieldController::class);
     Route::post('/custom-fields/reorder', [\App\Http\Controllers\Panel\CustomerCustomFieldController::class, 'reorder'])->name('custom-fields.reorder');
 
+    // Billing Profiles Management
+    Route::resource('billing-profiles', \App\Http\Controllers\Panel\BillingProfileController::class);
+
     // IP Pool Migration
     Route::get('/ip-pools/migrate', [\App\Http\Controllers\Panel\IpPoolMigrationController::class, 'index'])->name('ip-pools.migrate');
     Route::post('/ip-pools/migrate/validate', [\App\Http\Controllers\Panel\IpPoolMigrationController::class, 'validateMigration'])->name('ip-pools.migrate.validate');
