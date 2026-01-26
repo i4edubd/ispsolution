@@ -293,7 +293,7 @@ $data = Model::where('created_by', auth()->id())->get();
 ## Business Logic Status
 
 The core business logic has been implemented as documented in `IMPLEMENTATION_STATUS.md`. For additional features and enhancements, refer to:
-- `TODO.md` - Current development tasks
+- [PROJECT_STATUS.md](../PROJECT_STATUS.md) - Current project status and deployment checklist
 - `TODO_FEATURES_A2Z.md` - Comprehensive feature specifications
 - `docs/DEVELOPMENT_TRACKING.md` - Roadmap and planning
 

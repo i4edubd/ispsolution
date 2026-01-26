@@ -344,5 +344,5 @@ Thanks to all contributors, testers, and users who have helped make this project
 **Last Review**: January 23, 2026  
 **Next Review**: February 15, 2026
 
-_For detailed feature specifications, see [TODO_FEATURES_A2Z.md](../TODO_FEATURES_A2Z.md)_  
-_For current TODO items, see [TODO.md](../TODO.md)_
+_For current project status and deployment information, see [PROJECT_STATUS.md](../PROJECT_STATUS.md)_  
+_For complete documentation index, see [DOCUMENTATION_INDEX.md](../DOCUMENTATION_INDEX.md)_
