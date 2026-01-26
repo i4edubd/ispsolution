@@ -235,18 +235,16 @@ function generateSecret() {
             const index = randomValues[i] % charset.length;
             secret += charset.charAt(index);
         }
-    } else {
-        // Fallback for environments without Web Crypto (less secure)
-        console.warn('Web Crypto API not available, using less secure random generator');
-        for (let i = 0; i < length; i++) {
-            const index = Math.floor(Math.random() * charset.length);
-            secret += charset.charAt(index);
+        
+        const radiusSecretInput = document.getElementById('radius_secret');
+        if (radiusSecretInput) {
+            radiusSecretInput.value = secret;
         }
-    }
-    
-    const radiusSecretInput = document.getElementById('radius_secret');
-    if (radiusSecretInput) {
-        radiusSecretInput.value = secret;
+    } else {
+        // Do not fall back to Math.random() for security-sensitive secrets
+        console.error('Web Crypto API not available. Unable to securely generate a RADIUS shared secret.');
+        alert('Your browser does not support secure random number generation. Please use a modern browser or manually enter a strong RADIUS shared secret.');
+        return;
     }
 }
 </script>

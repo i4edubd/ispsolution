@@ -33,6 +33,13 @@ class Customer extends User
         static::addGlobalScope('customer', function ($query) {
             $query->where('operator_level', 100);
         });
+        
+        // Set default operator_level when creating a new customer
+        static::creating(function ($customer) {
+            if (!isset($customer->operator_level)) {
+                $customer->operator_level = 100;
+            }
+        });
     }
 
     /**

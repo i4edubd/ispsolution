@@ -57,8 +57,8 @@
                     <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         {{ optional($customer->router)->name ?? 'N/A' }}
                     </p>
-                    @if($customer->router ?? false)
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $customer->router->ip_address }}</p>
+                    @if(optional($customer->router)->ip_address)
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ optional($customer->router)->ip_address }}</p>
                     @endif
                 </div>
 

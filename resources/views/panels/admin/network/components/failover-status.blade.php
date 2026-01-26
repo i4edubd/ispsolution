@@ -169,7 +169,7 @@ function failoverStatus() {
             
             this.isLoading = true;
             try {
-                const response = await fetch('{{ route("panel.admin.routers.failover.configure", ["routerId" => $router->id]) }}', {
+                const response = await fetch('{{ route("panel.admin.routers.failover.configure", $router->id) }}', {
                     method: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -199,8 +199,8 @@ function failoverStatus() {
             
             this.isLoading = true;
             try {
-                const radiusUrl = '{{ route("panel.admin.routers.failover.switch-to-radius", ["routerId" => $router->id]) }}';
-                const routerUrl = '{{ route("panel.admin.routers.failover.switch-to-router", ["routerId" => $router->id]) }}';
+                const radiusUrl = '{{ route("panel.admin.routers.failover.switch-to-radius", $router->id) }}';
+                const routerUrl = '{{ route("panel.admin.routers.failover.switch-to-router", $router->id) }}';
                 const endpoint = mode === 'radius' ? radiusUrl : routerUrl;
                 
                 const response = await fetch(endpoint, {
