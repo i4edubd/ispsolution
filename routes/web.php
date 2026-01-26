@@ -10,8 +10,12 @@ use App\Http\Controllers\Panel\CustomerController;
 use App\Http\Controllers\Panel\DeveloperController;
 use App\Http\Controllers\Panel\ManagerController;
 use App\Http\Controllers\Panel\MasterPackageController;
+use App\Http\Controllers\Panel\NasController;
 use App\Http\Controllers\Panel\OnuController;
 use App\Http\Controllers\Panel\OperatorPackageController;
+use App\Http\Controllers\Panel\RouterBackupController;
+use App\Http\Controllers\Panel\RouterConfigurationController;
+use App\Http\Controllers\Panel\RouterFailoverController;
 use App\Http\Controllers\Panel\RouterProvisioningController;
 use App\Http\Controllers\Panel\StaffController;
 use App\Http\Controllers\Panel\SuperAdminController;
@@ -477,15 +481,47 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
         Route::get('/templates/{templateId}', [RouterProvisioningController::class, 'getTemplate'])->name('templates.show');
     });
     
+    // Router Configuration Routes
+    Route::prefix('routers/configuration')->name('routers.configuration.')->group(function () {
+        Route::get('/', [RouterConfigurationController::class, 'index'])->name('index');
+        Route::get('/{routerId}', [RouterConfigurationController::class, 'show'])->name('show');
+        Route::post('/{routerId}/configure-radius', [RouterConfigurationController::class, 'configureRadius'])->name('configure-radius');
+        Route::post('/{routerId}/configure-ppp', [RouterConfigurationController::class, 'configurePpp'])->name('configure-ppp');
+        Route::post('/{routerId}/configure-firewall', [RouterConfigurationController::class, 'configureFirewall'])->name('configure-firewall');
+        Route::get('/{routerId}/radius-status', [RouterConfigurationController::class, 'radiusStatus'])->name('radius-status');
+    });
+    
+    // Router Backup Routes
+    Route::prefix('routers/backup')->name('routers.backup.')->group(function () {
+        Route::get('/', [RouterBackupController::class, 'index'])->name('index');
+        Route::get('/{routerId}', [RouterBackupController::class, 'show'])->name('show');
+        Route::post('/{routerId}/create', [RouterBackupController::class, 'create'])->name('create');
+        Route::get('/{routerId}/list', [RouterBackupController::class, 'list'])->name('list');
+        Route::post('/{routerId}/restore', [RouterBackupController::class, 'restore'])->name('restore');
+        Route::delete('/{routerId}/{backupId}', [RouterBackupController::class, 'destroy'])->name('destroy');
+        Route::post('/{routerId}/cleanup', [RouterBackupController::class, 'cleanup'])->name('cleanup');
+    });
+    
+    // Router Failover Routes
+    Route::prefix('routers/failover')->name('routers.failover.')->group(function () {
+        Route::get('/', [RouterFailoverController::class, 'index'])->name('index');
+        Route::get('/{routerId}', [RouterFailoverController::class, 'show'])->name('show');
+        Route::post('/{routerId}/configure', [RouterFailoverController::class, 'configure'])->name('configure');
+        Route::post('/{routerId}/switch-to-radius', [RouterFailoverController::class, 'switchToRadius'])->name('switch-to-radius');
+        Route::post('/{routerId}/switch-to-router', [RouterFailoverController::class, 'switchToRouter'])->name('switch-to-router');
+        Route::get('/{routerId}/status', [RouterFailoverController::class, 'status'])->name('status');
+        Route::post('/{routerId}/test-connection', [RouterFailoverController::class, 'testConnection'])->name('test-connection');
+    });
+    
     // NAS Device Management Routes
-    Route::get('/network/nas', [AdminController::class, 'nasList'])->name('network.nas');
-    Route::get('/network/nas/create', [AdminController::class, 'nasCreate'])->name('network.nas.create');
-    Route::post('/network/nas', [AdminController::class, 'nasStore'])->name('network.nas.store');
-    Route::get('/network/nas/{id}', [AdminController::class, 'nasShow'])->name('network.nas.show');
-    Route::get('/network/nas/{id}/edit', [AdminController::class, 'nasEdit'])->name('network.nas.edit');
-    Route::put('/network/nas/{id}', [AdminController::class, 'nasUpdate'])->name('network.nas.update');
-    Route::delete('/network/nas/{id}', [AdminController::class, 'nasDestroy'])->name('network.nas.destroy');
-    Route::post('/network/nas/{id}/test-connection', [AdminController::class, 'nasTestConnection'])->name('network.nas.test-connection');
+    Route::get('/network/nas', [NasController::class, 'index'])->name('network.nas');
+    Route::get('/network/nas/create', [NasController::class, 'create'])->name('network.nas.create');
+    Route::post('/network/nas', [NasController::class, 'store'])->name('network.nas.store');
+    Route::get('/network/nas/{id}', [NasController::class, 'show'])->name('network.nas.show');
+    Route::get('/network/nas/{id}/edit', [NasController::class, 'edit'])->name('network.nas.edit');
+    Route::put('/network/nas/{id}', [NasController::class, 'update'])->name('network.nas.update');
+    Route::delete('/network/nas/{id}', [NasController::class, 'destroy'])->name('network.nas.destroy');
+    Route::post('/network/nas/{id}/test-connection', [NasController::class, 'testConnection'])->name('network.nas.test-connection');
     
     // OLT Device Management Routes (proper CRUD)
     Route::get('/network/olt', [AdminController::class, 'oltList'])->name('network.olt');
