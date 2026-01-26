@@ -47,6 +47,8 @@ This is the central documentation hub for the ISP Solution project. All document
 - **[RADIUS_SETUP_GUIDE.md](RADIUS_SETUP_GUIDE.md)** - RADIUS server configuration
 - **[MIKROTIK_QUICKSTART.md](MIKROTIK_QUICKSTART.md)** - Quick MikroTik setup
 - **[MIKROTIK_ADVANCED_FEATURES.md](MIKROTIK_ADVANCED_FEATURES.md)** - Advanced MikroTik features
+- **[ROUTER_RADIUS_DEVELOPER_NOTES.md](ROUTER_RADIUS_DEVELOPER_NOTES.md)** - Router + RADIUS implementation guide (based on IspBills study)
+- **[ROUTER_RADIUS_TODO.md](ROUTER_RADIUS_TODO.md)** - Detailed implementation checklist for Router + RADIUS features
 
 ### Payment & Billing
 - **[PAYMENT_GATEWAY_GUIDE.md](PAYMENT_GATEWAY_GUIDE.md)** - Payment gateway integration
