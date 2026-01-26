@@ -89,4 +89,52 @@ return [
         'description' => 'Can create and manage operator accounts (legacy alias)',
         'default' => false,
     ],
+
+    'generate_bills' => [
+        'label' => 'Generate Bills',
+        'description' => 'Can generate bills for customers',
+        'default' => false,
+    ],
+
+    'edit_billing_profile' => [
+        'label' => 'Edit Billing Profile',
+        'description' => 'Can edit customer billing profiles',
+        'default' => false,
+    ],
+
+    'record_payments' => [
+        'label' => 'Record Payments',
+        'description' => 'Can record customer payments',
+        'default' => false,
+    ],
+
+    'send_sms' => [
+        'label' => 'Send SMS',
+        'description' => 'Can send SMS messages to customers',
+        'default' => false,
+    ],
+
+    'send_payment_link' => [
+        'label' => 'Send Payment Link',
+        'description' => 'Can send payment links to customers',
+        'default' => false,
+    ],
+
+    'change_operator' => [
+        'label' => 'Change Operator',
+        'description' => 'Can change customer operator assignments',
+        'default' => false,
+    ],
+
+    'edit_suspend_date' => [
+        'label' => 'Edit Suspend Date',
+        'description' => 'Can edit customer suspend dates',
+        'default' => false,
+    ],
+
+    'hotspot_recharge' => [
+        'label' => 'Hotspot Recharge',
+        'description' => 'Can recharge hotspot user accounts',
+        'default' => false,
+    ],
 ];

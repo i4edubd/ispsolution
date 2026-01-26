@@ -86,6 +86,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Currency Symbol
+    |--------------------------------------------------------------------------
+    |
+    | This value is the currency symbol that will be used throughout the
+    | application for displaying prices, bills, and financial information.
+    | Common symbols: '$', '€', '£', '₹', '৳', etc.
+    |
+    */
+
+    'currency_symbol' => env('APP_CURRENCY_SYMBOL', '$'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Encryption Key
     |--------------------------------------------------------------------------
     |
