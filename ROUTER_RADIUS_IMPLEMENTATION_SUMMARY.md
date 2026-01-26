@@ -497,37 +497,39 @@ All core functionality has been implemented and is accessible through the Admin 
 #### Unified Router Management
 **Location:** `/panel/admin/network/routers`
 
-The router management interface has been unified to provide a single access point for all router types:
-- **MikroTik Routers** - Primary router management
-- **NAS Devices** - Network Access Server configuration (via tabs)
-- **Cisco Devices** - Cisco network device management (via tabs)
+The router management interface provides a single unified page for all router and device types:
+- **MikroTik Routers** - MikroTik router management
+- **NAS Devices** - Network Access Server configuration (MikroTik and Cisco routers function as NAS devices)
+- **Cisco Devices** - Cisco network device management
 
 **Navigation:** Admin Panel → Network Devices → Routers
 
-From the main Routers page, you can switch between device types using the tabs at the top.
+All device types are shown on a single page with filtering capabilities. Use the "Router Type" filter dropdown to view specific device types (MikroTik, NAS, Cisco, etc.) or view all types together.
 
-#### 1. Router Management (MikroTik, NAS, Cisco)
-**Location:** `/panel/admin/network/routers` (with tabs for each type)
+**Note:** MikroTik and Cisco routers are also NAS devices, so the interface treats them as unified router management rather than separate categories.
+
+#### 1. Router Management (All Types Unified)
+**Location:** `/panel/admin/network/routers`
 
 **Available Operations:**
-- ✅ **List Routers** - View all configured routers (MikroTik, NAS, Cisco)
+- ✅ **List Routers** - View all configured routers and NAS devices in one unified view
+- ✅ **Filter by Type** - Use dropdown to filter by MikroTik, NAS, Cisco, or view all
 - ✅ **Create Router** - Add new router with authentication settings
 - ✅ **Edit Router** - Update router configuration (IP, ports, credentials)
 - ✅ **Delete Router** - Remove routers
 - ✅ **Test Connection** - Verify connectivity to routers
 
-**Tab Navigation:**
-- **MikroTik Routers** tab - `/panel/admin/network/routers`
-- **NAS Devices** tab - `/panel/admin/network/nas`
-- **Cisco Devices** tab - `/panel/admin/cisco`
+**Alternative Access Points:**
+- `/panel/admin/network/nas` - Direct access to NAS devices (separate view if needed)
+- `/panel/admin/cisco` - Direct access to Cisco devices (separate view if needed)
 
 **Controllers:** 
-- `App\Http\Controllers\Panel\AdminController` (MikroTik)
-- `App\Http\Controllers\Panel\NasController` (NAS)
-- `App\Http\Controllers\Panel\AdminController` (Cisco)
+- `App\Http\Controllers\Panel\AdminController` (Main routers view)
+- `App\Http\Controllers\Panel\NasController` (NAS-specific operations)
+- `App\Http\Controllers\Panel\AdminController` (Cisco operations)
 
 **Views:** 
-- `resources/views/panels/admin/network/routers.blade.php`
+- `resources/views/panels/admin/network/routers.blade.php` (unified view)
 - `resources/views/panels/admin/nas/index.blade.php`
 - `resources/views/panels/admin/cisco/index.blade.php`
 
@@ -656,28 +658,27 @@ All services are fully implemented and production-ready:
 To verify the implementation in your Admin Panel:
 
 1. **Login as Admin**
-2. **Navigate to Network Devices → Routers** - Opens unified router management page
-3. **Switch Between Device Types:**
-   - Click "MikroTik Routers" tab to view MikroTik devices
-   - Click "NAS Devices" tab to view NAS configurations
-   - Click "Cisco Devices" tab to view Cisco equipment
+2. **Navigate to Network Devices → Routers** - Opens unified router management page showing all device types
+3. **Filter Device Types:**
+   - Use the "Router Type" dropdown filter to view specific types (MikroTik, NAS, Cisco)
+   - Or select "All Types" to view all routers and NAS devices together
 4. **Access Router Actions** (from any router in the list):
    - Click "Configure" - RADIUS and PPP setup
    - Click "Backups" - Backup management
    - Click "Failover" - Authentication mode switching
    - Click "Provision" - Customer provisioning
 5. **Test RADIUS Functionality:**
-   - Create a test NAS device (via NAS Devices tab)
+   - Create a test router/NAS device (recognizing that MikroTik/Cisco routers also function as NAS devices)
    - Configure RADIUS on a MikroTik router
    - Provision a test user
    - Check RADIUS logs
 
-All features are accessible through the unified router management interface with tabbed navigation.
+All device types (MikroTik routers, NAS devices, Cisco devices) are managed through the single unified interface with filtering capabilities.
 
 ---
 
-**Document Version:** 3.0  
+**Document Version:** 4.0  
 **Last Updated:** 2026-01-26  
 **Status:** ✅ Implementation Complete - Production Ready  
-**Navigation:** Unified router management with consolidated menu items
+**Navigation:** Unified router management - single page for all device types with filtering
 **Next Review:** Post-deployment monitoring

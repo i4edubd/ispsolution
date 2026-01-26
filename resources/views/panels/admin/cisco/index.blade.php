@@ -22,8 +22,6 @@
         </div>
     </div>
 
-    <x-router.device-tabs activeTab="cisco" />
-
     <!-- Devices List -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
