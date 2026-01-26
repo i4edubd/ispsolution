@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Models\MikrotikRouter;
 use App\Services\RouterConfigurationService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class RouterConfigurationController extends Controller
@@ -19,34 +18,28 @@ class RouterConfigurationController extends Controller
 
     /**
      * Display router configuration interface.
+     *
+     * Note: UI views for router configuration are not yet implemented (Phase 6).
      */
     public function index(): View
     {
-        $routers = MikrotikRouter::with('nas')
-            ->where('tenant_id', getCurrentTenantId())
-            ->orderBy('name')
-            ->get();
-
-        return view('panels.admin.routers.configuration.index', compact('routers'));
+        abort(501, 'Router configuration UI is not implemented yet.');
     }
 
     /**
      * Show router configuration details.
+     *
+     * Note: UI views for router configuration are not yet implemented (Phase 6).
      */
     public function show(int $routerId): View
     {
-        $router = MikrotikRouter::where('tenant_id', getCurrentTenantId())
-            ->findOrFail($routerId);
-
-        $radiusStatus = $this->configurationService->getRadiusStatus($router);
-
-        return view('panels.admin.routers.configuration.show', compact('router', 'radiusStatus'));
+        abort(501, 'Router configuration UI is not implemented yet.');
     }
 
     /**
      * Configure RADIUS on router.
      */
-    public function configureRadius(Request $request, int $routerId): JsonResponse
+    public function configureRadius(int $routerId): JsonResponse
     {
         $router = MikrotikRouter::where('tenant_id', getCurrentTenantId())
             ->findOrFail($routerId);
@@ -59,7 +52,7 @@ class RouterConfigurationController extends Controller
     /**
      * Configure PPP settings on router.
      */
-    public function configurePpp(Request $request, int $routerId): JsonResponse
+    public function configurePpp(int $routerId): JsonResponse
     {
         $router = MikrotikRouter::where('tenant_id', getCurrentTenantId())
             ->findOrFail($routerId);
@@ -72,7 +65,7 @@ class RouterConfigurationController extends Controller
     /**
      * Configure firewall on router.
      */
-    public function configureFirewall(Request $request, int $routerId): JsonResponse
+    public function configureFirewall(int $routerId): JsonResponse
     {
         $router = MikrotikRouter::where('tenant_id', getCurrentTenantId())
             ->findOrFail($routerId);

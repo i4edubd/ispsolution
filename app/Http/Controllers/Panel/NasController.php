@@ -152,8 +152,7 @@ class NasController extends Controller
             ]);
         }
 
-        // If RADIUS port fails, try a simple ICMP-like check using socket
-        // Note: This requires proper network configuration
+        // RADIUS port is not reachable
         return response()->json([
             'success' => false,
             'message' => 'Connection failed - Device unreachable',

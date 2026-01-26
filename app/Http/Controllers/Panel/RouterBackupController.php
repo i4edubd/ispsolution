@@ -22,27 +22,22 @@ class RouterBackupController extends Controller
 
     /**
      * Display router backup management interface.
+     *
+     * Note: UI not yet implemented. This endpoint will be enabled in Phase 6 (UI Development).
      */
     public function index(): View
     {
-        $routers = MikrotikRouter::where('tenant_id', getCurrentTenantId())
-            ->orderBy('name')
-            ->get();
-
-        return view('panels.admin.routers.backup.index', compact('routers'));
+        abort(501, 'Router backup UI is not yet implemented. This endpoint will be available in Phase 6 (UI Development).');
     }
 
     /**
      * Show backups for a specific router.
+     *
+     * Note: UI not yet implemented. This endpoint will be enabled in Phase 6 (UI Development).
      */
     public function show(int $routerId): View
     {
-        $router = MikrotikRouter::where('tenant_id', getCurrentTenantId())
-            ->findOrFail($routerId);
-
-        $backups = $this->backupService->listBackups($router);
-
-        return view('panels.admin.routers.backup.show', compact('router', 'backups'));
+        abort(501, 'Router backup UI is not yet implemented. This endpoint will be available in Phase 6 (UI Development).');
     }
 
     /**

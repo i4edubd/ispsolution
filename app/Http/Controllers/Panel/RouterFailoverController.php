@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Models\MikrotikRouter;
 use App\Services\RouterRadiusFailoverService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class RouterFailoverController extends Controller
@@ -19,34 +18,28 @@ class RouterFailoverController extends Controller
 
     /**
      * Display router failover management interface.
+     *
+     * Note: UI not implemented yet. This endpoint will be wired to views in Phase 6.
      */
     public function index(): View
     {
-        $routers = MikrotikRouter::with('nas')
-            ->where('tenant_id', getCurrentTenantId())
-            ->orderBy('name')
-            ->get();
-
-        return view('panels.admin.routers.failover.index', compact('routers'));
+        abort(501, 'Router failover management UI is not available yet.');
     }
 
     /**
      * Show failover status for a specific router.
+     *
+     * Note: UI not implemented yet. This endpoint will be wired to views in Phase 6.
      */
     public function show(int $routerId): View
     {
-        $router = MikrotikRouter::where('tenant_id', getCurrentTenantId())
-            ->findOrFail($routerId);
-
-        $status = $this->failoverService->getRadiusStatus($router);
-
-        return view('panels.admin.routers.failover.show', compact('router', 'status'));
+        abort(501, 'Router failover status UI is not available yet.');
     }
 
     /**
      * Configure failover for a router.
      */
-    public function configure(Request $request, int $routerId): JsonResponse
+    public function configure(int $routerId): JsonResponse
     {
         $router = MikrotikRouter::where('tenant_id', getCurrentTenantId())
             ->findOrFail($routerId);
