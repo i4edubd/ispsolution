@@ -166,6 +166,11 @@ class User extends Authenticatable
 
     /**
      * Alias for servicePackage() for convenience.
+     * 
+     * Note: This returns the User's subscription/billing package (service_package_id).
+     * For the NetworkUser's active network service package, use $user->currentPackage instead.
+     * - package: User's subscription package (for billing, subscription management)
+     * - currentPackage: NetworkUser's active package (for network service details, bandwidth, etc.)
      */
     public function package(): BelongsTo
     {
@@ -786,11 +791,12 @@ class User extends Authenticatable
     /**
      * Get username from network user (for backward compatibility)
      * Note: Users table doesn't have a username column, this accessor
-     * provides it from the networkUser relationship or falls back to email
+     * provides it from the networkUser relationship or falls back to email.
+     * The null check catches programmatically set values only, not database values.
      */
     public function getUsernameAttribute($value)
     {
-        // If a value is passed (from database or set programmatically), use it
+        // If value is explicitly set programmatically (not from database), use it
         if (!is_null($value)) {
             return $value;
         }
@@ -807,11 +813,12 @@ class User extends Authenticatable
     /**
      * Get status from network user (for backward compatibility)
      * Note: Users table doesn't have a status column for customers,
-     * this accessor provides it from the networkUser relationship
+     * this accessor provides it from the networkUser relationship.
+     * The null check catches programmatically set values only, not database values.
      */
     public function getStatusAttribute($value)
     {
-        // If a value is passed (from database or set programmatically), use it
+        // If value is explicitly set programmatically (not from database), use it
         if (!is_null($value)) {
             return $value;
         }
@@ -827,6 +834,11 @@ class User extends Authenticatable
 
     /**
      * Get current active package (from networkUser if available, otherwise servicePackage)
+     * 
+     * Note: This differs from the package() relationship method (line 170):
+     * - package() returns User's subscription/billing package (service_package_id)
+     * - currentPackage returns NetworkUser's active network service package
+     * Use currentPackage when displaying the customer's actual network service details.
      */
     public function getCurrentPackageAttribute()
     {
@@ -839,6 +851,9 @@ class User extends Authenticatable
 
     /**
      * Get sessions from network user (for backward compatibility)
+     * 
+     * Note: Returns empty collection if networkUser relationship isn't loaded.
+     * Ensure networkUser.sessions is eager-loaded in controller to avoid N+1 queries.
      */
     public function getSessionsAttribute()
     {
@@ -849,6 +864,9 @@ class User extends Authenticatable
 
     /**
      * Get service type from network user (for backward compatibility)
+     * 
+     * Note: Returns null if networkUser relationship isn't loaded.
+     * Ensure networkUser is eager-loaded in controller to avoid N+1 queries.
      */
     public function getServiceTypeAttribute()
     {
@@ -867,6 +885,9 @@ class User extends Authenticatable
 
     /**
      * Get IP address (needs to be fetched from network user or IP allocations)
+     * 
+     * Note: Returns null if ipAllocations relationship isn't loaded.
+     * Ensure ipAllocations is eager-loaded in controller to avoid N+1 queries.
      */
     public function getIpAddressAttribute()
     {
@@ -877,6 +898,9 @@ class User extends Authenticatable
 
     /**
      * Get MAC address (needs to be fetched from MAC addresses)
+     * 
+     * Note: Returns null if macAddresses relationship isn't loaded.
+     * Ensure macAddresses is eager-loaded in controller to avoid N+1 queries.
      */
     public function getMacAddressAttribute()
     {

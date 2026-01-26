@@ -874,20 +874,30 @@ class AdminController extends Controller
         
         // If not found as User, try finding as NetworkUser and get the related User
         if (!$customer) {
-            $networkUser = NetworkUser::with(['user', 'package', 'sessions'])->find($id);
+            // Mirror the eager loading done above by loading the same User relations via NetworkUser
+            $networkUser = NetworkUser::with([
+                'user.ipAllocations',
+                'user.macAddresses',
+                'package',
+                'sessions',
+            ])->find($id);
+            
             if ($networkUser && $networkUser->user) {
                 $customer = $networkUser->user;
                 $customer->setRelation('networkUser', $networkUser);
-                // Load additional relationships
-                $customer->load(['ipAllocations', 'macAddresses']);
             } else {
+                if ($networkUser && !$networkUser->user) {
+                    \Log::warning('NetworkUser found without associated User', ['network_user_id' => $id]);
+                }
                 abort(404, 'Customer not found');
             }
         }
         
-        // Load ONU information if exists (using NetworkUser ID)
-        $networkUserId = $customer->networkUser?->id ?? $id;
-        $onu = \App\Models\Onu::where('network_user_id', $networkUserId)->with('olt')->first();
+        // Load ONU information if the customer has an associated NetworkUser
+        $onu = null;
+        if ($customer->networkUser) {
+            $onu = \App\Models\Onu::where('network_user_id', $customer->networkUser->id)->with('olt')->first();
+        }
 
         return view('panels.admin.customers.show', compact('customer', 'onu'));
     }
