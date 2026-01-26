@@ -237,15 +237,23 @@ function routerDashboard() {
         async refreshAll() {
             this.isRefreshing = true;
             try {
-                // Refresh page to get latest data
-                window.location.reload();
+                // Reload page after a brief delay to show spinner
+                setTimeout(() => {
+                    window.location.reload();
+                }, 300);
             } catch (error) {
                 console.error('Error refreshing:', error);
+                this.isRefreshing = false;
             }
         },
         
         async testConnection(routerId) {
             try {
+                // Show notification that test is starting
+                this.showNotification('Testing connection...', 'info');
+                
+                // Note: This requires API route: POST /api/routers/{id}/test
+                // to be implemented in routes/api.php
                 const response = await fetch(`/api/routers/${routerId}/test`, {
                     method: 'POST',
                     headers: {
@@ -258,18 +266,22 @@ function routerDashboard() {
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('Connection successful! Latency: ' + data.latency + 'ms');
+                    this.showNotification('Connection successful! Latency: ' + data.latency + 'ms', 'success');
                 } else {
-                    alert('Connection failed: ' + (data.message || 'Unknown error'));
+                    this.showNotification('Connection failed: ' + (data.message || 'Unknown error'), 'error');
                 }
             } catch (error) {
                 console.error('Connection test error:', error);
-                alert('Failed to test connection');
+                this.showNotification('Failed to test connection. API endpoint may not be configured.', 'error');
             }
         },
         
         async reconnect(routerId) {
             try {
+                this.showNotification('Initiating reconnection...', 'info');
+                
+                // Note: This requires API route: POST /api/routers/{id}/reconnect
+                // to be implemented in routes/api.php
                 const response = await fetch(`/api/routers/${routerId}/reconnect`, {
                     method: 'POST',
                     headers: {
@@ -282,15 +294,37 @@ function routerDashboard() {
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('Reconnection initiated');
-                    window.location.reload();
+                    this.showNotification('Reconnection initiated successfully', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
                 } else {
-                    alert('Reconnection failed: ' + (data.message || 'Unknown error'));
+                    this.showNotification('Reconnection failed: ' + (data.message || 'Unknown error'), 'error');
                 }
             } catch (error) {
                 console.error('Reconnection error:', error);
-                alert('Failed to reconnect');
+                this.showNotification('Failed to reconnect. API endpoint may not be configured.', 'error');
             }
+        },
+        
+        showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+                warning: 'bg-yellow-500'
+            };
+            
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
     }
 }

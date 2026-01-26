@@ -234,7 +234,7 @@
                                     {{ $allocation['assigned_to'] }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                    {{ $allocation['allocated_at']->format('M d, Y H:i') }}
+                                    {{ isset($allocation['allocated_at']) && $allocation['allocated_at'] ? $allocation['allocated_at']->format('M d, Y H:i') : 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
@@ -259,6 +259,11 @@
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
             <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Export Analytics</h3>
+            
+            <!-- Note: Export routes need to be implemented in routes/web.php:
+                 Route::get('panel/admin/network/ip-analytics/export', [NetworkController::class, 'exportIpAnalytics'])
+                      ->name('panel.admin.network.ip-analytics.export');
+            -->
             
             <div class="flex flex-wrap gap-3">
                 <a href="{{ route('panel.admin.network.ip-analytics.export', ['format' => 'pdf']) }}" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 transition">
