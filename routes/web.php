@@ -253,6 +253,13 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/packages/{id}/edit', [AdminController::class, 'packagesEdit'])->name('packages.edit');
     Route::put('/packages/{id}', [AdminController::class, 'packagesUpdate'])->name('packages.update');
     Route::delete('/packages/{id}', [AdminController::class, 'packagesDestroy'])->name('packages.destroy');
+    
+    // PPPoE Profile Association
+    Route::get('/packages/{package}/profiles', [\App\Http\Controllers\Panel\PackageProfileController::class, 'index'])->name('packages.profiles');
+    Route::put('/packages/{package}/profiles', [\App\Http\Controllers\Panel\PackageProfileController::class, 'update'])->name('packages.profiles.update');
+    Route::post('/packages/profiles/apply-to-customer', [\App\Http\Controllers\Panel\PackageProfileController::class, 'applyToCustomer'])->name('packages.profiles.apply');
+    Route::get('/routers/{router}/profiles', [\App\Http\Controllers\Panel\PackageProfileController::class, 'getRouterProfiles'])->name('routers.profiles');
+    
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
 
     // Role Label Settings
