@@ -320,6 +320,11 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::post('/customers/{id}/activate', [AdminController::class, 'customersActivate'])->name('customers.activate');
     Route::get('/customers/{id}', [AdminController::class, 'customersShow'])->name('customers.show');
     
+    // Customer Actions
+    Route::post('/customers/{id}/disconnect', [\App\Http\Controllers\Panel\CustomerDisconnectController::class, 'disconnect'])->name('customers.disconnect');
+    Route::get('/customers/{id}/change-package', [\App\Http\Controllers\Panel\CustomerPackageChangeController::class, 'edit'])->name('customers.change-package.edit');
+    Route::put('/customers/{id}/change-package', [\App\Http\Controllers\Panel\CustomerPackageChangeController::class, 'update'])->name('customers.change-package.update');
+    
     // Daily Recharge
     Route::get('/customers/{customer}/daily-recharge', [\App\Http\Controllers\Panel\DailyRechargeController::class, 'show'])->name('customers.daily-recharge.show');
     Route::post('/customers/{customer}/daily-recharge', [\App\Http\Controllers\Panel\DailyRechargeController::class, 'recharge'])->name('customers.daily-recharge.process');
