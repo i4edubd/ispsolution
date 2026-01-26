@@ -23,7 +23,7 @@ class CustomerSpeedLimitController extends Controller
     {
         $this->authorize('editSpeedLimit', $customer);
 
-        $networkUser = NetworkUser::where('user_id', $customer->id)->first();
+        $networkUser = NetworkUser::with('package')->where('user_id', $customer->id)->first();
         
         // Get current speed limit from RADIUS
         $speedLimit = null;
@@ -33,13 +33,18 @@ class CustomerSpeedLimitController extends Controller
                 ->first();
             
             if ($radReply) {
-                // Parse format: upload/download (e.g., "512k/1024k")
-                $parts = explode('/', $radReply->value);
+                // Parse format: upload/download (e.g., "512k/1024k", "512/1024", "512k / 1024k")
+                $parts = array_map('trim', explode('/', $radReply->value));
                 if (count($parts) === 2) {
-                    $speedLimit = [
-                        'upload' => (int) str_replace('k', '', $parts[0]),
-                        'download' => (int) str_replace('k', '', $parts[1]),
-                    ];
+                    $upload = preg_replace('/[^0-9]/', '', $parts[0]);
+                    $download = preg_replace('/[^0-9]/', '', $parts[1]);
+                    
+                    if (is_numeric($upload) && is_numeric($download)) {
+                        $speedLimit = [
+                            'upload' => (int) $upload,
+                            'download' => (int) $download,
+                        ];
+                    }
                 }
             }
         }
@@ -72,8 +77,8 @@ class CustomerSpeedLimitController extends Controller
 
         DB::beginTransaction();
         try {
-            $uploadSpeed = $request->input('upload_speed');
-            $downloadSpeed = $request->input('download_speed');
+            $uploadSpeed = (int) $request->input('upload_speed');
+            $downloadSpeed = (int) $request->input('download_speed');
 
             // If "0 = managed by router" option is selected
             if ($uploadSpeed === 0 && $downloadSpeed === 0) {
@@ -110,7 +115,12 @@ class CustomerSpeedLimitController extends Controller
             return back()->with('success', 'Speed limit updated successfully. Customer needs to reconnect for changes to take effect.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to update speed limit: ' . $e->getMessage()]);
+            \Log::error('Failed to update speed limit', [
+                'customer_id' => $customer->id,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'Failed to update speed limit. Please try again or contact support.']);
         }
     }
 
@@ -153,7 +163,12 @@ class CustomerSpeedLimitController extends Controller
             return back()->with('success', 'Speed limit reset to package default successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to reset speed limit: ' . $e->getMessage()]);
+            \Log::error('Failed to reset speed limit', [
+                'customer_id' => $customer->id,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'Failed to reset speed limit. Please try again or contact support.']);
         }
     }
 
@@ -181,7 +196,12 @@ class CustomerSpeedLimitController extends Controller
             return back()->with('success', 'Speed limit removed successfully. Router will manage bandwidth.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to remove speed limit: ' . $e->getMessage()]);
+            \Log::error('Failed to remove speed limit', [
+                'customer_id' => $customer->id,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'Failed to remove speed limit. Please try again or contact support.']);
         }
     }
 
@@ -192,10 +212,11 @@ class CustomerSpeedLimitController extends Controller
     {
         AuditLog::create([
             'user_id' => auth()->id(),
-            'action' => 'customer.speed_limit.update',
-            'description' => $description,
-            'model_type' => User::class,
-            'model_id' => $customer->id,
+            'tenant_id' => $customer->tenant_id,
+            'event' => 'customer.speed_limit.update',
+            'auditable_type' => User::class,
+            'auditable_id' => $customer->id,
+            'new_values' => ['description' => $description],
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
