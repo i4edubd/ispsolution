@@ -1828,18 +1828,18 @@ class AdminController extends Controller
             });
 
         $nas = Nas::where('tenant_id', $tenantId)
-            ->select('id', 'shortname', 'nasname', 'description')
+            ->select('id', 'short_name', 'nas_name', 'description', 'status')
             ->get()
             ->map(function ($device) {
                 return [
                     'id' => $device->id,
-                    'name' => $device->shortname,
+                    'name' => $device->short_name,
                     'type' => 'nas',
-                    'ip_address' => $device->nasname,
+                    'ip_address' => $device->nas_name,
                     'location' => $device->description ?? 'N/A',
                     'latitude' => 0,
                     'longitude' => 0,
-                    'status' => 'unknown',
+                    'status' => $device->status ?? 'unknown',
                 ];
             });
 
