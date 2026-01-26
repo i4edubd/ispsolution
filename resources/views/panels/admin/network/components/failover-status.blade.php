@@ -199,15 +199,18 @@ function failoverStatus() {
             
             this.isLoading = true;
             try {
-                const response = await fetch(`/routers/failover/${this.routerId}/switch`, {
+                const endpoint = mode === 'radius' 
+                    ? `/routers/failover/${this.routerId}/switch-to-radius`
+                    : `/routers/failover/${this.routerId}/switch-to-router`;
+                
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({ mode: mode })
+                    }
                 });
                 
                 const data = await response.json();
@@ -230,7 +233,7 @@ function failoverStatus() {
         async testRadius() {
             this.isLoading = true;
             try {
-                const response = await fetch(`/routers/failover/${this.routerId}/test`, {
+                const response = await fetch(`/routers/failover/${this.routerId}/test-connection`, {
                     method: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',

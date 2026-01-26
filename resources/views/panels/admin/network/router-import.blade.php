@@ -183,41 +183,47 @@ function routerImport() {
             this.statusMessage = 'Preparing import...';
             
             try {
-                const endpoint = this.getEndpoint();
-                this.statusMessage = `Importing ${this.importType}...`;
-                this.progress = 25;
-                
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({
-                        include_disabled: this.includeDisabled,
-                        create_backup: this.createBackup
-                    })
-                });
-                
-                this.progress = 75;
-                const data = await response.json();
-                this.progress = 100;
-                
-                if (data.success) {
-                    this.statusMessage = 'Import completed successfully!';
-                    this.results = {
-                        total: data.total || 0,
-                        success: data.success_count || 0,
-                        failed: data.failed_count || 0,
-                        errors: data.errors || []
-                    };
-                    this.showResults = true;
-                    this.showNotification('Import completed successfully!', 'success');
+                if (this.importType === 'all') {
+                    // Import all types sequentially
+                    await this.importAll();
                 } else {
-                    this.statusMessage = 'Import failed';
-                    this.showNotification(`Import failed: ${data.message || 'Unknown error'}`, 'error');
+                    const endpoint = this.getEndpoint();
+                    this.statusMessage = `Importing ${this.importType}...`;
+                    this.progress = 25;
+                    
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            router_id: this.routerId,
+                            include_disabled: this.includeDisabled,
+                            create_backup: this.createBackup
+                        })
+                    });
+                    
+                    this.progress = 75;
+                    const data = await response.json();
+                    this.progress = 100;
+                    
+                    if (data.success) {
+                        this.statusMessage = 'Import completed successfully!';
+                        this.results = {
+                            total: data.total || 0,
+                            success: data.success_count || 0,
+                            failed: data.failed_count || 0,
+                            errors: data.errors || []
+                        };
+                        this.showResults = true;
+                        this.showNotification('Import completed successfully!', 'success');
+                    } else {
+                        this.statusMessage = 'Import failed';
+                        this.showNotification(`Import failed: ${data.message || 'Unknown error'}`, 'error');
+                    }
                 }
             } catch (error) {
                 console.error('Import error:', error);
@@ -228,19 +234,69 @@ function routerImport() {
             }
         },
         
+        async importAll() {
+            const types = ['pools', 'profiles', 'secrets'];
+            let totalResults = { total: 0, success: 0, failed: 0, errors: [] };
+            
+            for (let i = 0; i < types.length; i++) {
+                const type = types[i];
+                this.statusMessage = `Importing ${type}... (${i + 1}/${types.length})`;
+                this.progress = Math.floor(((i + 1) / types.length) * 100);
+                
+                const endpoint = `/mikrotik/import/${type === 'pools' ? 'ip-pools' : type}`;
+                
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            router_id: this.routerId,
+                            include_disabled: this.includeDisabled,
+                            create_backup: this.createBackup && i === 0 // Only backup on first import
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        totalResults.total += data.total || 0;
+                        totalResults.success += data.success_count || 0;
+                        totalResults.failed += data.failed_count || 0;
+                        if (data.errors) {
+                            totalResults.errors = totalResults.errors.concat(data.errors);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Error importing ${type}:`, error);
+                    totalResults.errors.push(`Failed to import ${type}: ${error.message}`);
+                }
+            }
+            
+            this.statusMessage = 'All imports completed!';
+            this.results = totalResults;
+            this.showResults = true;
+            this.showNotification('All imports completed!', 'success');
+        },
+        
         getEndpoint() {
-            const baseUrl = `/routers/import/${this.routerId}`;
+            // Use the existing MikroTik import routes
             switch (this.importType) {
                 case 'pools':
-                    return `${baseUrl}/ip-pools`;
+                    return '/mikrotik/import/ip-pools';
                 case 'profiles':
-                    return `${baseUrl}/ppp-profiles`;
+                    return '/mikrotik/import/profiles';
                 case 'secrets':
-                    return `${baseUrl}/ppp-secrets`;
+                    return '/mikrotik/import/secrets';
                 case 'all':
-                    return `${baseUrl}/all`;
+                    // For "all", we'll need to call each endpoint sequentially
+                    return null; // Handle in startImport
                 default:
-                    return `${baseUrl}/all`;
+                    return '/mikrotik/import/ip-pools';
             }
         },
         
