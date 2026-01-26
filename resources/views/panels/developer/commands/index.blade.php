@@ -34,8 +34,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     @foreach ($artisanCommands as $command => $description)
                         <button 
-                            onclick="executeArtisanCommand('{{ $command }}')"
-                            class="text-left p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            type="button"
+                            class="artisan-command-btn text-left p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            data-command="{{ $command }}">
                             <div class="font-medium text-gray-900 dark:text-gray-100 text-sm">{{ $command }}</div>
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $description }}</div>
                         </button>
@@ -74,8 +75,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     @foreach ($systemCommands as $command => $description)
                         <button 
-                            onclick="executeSystemCommand('{{ $command }}')"
-                            class="text-left p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            type="button"
+                            class="system-command-btn text-left p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            data-command="{{ $command }}">
                             <div class="font-medium text-gray-900 dark:text-gray-100 text-sm">{{ $command }}</div>
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $description }}</div>
                         </button>
@@ -250,6 +252,22 @@
 
     document.getElementById('customSystemCommand').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') executeCustomSystem();
+    });
+
+    // Add event listeners for artisan command buttons
+    document.querySelectorAll('.artisan-command-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const command = this.getAttribute('data-command');
+            executeArtisanCommand(command);
+        });
+    });
+
+    // Add event listeners for system command buttons
+    document.querySelectorAll('.system-command-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const command = this.getAttribute('data-command');
+            executeSystemCommand(command);
+        });
     });
 </script>
 @endsection
