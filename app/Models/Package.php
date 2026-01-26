@@ -79,6 +79,11 @@ class Package extends Model
         return $this->hasMany(OperatorPackageRate::class, 'package_id');
     }
 
+    public function fup(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(PackageFup::class, 'package_id');
+    }
+
     // Query scopes for optimization
     public function scopeActive(Builder $query): Builder
     {

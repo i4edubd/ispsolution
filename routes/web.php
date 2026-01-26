@@ -253,6 +253,13 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::get('/packages/{id}/edit', [AdminController::class, 'packagesEdit'])->name('packages.edit');
     Route::put('/packages/{id}', [AdminController::class, 'packagesUpdate'])->name('packages.update');
     Route::delete('/packages/{id}', [AdminController::class, 'packagesDestroy'])->name('packages.destroy');
+    
+    // PPPoE Profile Association
+    Route::get('/packages/{package}/profiles', [\App\Http\Controllers\Panel\PackageProfileController::class, 'index'])->name('packages.profiles');
+    Route::put('/packages/{package}/profiles', [\App\Http\Controllers\Panel\PackageProfileController::class, 'update'])->name('packages.profiles.update');
+    Route::post('/packages/profiles/apply-to-customer', [\App\Http\Controllers\Panel\PackageProfileController::class, 'applyToCustomer'])->name('packages.profiles.apply');
+    Route::get('/routers/{router}/profiles', [\App\Http\Controllers\Panel\PackageProfileController::class, 'getRouterProfiles'])->name('routers.profiles');
+    
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
 
     // Role Label Settings
@@ -305,6 +312,14 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::post('/customers/{id}/suspend', [AdminController::class, 'customersSuspend'])->name('customers.suspend');
     Route::post('/customers/{id}/activate', [AdminController::class, 'customersActivate'])->name('customers.activate');
     Route::get('/customers/{id}', [AdminController::class, 'customersShow'])->name('customers.show');
+    
+    // Daily Recharge
+    Route::get('/customers/{customer}/daily-recharge', [\App\Http\Controllers\Panel\DailyRechargeController::class, 'show'])->name('customers.daily-recharge.show');
+    Route::post('/customers/{customer}/daily-recharge', [\App\Http\Controllers\Panel\DailyRechargeController::class, 'recharge'])->name('customers.daily-recharge.process');
+    Route::post('/customers/daily-recharge/calculate', [\App\Http\Controllers\Panel\DailyRechargeController::class, 'calculateRate'])->name('customers.daily-recharge.calculate');
+    Route::get('/customers/{customer}/auto-renewal', [\App\Http\Controllers\Panel\DailyRechargeController::class, 'autoRenewal'])->name('customers.auto-renewal');
+    Route::post('/customers/{customer}/auto-renewal', [\App\Http\Controllers\Panel\DailyRechargeController::class, 'updateAutoRenewal'])->name('customers.auto-renewal.update');
+    
     Route::get('/customers-deleted', [AdminController::class, 'deletedCustomers'])->name('customers.deleted');
     Route::get('/customers-online', [AdminController::class, 'onlineCustomers'])->name('customers.online');
     Route::get('/customers-offline', [AdminController::class, 'offlineCustomers'])->name('customers.offline');
