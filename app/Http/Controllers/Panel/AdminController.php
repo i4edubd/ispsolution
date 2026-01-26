@@ -865,7 +865,12 @@ class AdminController extends Controller
     {
         // Load the User model which is what all customer actions expect
         // The $id could be either User ID or NetworkUser ID, so we need to handle both cases
-        $customer = User::with(['networkUser.package', 'networkUser.sessions'])->find($id);
+        $customer = User::with([
+            'networkUser.package', 
+            'networkUser.sessions',
+            'ipAllocations',
+            'macAddresses'
+        ])->find($id);
         
         // If not found as User, try finding as NetworkUser and get the related User
         if (!$customer) {
@@ -873,6 +878,8 @@ class AdminController extends Controller
             if ($networkUser && $networkUser->user) {
                 $customer = $networkUser->user;
                 $customer->setRelation('networkUser', $networkUser);
+                // Load additional relationships
+                $customer->load(['ipAllocations', 'macAddresses']);
             } else {
                 abort(404, 'Customer not found');
             }
