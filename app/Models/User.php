@@ -168,6 +168,11 @@ class User extends Authenticatable
         return $this->hasMany(Payment::class);
     }
 
+    public function walletTransactions(): HasMany
+    {
+        return $this->hasMany(WalletTransaction::class);
+    }
+
     public function ipAllocations(): HasMany
     {
         return $this->hasMany(IpAllocation::class);
