@@ -18,23 +18,23 @@ class RouterHealthCheckService
         $startTime = microtime(true);
         $status = 'unknown';
         $error = null;
+        $responseTime = null;
         
         try {
             // Use existing MikrotikService to test connection
             $mikrotikService = app(MikrotikService::class);
-            $mikrotikService->setRouter($router);
             
-            // Try to connect and get system resource
-            $resource = $mikrotikService->getSystemResource();
+            // Try to get active sessions as a health check
+            $sessions = $mikrotikService->getActiveSessions($router->id);
             
             $responseTime = (int) ((microtime(true) - $startTime) * 1000);
             
-            if ($resource) {
-                // Connection successful
+            // Connection successful if we got a response
+            if ($sessions !== null) {
                 $status = $responseTime < 1000 ? 'online' : 'warning';
             } else {
                 $status = 'offline';
-                $error = 'Failed to get system resource';
+                $error = 'Failed to retrieve sessions from router';
             }
         } catch (\Exception $e) {
             $status = 'offline';
@@ -52,12 +52,12 @@ class RouterHealthCheckService
             'api_status' => $status,
             'last_checked_at' => Carbon::now(),
             'last_error' => $error,
-            'response_time_ms' => $responseTime ?? null,
+            'response_time_ms' => $responseTime,
         ]);
         
         return [
             'status' => $status,
-            'response_time' => $responseTime ?? null,
+            'response_time' => $responseTime,
             'error' => $error,
             'checked_at' => Carbon::now(),
         ];

@@ -43,11 +43,13 @@ class DailyRechargeService
         $amount = $dailyRate * $days;
 
         return DB::transaction(function () use ($customer, $package, $days, $amount) {
-            // Create invoice
+            // Create invoice with more robust unique number
+            $invoiceNumber = 'INV-' . date('Ymd') . '-' . str_pad((string) $customer->id, 6, '0', STR_PAD_LEFT) . '-' . substr(uniqid(), -4);
+            
             $invoice = Invoice::create([
                 'user_id' => $customer->id,
                 'tenant_id' => $customer->tenant_id,
-                'invoice_number' => 'INV-' . time() . '-' . $customer->id,
+                'invoice_number' => $invoiceNumber,
                 'invoice_date' => Carbon::now(),
                 'due_date' => Carbon::now()->addDays($days),
                 'subtotal' => $amount,
