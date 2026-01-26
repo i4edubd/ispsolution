@@ -180,14 +180,14 @@ This document tracks the implementation status of all customer detail page actio
 
 ## 3. Network & Speed Management
 
-### 3.1 Edit Speed Limit 🟡
-**Status:** Partial (existing controller needs enhancement)  
+### 3.1 Edit Speed Limit ⚪
+**Status:** Planned (controller does not exist yet)  
 **Files:**
-- Controller: `app/Http/Controllers/Panel/CustomerSpeedLimitController.php` (exists, needs review)
+- Controller: `app/Http/Controllers/Panel/CustomerSpeedLimitController.php` (needs to be created)
 - Policy: `app/Policies/CustomerPolicy.php::editSpeedLimit()` ✅
 
 **Requirements:**
-- [ ] Review existing implementation
+- [ ] Create controller implementation
 - [ ] Add RADIUS attribute updates
 - [ ] Add MikroTik queue updates
 - [ ] Support "0 = managed by router" option
@@ -195,37 +195,51 @@ This document tracks the implementation status of all customer detail page actio
 - [ ] Add expiry date for temporary changes
 - [ ] Show current speed limits
 - [ ] Add validation
+- [ ] Create UI view for speed limit management
 
 ---
 
-### 3.2 Edit Time Limit 🟡
-**Status:** Partial (existing controller needs enhancement)  
+### 3.2 Edit Time Limit ✅
+**Status:** Complete (existing implementation)  
 **Files:**
-- Controller: `app/Http/Controllers/Panel/CustomerTimeLimitController.php` (exists, needs review)
+- Controller: `app/Http/Controllers/Panel/CustomerTimeLimitController.php` ✅
 - Policy: Uses `editSpeedLimit()` permission
+- UI: `resources/views/panel/customers/time-limit/show.blade.php`
 
-**Requirements:**
-- [ ] Review existing implementation
-- [ ] Add session timeout configuration
-- [ ] Add daily/weekly time limits
-- [ ] Add time-of-day restrictions
-- [ ] Update RADIUS attributes
-- [ ] Show current time limits
+**Implementation Notes:**
+- Daily and monthly minute limits
+- Session duration limits
+- Time-of-day restrictions (allowed_start_time, allowed_end_time)
+- Auto-disconnect on limit exceeded
+- Reset functionality (daily, monthly, or both)
+- Full CRUD operations
+
+**Enhancements Needed:**
+- [ ] Add UI button on customer details page
+- [ ] Update RADIUS attributes when time limits change
+- [ ] Add integration with session monitoring
+- [ ] Show real-time usage vs limit
 
 ---
 
-### 3.3 Edit Volume Limit 🟡
-**Status:** Partial (existing controller needs enhancement)  
+### 3.3 Edit Volume Limit ✅
+**Status:** Complete (existing implementation)  
 **Files:**
-- Controller: `app/Http/Controllers/Panel/CustomerVolumeLimitController.php` (exists, needs review)
+- Controller: `app/Http/Controllers/Panel/CustomerVolumeLimitController.php` ✅
 - Policy: Uses `editSpeedLimit()` permission
+- UI: `resources/views/panel/customers/volume-limit/show.blade.php`
 
-**Requirements:**
-- [ ] Review existing implementation
-- [ ] Add data quota configuration
-- [ ] Add monthly/daily data limits
-- [ ] Update RADIUS attributes
-- [ ] Show current usage vs limit
+**Implementation Notes:**
+- Monthly and daily data limits (in MB)
+- Auto-suspend on limit exceeded
+- Rollover functionality
+- Reset functionality (daily, monthly, or both)
+- Full CRUD operations
+
+**Enhancements Needed:**
+- [ ] Add UI button on customer details page
+- [ ] Update RADIUS attributes when volume limits change
+- [ ] Show real-time usage vs limit
 - [ ] Support FUP integration
 
 ---
@@ -252,19 +266,26 @@ This document tracks the implementation status of all customer detail page actio
 
 ---
 
-### 3.5 Remove MAC Bind 🟡
-**Status:** Partial (existing controller needs enhancement)  
+### 3.5 Remove MAC Bind ✅
+**Status:** Complete (existing implementation)  
 **Files:**
-- Controller: `app/Http/Controllers/Panel/CustomerMacBindController.php` (exists)
+- Controller: `app/Http/Controllers/Panel/CustomerMacBindController.php` ✅
 - Policy: `app/Policies/CustomerPolicy.php::removeMacBind()` ✅
+- UI: `resources/views/panel/customers/mac-binding/index.blade.php`
 
-**Requirements:**
-- [ ] Review existing implementation
-- [ ] Add UI button on customer details page
-- [ ] Remove MAC binding from RADIUS
+**Implementation Notes:**
+- Full CRUD operations for MAC address bindings
+- MAC address validation and formatting
+- Device name and notes support
+- Status management (active/blocked)
+- Bulk import from CSV/TXT files
+- Duplicate prevention
+
+**Enhancements Needed:**
+- [ ] Add UI button on customer details page for quick access
+- [ ] Integrate with RADIUS MAC authentication
 - [ ] Clear MikroTik MAC binding if applicable
-- [ ] Log the action
-- [ ] Show confirmation dialog
+- [ ] Add real-time MAC address detection
 
 ---
 
@@ -431,21 +452,21 @@ This document tracks the implementation status of all customer detail page actio
 5. ⚪ Send SMS
 6. ⚪ Send Payment Link
 7. ⚪ Advance Payment
-8. 🟡 Edit Speed Limit (enhance existing)
-9. 🟡 Remove MAC Bind (enhance existing)
+8. ⚪ Edit Speed Limit (needs to be created)
+9. ✅ Edit Time Limit (complete)
+10. ✅ Edit Volume Limit (complete)
+11. ✅ Remove MAC Bind (complete)
 
 ### Phase 3: Enhancement Features (Week 5-6)
-10. ⚪ Edit Billing Profile
-11. ⚪ Internet History Export
-12. ⚪ Check Usage (real-time)
-13. 🟡 Edit Time Limit (enhance existing)
-14. 🟡 Edit Volume Limit (enhance existing)
+12. ⚪ Edit Billing Profile
+13. ⚪ Internet History Export
+14. ⚪ Check Usage (real-time)
+15. ⚪ Edit Suspend Date
 
 ### Phase 4: Advanced Features (Week 7-8)
-15. ⚪ Change Operator
-16. ⚪ Other Payment
-17. ⚪ Hotspot Recharge
-18. ⚪ Edit Suspend Date
+16. ⚪ Change Operator
+17. ⚪ Other Payment
+18. ⚪ Hotspot Recharge
 
 ---
 
@@ -494,7 +515,8 @@ This document tracks the implementation status of all customer detail page actio
 1. MikroTik API errors not gracefully handled in some cases
 2. RADIUS integration needs testing with real RADIUS server
 3. Policy permission checks need corresponding database permissions seeded
-4. Some existing controllers (speed/time/volume limit) need review
+4. Speed limit controller needs to be created (time/volume limit controllers are complete)
+5. UI integration needed - add buttons on customer details page for time/volume/MAC limit management
 
 ### Blockers
 None currently
