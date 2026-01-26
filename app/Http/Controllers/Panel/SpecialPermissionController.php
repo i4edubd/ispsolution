@@ -12,9 +12,16 @@ use Illuminate\Support\Facades\Gate;
 
 class SpecialPermissionController extends Controller
 {
-    public function __construct(
-        private SpecialPermissionService $permissionService
-    ) {
+    // Role level constants matching SpecialPermissionPolicy
+    private const ADMIN_LEVEL = 20;
+    private const OPERATOR_LEVEL = 30;
+    private const SUB_OPERATOR_LEVEL = 40;
+
+    private SpecialPermissionService $permissionService;
+
+    public function __construct(SpecialPermissionService $permissionService)
+    {
+        $this->permissionService = $permissionService;
     }
 
     /**
@@ -48,7 +55,7 @@ class SpecialPermissionController extends Controller
 
         $permissions = $query->orderBy('granted_at', 'desc')->paginate(20);
         $users = User::where('tenant_id', auth()->user()->tenant_id)
-            ->whereIn('role_level', [20, 30, 40]) // Admin, Operator, Sub-Operator
+            ->whereIn('role_level', [self::ADMIN_LEVEL, self::OPERATOR_LEVEL, self::SUB_OPERATOR_LEVEL])
             ->orderBy('name')
             ->get();
 
@@ -65,7 +72,7 @@ class SpecialPermissionController extends Controller
         Gate::authorize('create', SpecialPermission::class);
 
         $users = User::where('tenant_id', auth()->user()->tenant_id)
-            ->whereIn('role_level', [20, 30, 40])
+            ->whereIn('role_level', [self::ADMIN_LEVEL, self::OPERATOR_LEVEL, self::SUB_OPERATOR_LEVEL])
             ->orderBy('name')
             ->get();
 
@@ -87,7 +94,7 @@ class SpecialPermissionController extends Controller
             'resource_type' => 'nullable|string',
             'resource_id' => 'nullable|integer',
             'description' => 'nullable|string|max:500',
-            'expires_at' => 'nullable|date|after:today',
+            'expires_at' => 'nullable|date|after:now',
         ]);
 
         $user = User::findOrFail($validated['user_id']);

@@ -85,22 +85,30 @@ class RouterHealthCheckService
     }
     
     /**
+     * Create base query for router statistics.
+     */
+    private function createBaseQuery(?int $tenantId = null)
+    {
+        $query = MikrotikRouter::query();
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        return $query;
+    }
+
+    /**
      * Get status statistics for routers
      */
     public function getStatusStatistics(?int $tenantId = null): array
     {
-        $query = MikrotikRouter::query();
-        
-        if ($tenantId) {
-            $query->where('tenant_id', $tenantId);
-        }
-        
         return [
-            'online' => $query->clone()->where('api_status', 'online')->count(),
-            'offline' => $query->clone()->where('api_status', 'offline')->count(),
-            'warning' => $query->clone()->where('api_status', 'warning')->count(),
-            'unknown' => $query->clone()->where('api_status', 'unknown')->count(),
-            'total' => $query->count(),
+            'online' => $this->createBaseQuery($tenantId)->where('api_status', 'online')->count(),
+            'offline' => $this->createBaseQuery($tenantId)->where('api_status', 'offline')->count(),
+            'warning' => $this->createBaseQuery($tenantId)->where('api_status', 'warning')->count(),
+            'unknown' => $this->createBaseQuery($tenantId)->where('api_status', 'unknown')->count(),
+            'total' => $this->createBaseQuery($tenantId)->count(),
         ];
     }
     

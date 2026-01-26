@@ -8,12 +8,24 @@ use Illuminate\Auth\Access\Response;
 
 class SpecialPermissionPolicy
 {
+    // Role level constants
+    private const SUPER_ADMIN_LEVEL = 10;
+    private const ADMIN_LEVEL = 20;
+
+    /**
+     * Check if user is Super Admin or Admin
+     */
+    private function isSuperAdminOrAdmin(User $user): bool
+    {
+        return in_array($user->role_level, [self::SUPER_ADMIN_LEVEL, self::ADMIN_LEVEL]);
+    }
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return in_array($user->role_level, [10, 20]);
+        return $this->isSuperAdminOrAdmin($user);
     }
 
     /**
@@ -21,7 +33,7 @@ class SpecialPermissionPolicy
      */
     public function view(User $user, SpecialPermission $specialPermission): bool
     {
-        return in_array($user->role_level, [10, 20]) && 
+        return $this->isSuperAdminOrAdmin($user) && 
                $user->tenant_id === $specialPermission->tenant_id;
     }
 
@@ -30,7 +42,7 @@ class SpecialPermissionPolicy
      */
     public function create(User $user): bool
     {
-        return in_array($user->role_level, [10, 20]);
+        return $this->isSuperAdminOrAdmin($user);
     }
 
     /**
@@ -38,7 +50,7 @@ class SpecialPermissionPolicy
      */
     public function update(User $user, SpecialPermission $specialPermission): bool
     {
-        return in_array($user->role_level, [10, 20]) &&
+        return $this->isSuperAdminOrAdmin($user) &&
                $user->tenant_id === $specialPermission->tenant_id;
     }
 
@@ -47,7 +59,7 @@ class SpecialPermissionPolicy
      */
     public function delete(User $user, SpecialPermission $specialPermission): bool
     {
-        return in_array($user->role_level, [10, 20]) &&
+        return $this->isSuperAdminOrAdmin($user) &&
                $user->tenant_id === $specialPermission->tenant_id;
     }
 

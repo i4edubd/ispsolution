@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Invoice;
+use App\Models\NetworkUser;
 use App\Models\Package;
 use App\Models\Payment;
-use App\Models\Subscription;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class DailyRechargeService
 {
@@ -30,6 +31,7 @@ class DailyRechargeService
             'monthly' => (float) $package->price / 30,
             'quarterly' => (float) $package->price / 90,
             'yearly' => (float) $package->price / 365,
+            'onetime' => (float) $package->price / 30,
             default => (float) $package->price / 30,
         };
     }
@@ -50,44 +52,44 @@ class DailyRechargeService
                 'user_id' => $customer->id,
                 'tenant_id' => $customer->tenant_id,
                 'invoice_number' => $invoiceNumber,
-                'invoice_date' => Carbon::now(),
                 'due_date' => Carbon::now()->addDays($days),
-                'subtotal' => $amount,
+                'amount' => $amount,
                 'tax_amount' => 0,
-                'discount_amount' => 0,
                 'total_amount' => $amount,
-                'status' => 'unpaid',
+                'status' => 'pending',
                 'notes' => "Daily recharge for {$days} day(s)",
             ]);
 
-            // Create or extend subscription
-            $subscription = Subscription::where('user_id', $customer->id)
+            // Update or create NetworkUser (service subscription) instead of tenant Subscription
+            $networkUser = \App\Models\NetworkUser::where('user_id', $customer->id)
                 ->where('package_id', $package->id)
-                ->where('status', 'active')
+                ->where('is_active', true)
                 ->first();
 
-            if ($subscription) {
-                // Extend existing subscription
-                $subscription->update([
-                    'end_date' => Carbon::parse($subscription->end_date)->addDays($days),
+            if ($networkUser) {
+                // Extend existing service
+                $networkUser->update([
+                    'expiry_date' => Carbon::parse($networkUser->expiry_date)->addDays($days),
                 ]);
             } else {
-                // Create new subscription
-                $subscription = Subscription::create([
+                // Create new network user service
+                $networkUser = \App\Models\NetworkUser::create([
                     'user_id' => $customer->id,
                     'tenant_id' => $customer->tenant_id,
+                    'username' => $customer->email,
+                    'password' => bcrypt(Str::random(12)),
+                    'service_type' => 'pppoe',
                     'package_id' => $package->id,
-                    'start_date' => Carbon::now(),
-                    'end_date' => Carbon::now()->addDays($days),
+                    'expiry_date' => Carbon::now()->addDays($days),
                     'status' => 'active',
-                    'auto_renew' => false,
+                    'is_active' => true,
                 ]);
             }
 
             return [
                 'success' => true,
                 'invoice' => $invoice,
-                'subscription' => $subscription,
+                'network_user' => $networkUser,
                 'amount' => $amount,
                 'days' => $days,
             ];
