@@ -288,7 +288,7 @@ To test the panels:
 ## 📚 Documentation
 
 - See `PANEL_DEVELOPMENT_PROGRESS.md` for detailed progress tracking
-- See `TODO.md` for overall project tasks
+- See [PROJECT_STATUS.md](PROJECT_STATUS.md) for overall project status and deployment checklist
 - See `Feature.md` for feature list
 
 ## 🤝 Contributing

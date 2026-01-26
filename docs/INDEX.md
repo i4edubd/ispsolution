@@ -7,7 +7,8 @@ Welcome to the ISP Solution documentation! This index provides quick access to a
 - **[Installation Script](../install.sh)** ⭐ - Complete Ubuntu installation script (A to Z setup)
 - **[README](../README.md)** - Project overview and quick start
 - **[CHANGELOG](../CHANGELOG.md)** - Version history and recent changes
-- **[TODO](../TODO.md)** - Current development roadmap
+- **[PROJECT_STATUS](../PROJECT_STATUS.md)** ⭐ **NEW** - Current project status and deployment checklist
+- **[DOCUMENTATION_INDEX](../DOCUMENTATION_INDEX.md)** ⭐ **NEW** - Complete documentation hub
 
 ## 👥 User Guides (By Role)
 
@@ -71,11 +72,9 @@ Comprehensive guides for each user role in the system:
 ## 🎯 Feature Specifications
 
 ### Core Features
-- **[TODO Features A-Z](../TODO_FEATURES_A2Z.md)** - Complete feature list and specifications
-- **[Feature Requests](../Feature.md)** - Requested features
+- **[Feature Implementation Status](../FEATURE_IMPLEMENTATION_STATUS.md)** - Current feature status
 - **[Implementation Status](IMPLEMENTATION_STATUS.md)** - Current development status (Feature tracking)
 - **[Network Services Status](../IMPLEMENTATION_STATUS.md)** - Network services implementation
-- **[Implementation TODO](../IMPLEMENTATION_TODO.md)** - Implementation tasks
 
 ### Panel & UI
 - **[Panel Specifications](../PANELS_SPECIFICATION.md)** - Detailed panel documentation
@@ -153,8 +152,9 @@ Comprehensive guides for each user role in the system:
 
 ### Still Can't Find It?
 - Check the [README](../README.md) for general information
-- Review [TODO](../TODO.md) for upcoming features
+- Review [PROJECT_STATUS](../PROJECT_STATUS.md) for current status
 - Check [CHANGELOG](../CHANGELOG.md) for recent changes
+- See [DOCUMENTATION_INDEX](../DOCUMENTATION_INDEX.md) for complete documentation hub
 - Open an issue on GitHub
 
 ## 📝 Documentation Standards
