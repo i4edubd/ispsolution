@@ -171,6 +171,119 @@ class CustomerPolicy
     }
 
     /**
+     * Determine if the user can disconnect the customer.
+     */
+    public function disconnect(User $user, User $customer): bool
+    {
+        return $this->update($user, $customer) && $user->hasPermission('disconnect_customers');
+    }
+
+    /**
+     * Determine if the user can change customer's package.
+     */
+    public function changePackage(User $user, User $customer): bool
+    {
+        return $this->update($user, $customer) && $user->hasPermission('change_package');
+    }
+
+    /**
+     * Determine if the user can edit speed limits.
+     */
+    public function editSpeedLimit(User $user, User $customer): bool
+    {
+        return $this->update($user, $customer) && $user->hasPermission('edit_speed_limit');
+    }
+
+    /**
+     * Determine if the user can activate FUP.
+     */
+    public function activateFup(User $user, User $customer): bool
+    {
+        return $this->update($user, $customer) && $user->hasPermission('activate_fup');
+    }
+
+    /**
+     * Determine if the user can remove MAC binding.
+     */
+    public function removeMacBind(User $user, User $customer): bool
+    {
+        return $this->update($user, $customer) && $user->hasPermission('remove_mac_bind');
+    }
+
+    /**
+     * Determine if the user can generate bills.
+     */
+    public function generateBill(User $user, User $customer): bool
+    {
+        return $user->hasPermission('generate_bills') && $this->view($user, $customer);
+    }
+
+    /**
+     * Determine if the user can edit billing profile.
+     */
+    public function editBillingProfile(User $user, User $customer): bool
+    {
+        return $this->update($user, $customer) && $user->hasPermission('edit_billing_profile');
+    }
+
+    /**
+     * Determine if the user can send SMS.
+     */
+    public function sendSms(User $user, User $customer): bool
+    {
+        return $user->hasPermission('send_sms') && $this->view($user, $customer);
+    }
+
+    /**
+     * Determine if the user can send payment link.
+     */
+    public function sendLink(User $user, User $customer): bool
+    {
+        return $user->hasPermission('send_payment_link') && $this->view($user, $customer);
+    }
+
+    /**
+     * Determine if the user can record advance payment.
+     */
+    public function advancePayment(User $user, User $customer): bool
+    {
+        return $user->hasPermission('record_payments') && $this->view($user, $customer);
+    }
+
+    /**
+     * Determine if the user can change operator.
+     */
+    public function changeOperator(User $user, User $customer): bool
+    {
+        // Only high-level operators can transfer customers
+        return $user->operator_level <= 20 && $user->hasPermission('change_operator');
+    }
+
+    /**
+     * Determine if the user can edit suspend date.
+     */
+    public function editSuspendDate(User $user, User $customer): bool
+    {
+        return $this->update($user, $customer) && $user->hasPermission('edit_suspend_date');
+    }
+
+    /**
+     * Determine if the user can perform daily recharge (for daily billing).
+     */
+    public function dailyRecharge(User $user, User $customer): bool
+    {
+        return $this->update($user, $customer) && $user->hasPermission('daily_recharge');
+    }
+
+    /**
+     * Determine if the user can perform hotspot recharge.
+     */
+    public function hotspotRecharge(User $user, User $customer): bool
+    {
+        return $this->update($user, $customer) && $user->hasPermission('hotspot_recharge');
+    }
+
+    /**
      * Check if user has a special permission.
      */
     private function hasSpecialPermission(User $user, string $permission): bool
