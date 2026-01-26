@@ -334,6 +334,7 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
     Route::post('/customers/{customer}/bills', [\App\Http\Controllers\Panel\CustomerBillingController::class, 'storeBill'])->name('customers.bills.store');
     Route::get('/customers/{customer}/billing-profile', [\App\Http\Controllers\Panel\CustomerBillingController::class, 'editBillingProfile'])->name('customers.billing-profile.edit');
     Route::put('/customers/{customer}/billing-profile', [\App\Http\Controllers\Panel\CustomerBillingController::class, 'updateBillingProfile'])->name('customers.billing-profile.update');
+    Route::get('/customers/{customer}/other-payment', [\App\Http\Controllers\Panel\CustomerBillingController::class, 'createOtherPayment'])->name('customers.other-payment.create');
     Route::post('/customers/{customer}/other-payment', [\App\Http\Controllers\Panel\CustomerBillingController::class, 'storeOtherPayment'])->name('customers.other-payment.store');
     
     // Section 4: Communication & Support

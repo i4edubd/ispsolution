@@ -153,6 +153,16 @@ class CustomerBillingController extends Controller
     }
 
     /**
+     * Show the other payment form
+     */
+    public function createOtherPayment(User $customer)
+    {
+        $this->authorize('advancePayment', $customer);
+
+        return view('panels.admin.customers.billing.other-payment', compact('customer'));
+    }
+
+    /**
      * Store other payment (non-package payment)
      */
     public function storeOtherPayment(Request $request, User $customer)
@@ -164,7 +174,7 @@ class CustomerBillingController extends Controller
             'amount' => 'required|numeric|min:0.01',
             'payment_method' => 'required|string|in:cash,bank_transfer,online,card',
             'transaction_reference' => 'nullable|string|max:255',
-            'description' => 'required|string|max:500',
+            'description' => 'nullable|string|max:500',
             'payment_date' => 'required|date',
         ]);
 
