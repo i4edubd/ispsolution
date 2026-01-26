@@ -58,7 +58,7 @@ class WalletController extends Controller
 
             $action = $validated['amount'] > 0 ? 'credited' : 'debited';
             return redirect()->back()->with('success', "Wallet balance {$action} successfully.");
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return redirect()->back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
     }

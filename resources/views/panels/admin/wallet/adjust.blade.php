@@ -8,9 +8,12 @@
         <h1 class="text-3xl font-bold mb-6">Adjust Wallet Balance</h1>
         <p class="mb-4">User: {{ $user->name }}</p>
 
+        @php
+            $currency = optional($user->billingProfile)->currency ?? config('app.currency', 'BDT');
+        @endphp
         <div class="mb-6 p-4 bg-blue-50 rounded">
             <p class="text-sm">Current Balance</p>
-            <p class="text-2xl font-bold">{{ number_format($user->wallet_balance ?? 0, 2) }} BDT</p>
+            <p class="text-2xl font-bold">{{ number_format($user->wallet_balance ?? 0, 2) }} {{ $currency }}</p>
         </div>
 
         <form action="{{ route('panel.admin.wallet.adjust', $user) }}" method="POST">

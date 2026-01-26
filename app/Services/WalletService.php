@@ -96,6 +96,10 @@ class WalletService
         string $description = null,
         int $createdBy = null
     ): WalletTransaction {
+        if ($amount == 0) {
+            throw new \InvalidArgumentException('Adjustment amount cannot be zero');
+        }
+        
         if ($amount > 0) {
             return $this->addCredit($user, $amount, $description, 'Adjustment', null, $createdBy);
         } else {

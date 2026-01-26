@@ -6,7 +6,7 @@
 <div class="space-y-6">
     <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
         <h1 class="text-3xl font-bold mb-4">Wallet Transaction History</h1>
-        <p class="mb-6">User: {{ $user->name }} | Balance: {{ number_format($user->wallet_balance ?? 0, 2) }} BDT</p>
+        <p class="mb-6">User: {{ $user->name }} | Balance: {{ number_format($user->wallet_balance ?? 0, 2) }} {{ optional($user->billingProfile)->currency ?? config('app.currency', 'BDT') }}</p>
 
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">

@@ -269,7 +269,7 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'role:ad
 
     // Wallet Management
     Route::get('/users/{user}/wallet/adjust', [\App\Http\Controllers\Panel\WalletController::class, 'adjustForm'])->name('wallet.adjust-form');
-    Route::post('/users/{user}/wallet/adjust', [\App\Http\Controllers\Panel\WalletController::class, 'adjust'])->name('wallet.adjust');
+    Route::post('/users/{user}/wallet/adjust', [\App\Http\Controllers\Panel\WalletController::class, 'adjust'])->middleware('password.confirm')->name('wallet.adjust');
     Route::get('/users/{user}/wallet/history', [\App\Http\Controllers\Panel\WalletController::class, 'history'])->name('wallet.history');
 
     // IP Pool Migration

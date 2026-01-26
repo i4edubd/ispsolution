@@ -74,11 +74,21 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right text-sm">
+                                <a href="{{ route('panel.admin.billing-profiles.show', $profile) }}" class="text-indigo-600 mr-3">View</a>
                                 <a href="{{ route('panel.admin.billing-profiles.edit', $profile) }}" class="text-blue-600 mr-3">Edit</a>
                                 <form action="{{ route('panel.admin.billing-profiles.destroy', $profile) }}" method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600" @if($profile->users_count > 0) disabled @endif>Delete</button>
+                                    <button
+                                        type="submit"
+                                        class="text-red-600 @if($profile->users_count > 0) opacity-50 cursor-not-allowed @endif"
+                                        @if($profile->users_count > 0)
+                                            disabled
+                                            title="Cannot delete profile with assigned customers"
+                                        @endif
+                                    >
+                                        Delete
+                                    </button>
                                 </form>
                             </td>
                         </tr>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Traits\BelongsToTenant;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -61,7 +62,7 @@ class WalletTransaction extends Model
     /**
      * Scope to filter by transaction type.
      */
-    public function scopeOfType($query, string $type)
+    public function scopeOfType(Builder $query, string $type): Builder
     {
         return $query->where('type', $type);
     }
@@ -69,7 +70,7 @@ class WalletTransaction extends Model
     /**
      * Scope to filter credits.
      */
-    public function scopeCredits($query)
+    public function scopeCredits(Builder $query): Builder
     {
         return $query->where('type', 'credit');
     }
@@ -77,7 +78,7 @@ class WalletTransaction extends Model
     /**
      * Scope to filter debits.
      */
-    public function scopeDebits($query)
+    public function scopeDebits(Builder $query): Builder
     {
         return $query->where('type', 'debit');
     }
