@@ -12,45 +12,6 @@
         </div>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <!-- Total Users -->
-        <x-info-box 
-            title="Total Users" 
-            :value="$stats['total_users']" 
-            icon="users" 
-            color="indigo"
-            link="{{ route('panel.admin.users') }}"
-        />
-
-        <!-- Total Network Users -->
-        <x-info-box 
-            title="Network Users" 
-            :value="$stats['total_network_users']" 
-            icon="network" 
-            color="green"
-            link="{{ route('panel.admin.customers') }}"
-        />
-
-        <!-- Active Users -->
-        <x-info-box 
-            title="Active Users" 
-            :value="$stats['active_users']" 
-            icon="check" 
-            color="yellow"
-            link="{{ route('panel.admin.customers', ['status' => 'active']) }}"
-        />
-
-        <!-- Total Packages -->
-        <x-info-box 
-            title="Total Packages" 
-            :value="$stats['total_packages']" 
-            icon="package" 
-            color="red"
-            link="{{ route('panel.admin.packages') }}"
-        />
-    </div>
-
     <!-- Customer Statistics Detail -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">
@@ -91,43 +52,6 @@
                     icon="network" 
                     color="purple"
                     subtitle="PPPoE connection type"
-                />
-
-                <!-- Hotspot Customers -->
-                <x-info-box 
-                    title="Hotspot Users" 
-                    :value="$stats['hotspot_customers']" 
-                    icon="wifi" 
-                    color="orange"
-                    subtitle="Hotspot connection type"
-                />
-
-                <!-- Expiring Today -->
-                <x-info-box 
-                    title="Expiring Today" 
-                    :value="$stats['expiring_today'] ?? 0" 
-                    icon="clock" 
-                    color="red"
-                    subtitle="Needs renewal"
-                />
-
-                <!-- New Customers Today -->
-                <x-info-box 
-                    title="New Today" 
-                    :value="$stats['new_customers_today'] ?? 0" 
-                    icon="users" 
-                    color="teal"
-                    subtitle="Registered today"
-                />
-
-                <!-- Tickets Today -->
-                <x-info-box 
-                    title="Tickets Today" 
-                    :value="$stats['tickets_today'] ?? 0" 
-                    icon="alert" 
-                    color="blue"
-                    link="{{ route('panel.tickets.index', ['date' => today()->format('Y-m-d')]) }}"
-                    subtitle="Support requests"
                 />
             </div>
         </div>
