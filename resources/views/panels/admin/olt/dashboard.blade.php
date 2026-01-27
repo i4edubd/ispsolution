@@ -186,7 +186,6 @@ function oltDashboard() {
                 const response = await fetch('/api/v1/olt/', {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'X-Requested-With': 'XMLHttpRequest'

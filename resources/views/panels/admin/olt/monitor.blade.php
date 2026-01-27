@@ -286,7 +286,6 @@ function onuMonitor(oltId) {
                 const response = await fetch(`/api/v1/olt/${this.oltId}/monitor-onus`, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'X-Requested-With': 'XMLHttpRequest'

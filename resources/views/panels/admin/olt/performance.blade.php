@@ -288,7 +288,6 @@ function performanceMetrics(oltId) {
                 const statsResponse = await fetch(`/api/v1/olt/${this.oltId}/statistics`, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'X-Requested-With': 'XMLHttpRequest'
@@ -310,7 +309,6 @@ function performanceMetrics(oltId) {
                 const portResponse = await fetch(`/api/v1/olt/${this.oltId}/port-utilization`, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'X-Requested-With': 'XMLHttpRequest'
