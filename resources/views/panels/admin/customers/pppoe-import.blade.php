@@ -200,13 +200,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add form submit handler to ensure hidden fields are populated
-    if (form) {
+    if (form && nasIdInput && routerIdInput) {
         form.addEventListener('submit', function(e) {
             // Check if at least one hidden field has a value
             if (!nasIdInput.value && !routerIdInput.value) {
                 e.preventDefault();
                 alert('Please select a NAS device or Mikrotik router before submitting.');
-                deviceSelect.focus();
+                if (deviceSelect) {
+                    deviceSelect.focus();
+                }
                 return false;
             }
         });
