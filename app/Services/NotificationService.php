@@ -286,4 +286,111 @@ class NotificationService
                 ->queue(new PaymentReceived($payment));
         }
     }
+
+    /**
+     * Send customer suspended notification
+     */
+    public function sendCustomerSuspendedNotification($user, string $reason): bool
+    {
+        $emailSent = false;
+        $smsSent = false;
+
+        try {
+            if ($user && $user->email) {
+                // Send simple email notification
+                Mail::raw(
+                    "Dear {$user->name},\n\n" .
+                    "Your account has been suspended.\n" .
+                    "Reason: {$reason}\n\n" .
+                    "Please contact support for more information.\n\n" .
+                    "Best regards,\n" .
+                    config('app.name'),
+                    function ($message) use ($user) {
+                        $message->to($user->email)
+                            ->subject('Account Suspended - ' . config('app.name'));
+                    }
+                );
+
+                Log::info('Customer suspended email sent', [
+                    'user_id' => $user->id,
+                    'reason' => $reason,
+                ]);
+
+                $emailSent = true;
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send customer suspended email', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Send SMS if enabled
+        if (config('sms.enabled', false) && $this->smsService && $user->phone) {
+            try {
+                $message = "Your account has been suspended. Reason: {$reason}. Contact support for assistance.";
+                $smsSent = $this->smsService->sendSms($user->phone, $message);
+            } catch (\Exception $e) {
+                Log::error('Failed to send customer suspended SMS', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $emailSent || $smsSent;
+    }
+
+    /**
+     * Send customer activated notification
+     */
+    public function sendCustomerActivatedNotification($user): bool
+    {
+        $emailSent = false;
+        $smsSent = false;
+
+        try {
+            if ($user && $user->email) {
+                // Send simple email notification
+                Mail::raw(
+                    "Dear {$user->name},\n\n" .
+                    "Your account has been activated successfully.\n" .
+                    "You can now access our services.\n\n" .
+                    "Thank you for choosing " . config('app.name') . ".\n\n" .
+                    "Best regards,\n" .
+                    config('app.name'),
+                    function ($message) use ($user) {
+                        $message->to($user->email)
+                            ->subject('Account Activated - ' . config('app.name'));
+                    }
+                );
+
+                Log::info('Customer activated email sent', [
+                    'user_id' => $user->id,
+                ]);
+
+                $emailSent = true;
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send customer activated email', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Send SMS if enabled
+        if (config('sms.enabled', false) && $this->smsService && $user->phone) {
+            try {
+                $message = "Your account has been activated successfully. Welcome to " . config('app.name') . "!";
+                $smsSent = $this->smsService->sendSms($user->phone, $message);
+            } catch (\Exception $e) {
+                Log::error('Failed to send customer activated SMS', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $emailSent || $smsSent;
+    }
 }

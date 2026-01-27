@@ -25,12 +25,15 @@ use App\Models\PaymentGateway;
 use App\Models\Role;
 use App\Models\ServicePackage;
 use App\Models\User;
+use App\Services\AuditLogService;
 use App\Services\CustomerCacheService;
 use App\Services\CustomerFilterService;
 use App\Services\ExcelExportService;
 use App\Services\MikrotikService;
+use App\Services\NotificationService;
 use App\Services\PdfExportService;
 use App\Services\PdfService;
+use App\Services\RadiusService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -1226,10 +1229,16 @@ class AdminController extends Controller
     /**
      * Suspend a customer.
      */
-    public function customersSuspend($id)
-    {
+    public function customersSuspend(
+        Request $request,
+        $id,
+        RadiusService $radiusService,
+        MikrotikService $mikrotikService,
+        NotificationService $notificationService,
+        AuditLogService $auditLogService
+    ) {
         try {
-            $customer = NetworkUser::with('user')->findOrFail($id);
+            $customer = NetworkUser::with(['user', 'package'])->findOrFail($id);
 
             // Authorization check on the related User model
             if ($customer->user) {
@@ -1244,25 +1253,104 @@ class AdminController extends Controller
                 ], 400);
             }
 
-            $customer->status = 'suspended';
-            $customer->save();
+            // Get suspend reason from request
+            $reason = $request->input('reason', 'Manual suspension by admin');
 
-            // Clear cache if CustomerCacheService is being used
-            if (class_exists('\App\Services\CustomerCacheService')) {
-                \Cache::tags(['customers'])->flush();
+            DB::beginTransaction();
+
+            try {
+                // Update customer status
+                $oldStatus = $customer->status;
+                $customer->status = 'suspended';
+                $customer->save();
+
+                // RADIUS integration: Disable network access for PPPoE customers
+                if ($customer->service_type === 'pppoe' && $customer->username) {
+                    try {
+                        // Update RADIUS attributes to disable access
+                        $radiusService->updateUser($customer->username, [
+                            'Auth-Type' => 'Reject',
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to update RADIUS for suspended customer', [
+                            'customer_id' => $customer->id,
+                            'username' => $customer->username,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                // MikroTik integration: Disconnect active sessions
+                if ($customer->username) {
+                    try {
+                        // Get customer's router if applicable
+                        $router = $customer->package?->mikrotikRouter ?? MikrotikRouter::where('is_active', true)->first();
+                        
+                        if ($router) {
+                            // Get active sessions
+                            $sessions = $mikrotikService->getActiveSessions($router->id);
+                            
+                            foreach ($sessions as $session) {
+                                if (isset($session['name']) && $session['name'] === $customer->username) {
+                                    $mikrotikService->disconnectSession($session['id']);
+                                }
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to disconnect MikroTik sessions for suspended customer', [
+                            'customer_id' => $customer->id,
+                            'username' => $customer->username,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                // Send notification to customer
+                if ($customer->user) {
+                    try {
+                        $notificationService->sendCustomerSuspendedNotification($customer->user, $reason);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to send suspension notification', [
+                            'customer_id' => $customer->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                // Audit logging
+                $auditLogService->log(
+                    'customer_suspended',
+                    $customer,
+                    ['status' => $oldStatus],
+                    ['status' => 'suspended', 'reason' => $reason],
+                    ['reason' => $reason]
+                );
+
+                DB::commit();
+
+                // Clear cache
+                if (class_exists('\App\Services\CustomerCacheService')) {
+                    \Cache::tags(['customers'])->flush();
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Customer suspended successfully.',
+                ]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
             }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Customer suspended successfully.',
-            ]);
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'You are not authorized to suspend this customer.',
             ], 403);
         } catch (\Exception $e) {
-            \Log::error('Failed to suspend customer: ' . $e->getMessage());
+            Log::error('Failed to suspend customer: ' . $e->getMessage(), [
+                'customer_id' => $id,
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return response()->json([
                 'success' => false,
@@ -1274,10 +1362,15 @@ class AdminController extends Controller
     /**
      * Activate a customer.
      */
-    public function customersActivate($id)
-    {
+    public function customersActivate(
+        $id,
+        RadiusService $radiusService,
+        MikrotikService $mikrotikService,
+        NotificationService $notificationService,
+        AuditLogService $auditLogService
+    ) {
         try {
-            $customer = NetworkUser::with('user')->findOrFail($id);
+            $customer = NetworkUser::with(['user', 'package'])->findOrFail($id);
 
             // Authorization check on the related User model
             if ($customer->user) {
@@ -1292,25 +1385,111 @@ class AdminController extends Controller
                 ], 400);
             }
 
-            $customer->status = 'active';
-            $customer->save();
+            DB::beginTransaction();
 
-            // Clear cache if CustomerCacheService is being used
-            if (class_exists('\App\Services\CustomerCacheService')) {
-                \Cache::tags(['customers'])->flush();
+            try {
+                // Update customer status
+                $oldStatus = $customer->status;
+                $customer->status = 'active';
+                $customer->save();
+
+                // RADIUS integration: Enable network access for PPPoE customers
+                if ($customer->service_type === 'pppoe' && $customer->username) {
+                    try {
+                        // Sync user to RADIUS with proper attributes from package
+                        $attributes = [];
+                        
+                        if ($customer->package) {
+                            // Add speed limit attributes
+                            if ($customer->package->bandwidth_upload && $customer->package->bandwidth_download) {
+                                $attributes['Mikrotik-Rate-Limit'] = sprintf(
+                                    '%dk/%dk',
+                                    $customer->package->bandwidth_upload,
+                                    $customer->package->bandwidth_download
+                                );
+                            }
+                        }
+
+                        $radiusService->syncUser($customer, $attributes);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to sync RADIUS for activated customer', [
+                            'customer_id' => $customer->id,
+                            'username' => $customer->username,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                // MikroTik integration: Provision network access
+                if ($customer->service_type === 'pppoe' && $customer->username) {
+                    try {
+                        $router = $customer->package?->mikrotikRouter ?? MikrotikRouter::where('is_active', true)->first();
+                        
+                        if ($router) {
+                            // Create or update PPPoE user on router
+                            $mikrotikService->createPppoeUser([
+                                'router_id' => $router->id,
+                                'username' => $customer->username,
+                                'password' => $customer->password,
+                                'profile' => $customer->package?->mikrotik_profile ?? 'default',
+                                'service' => 'pppoe',
+                            ]);
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to provision MikroTik for activated customer', [
+                            'customer_id' => $customer->id,
+                            'username' => $customer->username,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                // Send notification to customer
+                if ($customer->user) {
+                    try {
+                        $notificationService->sendCustomerActivatedNotification($customer->user);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to send activation notification', [
+                            'customer_id' => $customer->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                // Audit logging
+                $auditLogService->log(
+                    'customer_activated',
+                    $customer,
+                    ['status' => $oldStatus],
+                    ['status' => 'active'],
+                    []
+                );
+
+                DB::commit();
+
+                // Clear cache
+                if (class_exists('\App\Services\CustomerCacheService')) {
+                    \Cache::tags(['customers'])->flush();
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Customer activated successfully.',
+                ]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
             }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Customer activated successfully.',
-            ]);
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'You are not authorized to activate this customer.',
             ], 403);
         } catch (\Exception $e) {
-            \Log::error('Failed to activate customer: ' . $e->getMessage());
+            Log::error('Failed to activate customer: ' . $e->getMessage(), [
+                'customer_id' => $id,
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return response()->json([
                 'success' => false,
