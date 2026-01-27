@@ -36,16 +36,14 @@ This task involved a comprehensive check for legacy and deprecated code in the I
 
 ### 2. Security Vulnerabilities Fixed
 
-#### Critical: axios Package (5 CVEs)
+#### Critical: axios Package (3 vulnerability types)
 - **Previous**: axios@1.6.4
 - **Updated**: axios@1.12.0
 
 **Vulnerabilities Fixed:**
-1. ✅ DoS attack via lack of data size check
-2. ✅ SSRF via absolute URL
-3. ✅ Credential leakage via absolute URL
-4. ✅ Server-Side Request Forgery
-5. ✅ Additional DoS vulnerability
+1. ✅ DoS attack via lack of data size check (multiple version ranges)
+2. ✅ SSRF and credential leakage via absolute URL (multiple version ranges)
+3. ✅ Server-Side Request Forgery
 
 #### Package Updates
 - ✅ alpinejs: 3.13.3 → 3.15.5

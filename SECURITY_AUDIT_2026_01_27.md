@@ -12,7 +12,7 @@ This audit focused on identifying and removing legacy/deprecated code and checki
 
 ### Key Actions Taken
 - ✅ Removed 4 deprecated methods from codebase
-- ✅ Updated axios from 1.6.4 to 1.12.0 (fixes 5 critical vulnerabilities)
+- ✅ Updated axios from 1.6.4 to 1.12.0 (fixes 3 distinct vulnerability types across multiple version ranges)
 - ✅ Updated alpinejs from 3.13.3 to 3.15.5
 - ✅ Documented backward compatibility requirements
 
@@ -69,13 +69,13 @@ This audit focused on identifying and removing legacy/deprecated code and checki
 
 1. **DoS Attack via Lack of Data Size Check**
    - **Severity**: High
-   - **Affected**: axios >= 1.0.0, < 1.12.0
+   - **Affected**: Multiple version ranges (>= 1.0.0, < 1.12.0 and >= 0.28.0, < 0.30.2)
    - **Impact**: Denial of Service attack possible
    - **Fix**: Updated to 1.12.0
 
 2. **SSRF and Credential Leakage via Absolute URL**
    - **Severity**: High
-   - **Affected**: axios >= 1.0.0, < 1.8.2
+   - **Affected**: Multiple version ranges (>= 1.0.0, < 1.8.2 and < 0.30.0)
    - **Impact**: Server-Side Request Forgery and credential leakage
    - **Fix**: Updated to 1.12.0
 
