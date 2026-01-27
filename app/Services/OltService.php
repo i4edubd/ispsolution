@@ -22,12 +22,29 @@ class OltService implements OltServiceInterface
     private array $connections = [];
 
     /**
+     * @var array<int, Olt>
+     */
+    private array $oltCache = [];
+
+    /**
+     * Get OLT from cache or database.
+     */
+    private function getOlt(int $oltId): Olt
+    {
+        if (! isset($this->oltCache[$oltId])) {
+            $this->oltCache[$oltId] = Olt::findOrFail($oltId);
+        }
+
+        return $this->oltCache[$oltId];
+    }
+
+    /**
      * Connect to an OLT device.
      */
     public function connect(int $oltId): bool
     {
         try {
-            $olt = Olt::findOrFail($oltId);
+            $olt = $this->getOlt($oltId);
 
             if (! $olt->canConnect()) {
                 Log::warning("OLT {$oltId} cannot be connected: invalid configuration");
@@ -85,7 +102,7 @@ class OltService implements OltServiceInterface
         $startTime = microtime(true);
 
         try {
-            $olt = Olt::findOrFail($oltId);
+            $olt = $this->getOlt($oltId);
 
             if (! $olt->canConnect()) {
                 return [
@@ -152,7 +169,7 @@ class OltService implements OltServiceInterface
                 throw new RuntimeException("Failed to connect to OLT {$oltId}");
             }
 
-            $olt = Olt::findOrFail($oltId);
+            $olt = $this->getOlt($oltId);
             $connection = $this->connections[$oltId];
             $commands = $this->getVendorCommands($olt);
             $onus = [];
@@ -196,7 +213,7 @@ class OltService implements OltServiceInterface
     public function syncOnus(int $oltId): int
     {
         try {
-            $olt = Olt::findOrFail($oltId);
+            $olt = $this->getOlt($oltId);
             $discoveredOnus = $this->discoverOnus($oltId);
             $syncedCount = 0;
 
@@ -410,7 +427,7 @@ class OltService implements OltServiceInterface
     public function createBackup(int $oltId): bool
     {
         try {
-            $olt = Olt::findOrFail($oltId);
+            $olt = $this->getOlt($oltId);
 
             if (! $this->ensureConnected($oltId)) {
                 throw new RuntimeException("Failed to connect to OLT {$oltId}");
@@ -656,20 +673,21 @@ class OltService implements OltServiceInterface
     }
 
     /**
-     * Get vendor-specific commands based on OLT model.
+     * Get vendor-specific commands based on OLT model and name.
      */
     private function getVendorCommands(Olt $olt): array
     {
-        $model = strtolower($olt->model ?? '');
+        // Check both model and name fields for vendor identification
+        $searchText = strtolower(($olt->model ?? '') . ' ' . ($olt->name ?? ''));
 
-        // Detect vendor from model string
-        if (str_contains($model, 'vsol') || str_contains($model, 'v-sol')) {
+        // Detect vendor from model or name string
+        if (str_contains($searchText, 'vsol') || str_contains($searchText, 'v-sol')) {
             return $this->getVsolCommands();
-        } elseif (str_contains($model, 'huawei')) {
+        } elseif (str_contains($searchText, 'huawei')) {
             return $this->getHuaweiCommands();
-        } elseif (str_contains($model, 'zte')) {
+        } elseif (str_contains($searchText, 'zte')) {
             return $this->getZteCommands();
-        } elseif (str_contains($model, 'fiberhome')) {
+        } elseif (str_contains($searchText, 'fiberhome') || str_contains($searchText, 'fiber home')) {
             return $this->getFiberhomeCommands();
         }
 
