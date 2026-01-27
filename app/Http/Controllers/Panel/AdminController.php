@@ -72,10 +72,14 @@ class AdminController extends Controller
             // Note: This includes customers who have never connected (no radacct entries)
             $offlineCustomers = $totalNetworkCustomers - $onlineCustomers;
         } catch (\Illuminate\Database\QueryException $e) {
-            // Only swallow "table not found" (SQLSTATE 42S02); rethrow other database errors
+            // Swallow "table not found" (42S02) and "permission denied" (42000) errors
             $sqlState = $e->getCode();
-            if ($sqlState === '42S02' || str_contains($e->getMessage(), '42S02')) {
-                Log::warning('Unable to query radacct table for online/offline status (table not found)', [
+            $isTableNotFound = $sqlState === '42S02' || str_contains($e->getMessage(), '42S02');
+            $isPermissionDenied = $sqlState === '42000' || str_contains($e->getMessage(), '42000');
+            
+            if ($isTableNotFound || $isPermissionDenied) {
+                $reason = $isTableNotFound ? 'table not found' : 'permission denied';
+                Log::warning("Unable to query radacct table for online/offline status ({$reason})", [
                     'sql_state' => $sqlState,
                     'error' => $e->getMessage(),
                 ]);
