@@ -44,7 +44,7 @@ class SearchController extends Controller
     /**
      * Search customers with permission filtering.
      */
-    private function searchCustomers(string $query, $user)
+    private function searchCustomers(string $escapedQuery, $user)
     {
         $customerQuery = User::query();
 
@@ -52,12 +52,12 @@ class SearchController extends Controller
         $customerQuery = $this->applyPermissionFilters($customerQuery, $user);
 
         // Apply search conditions (mobile, username, email, name)
-        $customerQuery->where(function ($q) use ($query) {
-            $q->where('email', 'like', "%{$query}%")
-                ->orWhere('name', 'like', "%{$query}%")
-                ->orWhere('username', 'like', "%{$query}%")
-                ->orWhere('mobile', 'like', "%{$query}%")
-                ->orWhere('phone', 'like', "%{$query}%");
+        $customerQuery->where(function ($q) use ($escapedQuery) {
+            $q->where('email', 'like', "%{$escapedQuery}%")
+                ->orWhere('name', 'like', "%{$escapedQuery}%")
+                ->orWhere('username', 'like', "%{$escapedQuery}%")
+                ->orWhere('mobile', 'like', "%{$escapedQuery}%")
+                ->orWhere('phone', 'like', "%{$escapedQuery}%");
         });
 
         // Scope to customers only (operator_level = 100)
@@ -74,7 +74,7 @@ class SearchController extends Controller
     /**
      * Search invoices with permission filtering.
      */
-    private function searchInvoices(string $query, $user)
+    private function searchInvoices(string $escapedQuery, $user)
     {
         $invoiceQuery = Invoice::query();
 
@@ -82,13 +82,13 @@ class SearchController extends Controller
         $invoiceQuery = $this->applyInvoicePermissionFilters($invoiceQuery, $user);
 
         // Search by invoice number or user details
-        $invoiceQuery->where(function ($q) use ($query) {
-            $q->where('invoice_number', 'like', "%{$query}%")
-                ->orWhereHas('user', function ($userQuery) use ($query) {
-                    $userQuery->where('name', 'like', "%{$query}%")
-                        ->orWhere('email', 'like', "%{$query}%")
-                        ->orWhere('username', 'like', "%{$query}%")
-                        ->orWhere('mobile', 'like', "%{$query}%");
+        $invoiceQuery->where(function ($q) use ($escapedQuery) {
+            $q->where('invoice_number', 'like', "%{$escapedQuery}%")
+                ->orWhereHas('user', function ($userQuery) use ($escapedQuery) {
+                    $userQuery->where('name', 'like', "%{$escapedQuery}%")
+                        ->orWhere('email', 'like', "%{$escapedQuery}%")
+                        ->orWhere('username', 'like', "%{$escapedQuery}%")
+                        ->orWhere('mobile', 'like', "%{$escapedQuery}%");
                 });
         });
 
