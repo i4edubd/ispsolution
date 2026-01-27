@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ip_allocations', function (Blueprint $table) {
-            $table->foreignId('user_id')->nullable()->after('subnet_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->after('subnet_id')->constrained('users')->nullOnDelete();
             $table->enum('allocation_type', ['static', 'dynamic'])->default('dynamic')->after('status');
             $table->index('user_id');
             $table->index('allocation_type');

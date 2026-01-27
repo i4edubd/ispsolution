@@ -129,26 +129,46 @@ class IpAllocationsMigrationTest extends TestCase
             'status' => 'active',
         ]);
 
-        // Create allocated IP
+        $user = User::factory()->create();
+        $tenantId = $user->tenant_id;
+
+        // Create a different tenant to ensure proper filtering
+        $otherTenant = \App\Models\Tenant::factory()->create();
+
+        // Create allocated IP in the same tenant
         IpAllocation::create([
             'subnet_id' => $subnet->id,
-            'user_id' => User::factory()->create()->id,
+            'tenant_id' => $tenantId,
+            'user_id' => User::factory()->create(['tenant_id' => $tenantId])->id,
             'ip_address' => '10.0.0.100',
             'status' => 'allocated',
             'allocation_type' => 'static',
         ]);
 
-        // Create unallocated IP
+        // Create unallocated IP in the same tenant
         IpAllocation::create([
             'subnet_id' => $subnet->id,
+            'tenant_id' => $tenantId,
             'user_id' => null,
             'ip_address' => '10.0.0.101',
             'status' => 'reserved',
             'allocation_type' => 'dynamic',
         ]);
 
-        // Test the query from ServiceController
-        $availableCount = IpAllocation::whereNull('user_id')->count();
+        // Create unallocated IP in a different tenant (should not be counted)
+        IpAllocation::create([
+            'subnet_id' => $subnet->id,
+            'tenant_id' => $otherTenant->id,
+            'user_id' => null,
+            'ip_address' => '10.0.0.102',
+            'status' => 'reserved',
+            'allocation_type' => 'dynamic',
+        ]);
+
+        // Test the query from ServiceController with tenant_id filter
+        $availableCount = IpAllocation::where('tenant_id', $tenantId)
+            ->whereNull('user_id')
+            ->count();
 
         $this->assertEquals(1, $availableCount);
     }
