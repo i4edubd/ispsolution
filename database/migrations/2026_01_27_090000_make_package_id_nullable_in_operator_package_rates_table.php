@@ -10,7 +10,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Makes package_id nullable in operator_package_rates table.
      * This field is a legacy field maintained for backward compatibility.
      * New records use master_package_id instead.
