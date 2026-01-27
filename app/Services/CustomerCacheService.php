@@ -82,8 +82,6 @@ class CustomerCacheService
 
     /**
      * Get available columns for users table (cached).
-     * 
-     * Note: After NetworkUser migration, we now check users table columns.
      */
     private function getAvailableColumns(): array
     {
@@ -102,9 +100,7 @@ class CustomerCacheService
 
     /**
      * Fetch customers from database.
-     * 
-     * Note: After NetworkUser migration, customers are now Users with operator_level = 100.
-     * This method fetches customers from the users table instead of network_users.
+     * Network credentials are now stored directly in the User model.
      */
     private function fetchCustomers(int $tenantId): Collection
     {
@@ -117,6 +113,9 @@ class CustomerCacheService
                 'email',
                 'mobile',
                 'username',
+                'name',
+                'email',
+                'phone',
                 'service_package_id',
                 'status',
                 'operator_level',
@@ -127,6 +126,7 @@ class CustomerCacheService
             $optionalColumns = [
                 'expiry_date',
                 'connection_type',
+                'service_type',
                 'billing_type',
                 'service_type',
                 'device_type',
@@ -136,6 +136,12 @@ class CustomerCacheService
                 'zone_id',
                 'created_at',
                 'updated_at',
+                'address',
+                'city',
+                'state',
+                'postal_code',
+                'country',
+                'wallet_balance',
             ];
             
             foreach ($optionalColumns as $column) {
@@ -144,11 +150,10 @@ class CustomerCacheService
                 }
             }
             
-            // Fetch customers (users with operator_level = 100)
             return User::where('tenant_id', $tenantId)
-                ->where('operator_level', 100) // Only customers
+                ->where('operator_level', 100) // Customers only
                 ->with([
-                    'package:id,name,price,bandwidth_download,bandwidth_upload',
+                    'package:id,name,price,bandwidth_down,bandwidth_up',
                     'zone:id,name',
                 ])
                 ->select($selectColumns)
@@ -188,7 +193,7 @@ class CustomerCacheService
                     $query->select('username')
                         ->from('users')
                         ->whereIn('id', $customerIds)
-                        ->where('operator_level', 100); // Only customers
+                        ->where('operator_level', 100);
                 })
                 ->whereNull('acctstoptime')
                 ->get()
