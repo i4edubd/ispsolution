@@ -502,7 +502,7 @@ The router management interface provides a single unified page for all network d
 
 **Navigation:** Admin Panel → Network Devices → Routers
 
-All device types are shown on a single page with filtering capabilities. Use the "Router Type" filter dropdown to view specific device types (MikroTik, NAS, Cisco, etc.) or view all types together.
+All device types are shown on a single page with filtering capabilities. Use the "Router Type" filter dropdown to view specific device types (All Types, MikroTik, Cisco, Juniper, Other) or view all types together.
 
 #### 1. Router Management (All Types Unified)
 **Location:** `/panel/admin/network/routers`
@@ -538,8 +538,7 @@ All device types are shown on a single page with filtering capabilities. Use the
 - ✅ **Configure PPP** - Configure PPP settings and profiles
 - ✅ **RADIUS Status** - Check RADIUS connection status
 
-**Access:** Click "Configure" button on any router in the list, or navigate to:
-- `/panel/admin/routers/configuration/{routerId}`
+**Access:** Router configuration features are accessed from individual router detail pages. Click "View / Edit" on any router in the list to access configuration options.
 
 **Controller:** `App\Http\Controllers\Panel\RouterConfigurationController`
 **Views:** `resources/views/panels/admin/network/router-configure.blade.php`
@@ -555,8 +554,7 @@ All device types are shown on a single page with filtering capabilities. Use the
 - ✅ **Delete Backup** - Remove old backups
 - ✅ **Cleanup Old Backups** - Automated cleanup
 
-**Access:** Click "Backups" button on any router in the list, or navigate to:
-- `/panel/admin/routers/backup/{routerId}`
+**Access:** Router backup features are accessed from individual router detail pages. Click "View / Edit" on any router in the list to access backup management.
 
 **Controller:** `App\Http\Controllers\Panel\RouterBackupController`
 **Views:** `resources/views/panels/admin/network/router-backups.blade.php`
@@ -570,8 +568,7 @@ All device types are shown on a single page with filtering capabilities. Use the
 - ✅ **View Failover Status** - Monitor current authentication mode
 - ✅ **Test RADIUS Connection** - Verify RADIUS availability
 
-**Access:** Click "Failover" button on any router in the list, or navigate to:
-- `/panel/admin/routers/failover/{routerId}`
+**Access:** Router failover features are accessed from individual router detail pages. Click "View / Edit" on any router in the list to access failover management.
 
 **Controller:** `App\Http\Controllers\Panel\RouterFailoverController`
 **Views:** `resources/views/panels/admin/network/components/failover-status.blade.php`
@@ -585,8 +582,7 @@ All device types are shown on a single page with filtering capabilities. Use the
 - ✅ **View Provisioning Logs** - Audit trail of provisioning actions
 - ✅ **View Backups** - List backups for this router
 
-**Access:** Click "Provision" button on any router in the list, or navigate to:
-- `/panel/admin/routers/provision/{routerId}`
+**Access:** Router provisioning features are accessed from individual router detail pages. Click "View / Edit" on any router in the list to access provisioning functionality.
 
 **Controller:** `App\Http\Controllers\Panel\RouterProvisioningController`
 **Views:** `resources/views/panels/admin/routers/provision.blade.php`

@@ -197,14 +197,14 @@ All phases reviewed for missing UI development and tasks:
 ## Phase 2: Core Services (Week 1-2)
 
 ### 2.1 Enhance MikrotikApiService 🔴
-- [x] Add to `app/Services/MikrotikApiService.php` or create wrapper: (Service exists as MikrotikService.php) ✅
+- [ ] Add to `app/Services/MikrotikApiService.php` or create wrapper: (Service exists as MikrotikService.php with different method signatures) ⏳
   - [ ] `getMktRows(string $menu, array $query = []): array` (Not implemented - MikrotikService uses different method names)
   - [ ] `addMktRows(string $menu, array $rows): bool` (Not implemented - MikrotikService uses different method names)
   - [ ] `editMktRow(string $menu, array $row, array $data): bool` (Not implemented - MikrotikService uses different method names)
   - [ ] `removeMktRows(string $menu, array $rows): bool` (Not implemented - MikrotikService uses different method names)
   - [ ] `ttyWrite(string $command, array $params = []): mixed` (Not implemented - MikrotikService uses different method names)
   
-  **Note:** MikrotikService exists but uses HTTP API with different method signatures
+  **Note:** MikrotikService exists but uses HTTP API with different method signatures. Adapter needed for expected method names.
 
 ### 2.2 Create RouterCommentHelper 🟡
 - [x] Create `app/Helpers/RouterCommentHelper.php` ✅
@@ -766,7 +766,8 @@ All phases reviewed for missing UI development and tasks:
 - [x] Verify user can connect via PPPoE ✅
 - [x] Test RADIUS authentication ✅
 - [x] Simulate RADIUS failure (failover test) ✅
-- [x] Create backup and restore ✅
+- [x] Create backup ✅
+- [ ] Restore from backup (pending - restore path currently not implemented) ⏳
 - [x] Switch between authentication modes ✅
 - [x] Test with multiple tenants (isolation) ✅
 
