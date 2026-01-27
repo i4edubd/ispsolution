@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomerMacAddress;
+use App\Models\MikrotikRouter;
 use App\Models\NetworkUser;
 use App\Models\RadCheck;
 use App\Models\User;
@@ -162,7 +163,7 @@ class CustomerMacBindController extends Controller
             // Clear MikroTik MAC binding if applicable
             if ($networkUser) {
                 try {
-                    $router = $networkUser->package?->mikrotikRouter ?? \App\Models\MikrotikRouter::where('is_active', true)->first();
+                    $router = $networkUser->package?->mikrotikRouter ?? MikrotikRouter::where('is_active', true)->first();
                     
                     if ($router) {
                         // Disconnect any active sessions with this MAC
