@@ -141,10 +141,11 @@ class CustomerPolicy
 
     /**
      * Determine if the user can delete the customer.
+     * ADMIN ONLY - Not available to Operator/Sub-Operator.
      */
     public function delete(User $user, User $customer): bool
     {
-        // Developer, Super Admin, and Admin have automatic access
+        // Only Developer, Super Admin, and Admin have access
         if ($user->operator_level <= 20) {
             // Check tenant isolation
             if ($user->tenant_id && $customer->tenant_id !== $user->tenant_id) {
@@ -153,23 +154,8 @@ class CustomerPolicy
             return true;
         }
 
-        // Operators (level 30) can delete customers
-        // Sub-Operators (level 40+) and below cannot delete
-        if ($user->operator_level > 30) {
-            return false;
-        }
-
-        // Check permission for Operator role
-        if (! $user->hasPermission('delete_customers')) {
-            return false;
-        }
-
-        // Check tenant isolation
-        if ($user->tenant_id && $customer->tenant_id !== $user->tenant_id) {
-            return false;
-        }
-
-        return true;
+        // Operator and Sub-Operator do NOT have access to delete customers
+        return false;
     }
 
     /**
@@ -200,15 +186,17 @@ class CustomerPolicy
 
     /**
      * Determine if the user can disconnect the customer.
+     * ADMIN ONLY - Not available to Operator/Sub-Operator.
      */
     public function disconnect(User $user, User $customer): bool
     {
-        // Developer, Super Admin, and Admin have automatic access
+        // Only Developer, Super Admin, and Admin have access
         if ($user->operator_level <= 20) {
             return $this->view($user, $customer);
         }
         
-        return $this->update($user, $customer) && $user->hasPermission('disconnect_customers');
+        // Operator and Sub-Operator do NOT have access to disconnect
+        return false;
     }
 
     /**
@@ -226,28 +214,32 @@ class CustomerPolicy
 
     /**
      * Determine if the user can edit speed limits.
+     * ADMIN ONLY - Not available to Operator/Sub-Operator.
      */
     public function editSpeedLimit(User $user, User $customer): bool
     {
-        // Developer, Super Admin, and Admin have automatic access
+        // Only Developer, Super Admin, and Admin have access
         if ($user->operator_level <= 20) {
             return $this->view($user, $customer);
         }
         
-        return $this->update($user, $customer) && $user->hasPermission('edit_speed_limit');
+        // Operator and Sub-Operator do NOT have access to edit speed limits
+        return false;
     }
 
     /**
      * Determine if the user can activate FUP.
+     * ADMIN ONLY - Not available to Operator/Sub-Operator.
      */
     public function activateFup(User $user, User $customer): bool
     {
-        // Developer, Super Admin, and Admin have automatic access
+        // Only Developer, Super Admin, and Admin have access
         if ($user->operator_level <= 20) {
             return $this->view($user, $customer);
         }
         
-        return $this->update($user, $customer) && $user->hasPermission('activate_fup');
+        // Operator and Sub-Operator do NOT have access to activate FUP
+        return false;
     }
 
     /**
@@ -265,28 +257,32 @@ class CustomerPolicy
 
     /**
      * Determine if the user can generate bills.
+     * ADMIN ONLY - Not available to Operator/Sub-Operator.
      */
     public function generateBill(User $user, User $customer): bool
     {
-        // Developer, Super Admin, and Admin have automatic access
+        // Only Developer, Super Admin, and Admin have access
         if ($user->operator_level <= 20) {
             return $this->view($user, $customer);
         }
         
-        return $user->hasPermission('generate_bills') && $this->view($user, $customer);
+        // Operator and Sub-Operator do NOT have access to generate bills
+        return false;
     }
 
     /**
      * Determine if the user can edit billing profile.
+     * ADMIN ONLY - Not available to Operator/Sub-Operator.
      */
     public function editBillingProfile(User $user, User $customer): bool
     {
-        // Developer, Super Admin, and Admin have automatic access
+        // Only Developer, Super Admin, and Admin have access
         if ($user->operator_level <= 20) {
             return $this->view($user, $customer);
         }
         
-        return $this->update($user, $customer) && $user->hasPermission('edit_billing_profile');
+        // Operator and Sub-Operator do NOT have access to edit billing profile
+        return false;
     }
 
     /**
@@ -330,60 +326,62 @@ class CustomerPolicy
 
     /**
      * Determine if the user can change operator.
+     * ADMIN ONLY - Not available to Operator/Sub-Operator.
      */
     public function changeOperator(User $user, User $customer): bool
     {
-        // Developer, Super Admin, and Admin have automatic access
+        // Only Developer, Super Admin, and Admin have access
         if ($user->operator_level <= 20) {
             return true;
         }
         
-        // Only Operators and above can transfer customers (Sub-Operators and below cannot)
-        if ($user->operator_level > 30) {
-            return false;
-        }
-        
-        // Operators need permission
-        return $user->hasPermission('change_operator');
+        // Operator and Sub-Operator do NOT have access to change operator
+        return false;
     }
 
     /**
      * Determine if the user can edit suspend date.
+     * ADMIN ONLY - Not available to Operator/Sub-Operator.
      */
     public function editSuspendDate(User $user, User $customer): bool
     {
-        // Developer, Super Admin, and Admin have automatic access
+        // Only Developer, Super Admin, and Admin have access
         if ($user->operator_level <= 20) {
             return $this->view($user, $customer);
         }
         
-        return $this->update($user, $customer) && $user->hasPermission('edit_suspend_date');
+        // Operator and Sub-Operator do NOT have access to edit suspend date
+        return false;
     }
 
     /**
      * Determine if the user can perform daily recharge (for daily billing).
+     * ADMIN ONLY - Not available to Operator/Sub-Operator.
      */
     public function dailyRecharge(User $user, User $customer): bool
     {
-        // Developer, Super Admin, and Admin have automatic access
+        // Only Developer, Super Admin, and Admin have access
         if ($user->operator_level <= 20) {
             return $this->view($user, $customer);
         }
         
-        return $this->update($user, $customer) && $user->hasPermission('daily_recharge');
+        // Operator and Sub-Operator do NOT have access to daily recharge
+        return false;
     }
 
     /**
      * Determine if the user can perform hotspot recharge.
+     * ADMIN ONLY - Not available to Operator/Sub-Operator.
      */
     public function hotspotRecharge(User $user, User $customer): bool
     {
-        // Developer, Super Admin, and Admin have automatic access
+        // Only Developer, Super Admin, and Admin have access
         if ($user->operator_level <= 20) {
             return $this->view($user, $customer);
         }
         
-        return $this->update($user, $customer) && $user->hasPermission('hotspot_recharge');
+        // Operator and Sub-Operator do NOT have access to hotspot recharge
+        return false;
     }
 
     /**
