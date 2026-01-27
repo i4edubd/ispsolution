@@ -215,9 +215,9 @@ class RouterBackupService
             if (isset($config['ppp_secrets']) && is_array($config['ppp_secrets'])) {
                 foreach ($config['ppp_secrets'] as $secret) {
                     try {
-                        // Ensure router_id is included in the secret data
-                        $secret['router_id'] = $router->id;
-                        if ($mikrotikService->createPppoeUser($secret)) {
+                        // Create a copy with router_id to avoid modifying original array
+                        $secretData = array_merge($secret, ['router_id' => $router->id]);
+                        if ($mikrotikService->createPppoeUser($secretData)) {
                             $restored[] = 'PPP Secret: ' . ($secret['username'] ?? 'unknown');
                         } else {
                             $failed[] = 'PPP Secret: ' . ($secret['username'] ?? 'unknown');
