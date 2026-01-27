@@ -267,9 +267,9 @@ class RouterBackupService
                 'failed_items' => $failed,
             ]);
 
-            // Consider it successful if at least some items were restored
-            // or if there were no items to restore but no errors occurred
-            return count($failed) === 0 || count($restored) > 0;
+            // Consider it successful only if no items failed to restore
+            // (including the case where there were no items and no errors)
+            return count($failed) === 0;
 
         } catch (\Exception $e) {
             Log::error('Restore from backup failed', [

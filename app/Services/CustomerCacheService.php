@@ -117,7 +117,7 @@ class CustomerCacheService
                 'email',
                 'mobile',
                 'username',
-                'package_id',
+                'service_package_id',
                 'status',
                 'operator_level',
             ];
