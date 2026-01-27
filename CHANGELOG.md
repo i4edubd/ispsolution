@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- Apply second round of code review feedback - documentation accuracy ([b2cfefc](../../commit/b2cfefc2945cee070f4e064841b2e0e0dcbbe0bb))
+- Consolidate staff sidebar to single "Routers" menu item ([5db716b](../../commit/5db716b6c2ec167b0f50325718123e2bd1f782a9))
+- Address code review feedback on documentation accuracy and UI consistency ([6ebd86d](../../commit/6ebd86d2e426df90d8f886dee628d090b6e5c4fc))
+- Consolidate router management menu and add tabbed navigation ([2662834](../../commit/26628341f92b4039e6863f44d1ce64eb9ae4c8b4))
 - Address security and consistency issues, add views to sidebar menu ([3578f99](../../commit/3578f991f220e2b52373aeaf01094652f9f569ef))
 - Replace hardcoded routes with route() helper, add null safety to components ([ff5706d](../../commit/ff5706dab4bf586f76416c74ba4424157fda4088))
 - Address PR review comments - crypto security, validation, routes ([07f5287](../../commit/07f528788f115fcfa0673804bb29c296fae0ce10))
@@ -26,8 +30,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 📚 Documentation
 
+- Update documentation to reflect removal of NAS category from filter ([7e3a07f](../../commit/7e3a07f0537ebf04c1cd29a0d43131c599cc8ee0))
+- Refine wording to avoid redundant categorization ([b8adb5a](../../commit/b8adb5ad24a95f244e918bf4367f4450575b2f0a))
+- Add clarification about incomplete tasks being optional enhancements ([4a595e5](../../commit/4a595e5da8b69ce4a9711d4057154f41bd7d7a13))
+- Update ROUTER_RADIUS_IMPLEMENTATION_SUMMARY.md with completion status and admin panel access guide ([f847275](../../commit/f8472756cdf3a35c58424ce1b4cc7849ab9635c8))
 - Add Router + RADIUS implementation summary and finalize documentation ([4df04cf](../../commit/4df04cfb94f1ce4f11f1575687ee8ad9826e335b))
 - Add comprehensive Router + RADIUS implementation documentation ([03e6098](../../commit/03e6098690ec34fd99f73c2867b0fd0a7df6cb0f))
+
+### ♻️ Code Refactoring
+
+- Remove redundant tabs, unify all routers into single page with filtering ([26bb49f](../../commit/26bb49f2f00973c0d20a1c206bd20972eec64a46))
+- Extract router device tabs into reusable component ([d121f37](../../commit/d121f378ed4718bd9bc3dab8c234543422ceb857))
 
 ---
 
