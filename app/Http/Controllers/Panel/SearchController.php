@@ -13,7 +13,7 @@ class SearchController extends Controller
 {
     /**
      * Global search for customers and invoices.
-     * Searches by: mobile number, username, email, invoice number, or name.
+     * Searches by: username, email, invoice number, or name.
      * Results respect permissions and ownership.
      */
     public function search(Request $request): View
@@ -51,13 +51,11 @@ class SearchController extends Controller
         // Apply tenant and ownership filters based on user role
         $customerQuery = $this->applyPermissionFilters($customerQuery, $user);
 
-        // Apply search conditions (mobile, username, email, name)
+        // Apply search conditions (username, email, name)
         $customerQuery->where(function ($q) use ($escapedQuery) {
             $q->where('email', 'like', "%{$escapedQuery}%")
                 ->orWhere('name', 'like', "%{$escapedQuery}%")
-                ->orWhere('username', 'like', "%{$escapedQuery}%")
-                ->orWhere('mobile', 'like', "%{$escapedQuery}%")
-                ->orWhere('phone', 'like', "%{$escapedQuery}%");
+                ->orWhere('username', 'like', "%{$escapedQuery}%");
         });
 
         // Scope to customers only (operator_level = 100)
@@ -65,7 +63,7 @@ class SearchController extends Controller
 
         return $customerQuery
             ->with(['tenant:id,company_name', 'currentPackage:id,name'])
-            ->select('id', 'name', 'email', 'username', 'mobile', 'phone', 'tenant_id', 'is_active', 'service_package_id', 'created_by')
+            ->select('id', 'name', 'email', 'username', 'tenant_id', 'is_active', 'service_package_id', 'created_by')
             ->latest()
             ->limit(20)
             ->get();
@@ -87,13 +85,12 @@ class SearchController extends Controller
                 ->orWhereHas('user', function ($userQuery) use ($escapedQuery) {
                     $userQuery->where('name', 'like', "%{$escapedQuery}%")
                         ->orWhere('email', 'like', "%{$escapedQuery}%")
-                        ->orWhere('username', 'like', "%{$escapedQuery}%")
-                        ->orWhere('mobile', 'like', "%{$escapedQuery}%");
+                        ->orWhere('username', 'like', "%{$escapedQuery}%");
                 });
         });
 
         return $invoiceQuery
-            ->with(['user:id,name,email,username,mobile', 'package:id,name'])
+            ->with(['user:id,name,email,username', 'package:id,name'])
             ->select('id', 'invoice_number', 'user_id', 'package_id', 'total_amount', 'status', 'due_date', 'tenant_id', 'created_by')
             ->latest()
             ->limit(20)
@@ -107,13 +104,13 @@ class SearchController extends Controller
     {
         $operatorLevel = $user->operator_level;
 
-        // Super Admin and Developer: Access all tenants
-        if (in_array($operatorLevel, [0, 10])) {
+        // Developer: Access all tenants
+        if ($operatorLevel === 0) {
             return $query; // No restrictions
         }
 
-        // Admin, Manager, Accountant: Access their tenant only
-        if (in_array($operatorLevel, [20, 50, 70])) {
+        // Super Admin, Admin, Manager, Accountant: Access their tenant only
+        if (in_array($operatorLevel, [10, 20, 50, 70])) {
             return $query->where('tenant_id', $user->tenant_id);
         }
 
@@ -134,13 +131,13 @@ class SearchController extends Controller
     {
         $operatorLevel = $user->operator_level;
 
-        // Super Admin and Developer: Access all tenants
-        if (in_array($operatorLevel, [0, 10])) {
+        // Developer: Access all tenants
+        if ($operatorLevel === 0) {
             return $query; // No restrictions
         }
 
-        // Admin, Manager, Accountant: Access their tenant only
-        if (in_array($operatorLevel, [20, 50, 70])) {
+        // Super Admin, Admin, Manager, Accountant: Access their tenant only
+        if (in_array($operatorLevel, [10, 20, 50, 70])) {
             return $query->where('tenant_id', $user->tenant_id);
         }
 

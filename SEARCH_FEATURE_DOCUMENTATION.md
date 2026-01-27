@@ -15,7 +15,6 @@ You can search using any of the following:
 - **Customer Name**: Full or partial name
 - **Email**: Customer email address
 - **Username**: Customer username
-- **Mobile/Phone**: Customer mobile or phone number
 - **Invoice Number**: Invoice identification number
 
 ### Search Results
@@ -25,11 +24,11 @@ Results are displayed in two sections:
 
 ## Permission-Based Access
 
-### Super Admin (Level 0) & Developer (Level 10)
+### Developer (Level 0)
 - Can search and view all customers and invoices across all tenants
 - No restrictions applied
 
-### Admin (Level 20), Manager (Level 50), Accountant (Level 70)
+### Super Admin (Level 10), Admin (Level 20), Manager (Level 50), Accountant (Level 70)
 - Can search and view customers and invoices within their tenant only
 - Tenant filter automatically applied
 
@@ -48,16 +47,15 @@ Results are displayed in two sections:
 - Customer Name
 - Email
 - Username
-- Mobile/Phone Number
 - Current Package
 - Account Status (Active/Inactive)
-- Tenant (for Super Admin and Developer only)
+- Tenant (for Developer only)
 - View Link (when available)
 
 ### Invoice Search Results Display
 - Invoice Number
 - Customer Name
-- Customer Email/Mobile
+- Customer Email
 - Package
 - Amount
 - Due Date

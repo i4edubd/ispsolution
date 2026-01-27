@@ -9,7 +9,7 @@ Successfully implemented a global search engine for the ISP Solution application
 - Global search endpoint at `/panel/search`
 - Permission-based filtering for all user roles
 - SQL injection protection
-- Searches customers by: name, email, username, mobile, phone
+- Searches customers by: name, email, username
 - Searches invoices by: invoice number, customer details
 - Results limited to 20 per category for performance
 
@@ -24,7 +24,8 @@ Successfully implemented a global search engine for the ISP Solution application
 | Role | Customer Access | Invoice Access |
 |------|----------------|----------------|
 | Developer (0) | All, all tenants | All, all tenants |
-| Super Admin+ (10-70) | Tenant-specific | Tenant-specific |
+| Super Admin (10) | Tenant-specific | Tenant-specific |
+| Admin/Manager/Accountant (20-70) | Tenant-specific | Tenant-specific |
 | Operator/Staff (30-80) | Own created only | Own created only |
 | Customer (100) | No access | Own only |
 

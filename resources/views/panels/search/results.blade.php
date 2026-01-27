@@ -73,10 +73,9 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Username</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Mobile</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                                    @if(in_array(auth()->user()->operator_level, [0, 10]))
+                                    @if(in_array(auth()->user()->operator_level, [0]))
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tenant</th>
                                     @endif
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
@@ -95,9 +94,6 @@
                                             {{ $customer->username ?? 'N/A' }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {{ $customer->mobile ?? $customer->phone ?? 'N/A' }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {{ $customer->currentPackage?->name ?? 'No Package' }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -111,7 +107,7 @@
                                                 </span>
                                             @endif
                                         </td>
-                                        @if(in_array(auth()->user()->operator_level, [0, 10]))
+                                        @if(auth()->user()->operator_level === 0)
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                 {{ $customer->tenant?->company_name ?? 'N/A' }}
                                             </td>
@@ -170,7 +166,7 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Invoice #</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email / Mobile</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Due Date</th>
@@ -188,8 +184,7 @@
                                             {{ $invoice->user?->name ?? 'N/A' }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {{ $invoice->user?->email ?? 'N/A' }}<br>
-                                            <span class="text-xs">{{ $invoice->user?->mobile ?? 'N/A' }}</span>
+                                            {{ $invoice->user?->email ?? 'N/A' }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {{ $invoice->package?->name ?? 'N/A' }}
@@ -228,12 +223,10 @@
                                                         $viewRoute = route('panel.customer.invoice.view', $invoice->id);
                                                     }
                                                 } elseif (in_array($operatorLevel, [0, 10, 20, 50, 70]) && Route::has('panel.admin.export.invoice.view')) {
-                                                    // Super Admin, Developer, Admin, Manager, Accountant
+                                                    // Developer, Super Admin, Admin, Manager, Accountant
                                                     $viewRoute = route('panel.admin.export.invoice.view', $invoice->id);
-                                                } elseif (Route::has('payments.show')) {
-                                                    // Fallback to payment view for operators/staff
-                                                    $viewRoute = route('payments.show', $invoice->id);
                                                 }
+                                                // Note: Operators, Sub-Operators, and Staff don't have invoice view routes
                                             @endphp
                                             
                                             @if($viewRoute)
