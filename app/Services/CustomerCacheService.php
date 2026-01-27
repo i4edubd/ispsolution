@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\NetworkUser;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -81,7 +81,7 @@ class CustomerCacheService
     }
 
     /**
-     * Get available columns for network_users table (cached).
+     * Get available columns for users table (cached).
      */
     private function getAvailableColumns(): array
     {
@@ -89,9 +89,9 @@ class CustomerCacheService
         if (self::$cachedColumns === null) {
             // Use Laravel cache for cross-request caching
             self::$cachedColumns = Cache::remember(
-                'network_users:available_columns',
+                'users:available_columns',
                 self::COLUMN_CACHE_TTL,
-                fn() => Schema::getColumnListing('network_users')
+                fn() => Schema::getColumnListing('users')
             );
         }
         
@@ -100,6 +100,7 @@ class CustomerCacheService
 
     /**
      * Fetch customers from database.
+     * Network credentials are now stored directly in the User model.
      */
     private function fetchCustomers(int $tenantId): Collection
     {
@@ -107,10 +108,12 @@ class CustomerCacheService
             // Build the select array dynamically based on available columns
             $selectColumns = [
                 'id',
-                'user_id',
                 'tenant_id',
                 'username',
-                'package_id',
+                'name',
+                'email',
+                'phone',
+                'service_package_id',
                 'status',
             ];
             
@@ -119,13 +122,21 @@ class CustomerCacheService
             $optionalColumns = [
                 'expiry_date',
                 'connection_type',
+                'service_type',
                 'billing_type',
                 'device_type',
                 'mac_address',
                 'ip_address',
                 'is_active',
+                'zone_id',
                 'created_at',
                 'updated_at',
+                'address',
+                'city',
+                'state',
+                'postal_code',
+                'country',
+                'wallet_balance',
             ];
             
             foreach ($optionalColumns as $column) {
@@ -134,17 +145,19 @@ class CustomerCacheService
                 }
             }
             
-            return NetworkUser::where('tenant_id', $tenantId)
+            return User::where('tenant_id', $tenantId)
+                ->where('operator_level', 100) // Customers only
                 ->with([
                     'package:id,name,price,bandwidth_download,bandwidth_upload',
-                    'user:id,name,mobile,email,zone_id,created_at',
-                    'user.zone:id,name',
+                    'zone:id,name',
                 ])
                 ->select($selectColumns)
                 ->get()
                 ->map(function ($customer) {
                     // Add computed attributes
                     $customer->online_status = false; // Will be populated separately
+                    // Map service_package_id to package_id for compatibility
+                    $customer->package_id = $customer->service_package_id;
                     return $customer;
                 });
         } catch (\Exception $e) {
@@ -173,8 +186,9 @@ class CustomerCacheService
                 ->select('username')
                 ->whereIn('username', function ($query) use ($customerIds) {
                     $query->select('username')
-                        ->from('network_users')
-                        ->whereIn('id', $customerIds);
+                        ->from('users')
+                        ->whereIn('id', $customerIds)
+                        ->where('operator_level', 100);
                 })
                 ->whereNull('acctstoptime')
                 ->get()
@@ -183,8 +197,9 @@ class CustomerCacheService
                 ->toArray();
 
             // Convert usernames back to customer IDs
-            $onlineCustomers = DB::table('network_users')
+            $onlineCustomers = DB::table('users')
                 ->select('id')
+                ->where('operator_level', 100)
                 ->whereIn('username', $activeSessions)
                 ->pluck('id')
                 ->toArray();
