@@ -524,17 +524,19 @@ class User extends Authenticatable
     /**
      * Check if user can create a user with the specified operator level.
      * Enforces the role creation hierarchy:
-     * - Developer: Can create Super Admins (level 10) and below
+     * - Developer: Can create Super Admins (level 10) and all subordinate roles
      * - Super Admin: Can create Admins (level 20) within their own tenants only
      * - Admin: Can create Operators (30), Sub-Operators (40), Managers (50), Accountants (70), Staff (80), and Customers (100) within their ISP
      * - Operator: Can create Sub-Operators (level 40) and Customers (level 100)
      * - Sub-Operator: Can only create Customers (level 100)
+     * 
+     * Note: Lower level numbers = higher privilege (0 = Developer, 100 = Customer)
      */
     public function canCreateUserWithLevel(int $targetLevel): bool
     {
-        // Developer can create Super Admins (level 10) and all roles below
+        // Developer can create Super Admins (level 10) and all subordinate roles (higher level numbers)
         if ($this->isDeveloper()) {
-            return $targetLevel >= 10; // Can create level 10 (Super Admin) and higher (lower privilege)
+            return $targetLevel >= 10; // Can create level 10+ (all roles except Developer)
         }
 
         // Super Admin can ONLY create Admins (level 20) within their own tenants

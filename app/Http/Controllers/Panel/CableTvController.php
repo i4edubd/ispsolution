@@ -56,11 +56,13 @@ class CableTvController extends Controller
 
     /**
      * Show create subscription form
+     * Enforce tenant isolation - only show active users from the same tenant.
      */
     public function create(): View
     {
-        $packages = CableTvPackage::active()->with('channels')->get();
-        $users = User::where('is_active', true)->get();
+        $tenantId = auth()->user()->tenant_id;
+        $packages = CableTvPackage::where('tenant_id', $tenantId)->active()->with('channels')->get();
+        $users = User::where('tenant_id', $tenantId)->where('is_active', true)->get();
 
         return view('panels.admin.cable-tv.create', compact('packages', 'users'));
     }
