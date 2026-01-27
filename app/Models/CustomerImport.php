@@ -15,6 +15,7 @@ class CustomerImport extends Model
     protected $fillable = [
         'operator_id',
         'nas_id',
+        'router_id',
         'status',
         'total_count',
         'success_count',
@@ -39,8 +40,11 @@ class CustomerImport extends Model
      * Status constants.
      */
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_FAILED = 'failed';
 
     /**
@@ -57,6 +61,14 @@ class CustomerImport extends Model
     public function nas(): BelongsTo
     {
         return $this->belongsTo(Nas::class);
+    }
+
+    /**
+     * Get the Mikrotik router.
+     */
+    public function router(): BelongsTo
+    {
+        return $this->belongsTo(MikrotikRouter::class, 'router_id');
     }
 
     /**
@@ -93,6 +105,7 @@ class CustomerImport extends Model
         }
 
         $processed = $this->success_count + $this->failed_count;
+
         return round(($processed / $this->total_count) * 100, 2);
     }
 }
