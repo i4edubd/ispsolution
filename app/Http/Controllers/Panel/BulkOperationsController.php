@@ -135,9 +135,9 @@ class BulkOperationsController extends Controller
                 foreach ($ids as $id) {
                     try {
                         $customer = User::where('operator_level', 100)
-                            ->with('package')->findOrFail($id);
+                            ->with('servicePackage')->findOrFail($id);
 
-                        if (! $customer->package) {
+                        if (! $customer->servicePackage) {
                             $failedCount++;
 
                             continue;
@@ -158,11 +158,11 @@ class BulkOperationsController extends Controller
                         $invoice = Invoice::create([
                             'tenant_id' => $customer->tenant_id,
                             'user_id' => $customer->id,
-                            'package_id' => $customer->package_id,
+                            'package_id' => $customer->service_package_id,
                             'invoice_number' => $this->generateInvoiceNumber(),
-                            'amount' => $customer->package->price_monthly,
-                            'tax_amount' => $customer->package->price_monthly * 0.15, // 15% tax
-                            'total_amount' => $customer->package->price_monthly * 1.15,
+                            'amount' => $customer->servicePackage->price_monthly,
+                            'tax_amount' => $customer->servicePackage->price_monthly * 0.15, // 15% tax
+                            'total_amount' => $customer->servicePackage->price_monthly * 1.15,
                             'billing_period_start' => now(),
                             'billing_period_end' => now()->addMonth(),
                             'due_date' => now()->addDays(7),

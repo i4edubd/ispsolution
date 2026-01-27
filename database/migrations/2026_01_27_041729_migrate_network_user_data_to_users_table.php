@@ -36,7 +36,11 @@ return new class extends Migration
                         ->where('id', $networkUser->user_id)
                         ->update([
                             'username' => $networkUser->username,
-                            'radius_password' => $networkUser->password, // Store plain text for RADIUS
+                            // SECURITY NOTE: radius_password stores plain text for RADIUS authentication
+                            // This is required by RADIUS protocol (Cleartext-Password attribute)
+                            // Ensure the database has appropriate access controls
+                            // Consider using database encryption at rest for additional security
+                            'radius_password' => $networkUser->password,
                             'service_type' => $networkUser->service_type,
                             'connection_type' => $networkUser->connection_type ?? null,
                             'billing_type' => $networkUser->billing_type ?? null,
@@ -70,19 +74,27 @@ return new class extends Migration
         Log::warning('Rollback for network_user data migration: Data will remain in users table');
         
         // Optionally clear network fields from users where operator_level = 100
-        DB::table('users')
+        // Update each customer individually to avoid DB-specific SQL
+        $customers = DB::table('users')
             ->where('operator_level', 100)
-            ->update([
-                'username' => DB::raw('CONCAT("user_", id)'), // Generate temporary username
-                'radius_password' => null,
-                'service_type' => null,
-                'connection_type' => null,
-                'billing_type' => null,
-                'device_type' => null,
-                'mac_address' => null,
-                'ip_address' => null,
-                'status' => 'active',
-                'expiry_date' => null,
-            ]);
+            ->select('id')
+            ->get();
+        
+        foreach ($customers as $customer) {
+            DB::table('users')
+                ->where('id', $customer->id)
+                ->update([
+                    'username' => 'user_' . $customer->id, // Generate temporary username
+                    'radius_password' => null,
+                    'service_type' => null,
+                    'connection_type' => null,
+                    'billing_type' => null,
+                        'device_type' => null,
+                    'mac_address' => null,
+                    'ip_address' => null,
+                    'status' => 'active',
+                    'expiry_date' => null,
+                ]);
+        }
     }
 };

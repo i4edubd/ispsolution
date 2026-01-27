@@ -959,7 +959,7 @@ class User extends Authenticatable
         $allAttributes = array_merge($baseAttributes, $attributes);
 
         // Check if customer should be active in RADIUS
-        if ($this->status === 'active' && $this->is_active) {
+        if ($this->isActiveForRadius()) {
             // Use the radius_password field (plain text for RADIUS)
             $password = $attributes['password'] ?? $this->radius_password ?? $this->username;
             
@@ -1022,5 +1022,16 @@ class User extends Authenticatable
     public function getNetworkPasswordAttribute(): ?string
     {
         return $this->radius_password ?? $this->username;
+    }
+
+    /**
+     * Check if customer should be active in RADIUS.
+     * Customer must have status 'active' AND is_active flag set.
+     *
+     * @return bool
+     */
+    public function isActiveForRadius(): bool
+    {
+        return $this->status === 'active' && $this->is_active;
     }
 }

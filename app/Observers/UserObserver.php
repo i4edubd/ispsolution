@@ -69,10 +69,10 @@ class UserObserver
 
             // Sync to RADIUS
             if ($user->username) {
-                // If suspended or inactive, remove from RADIUS
-                if ($user->status !== 'active' || !$user->is_active) {
+                // If not active for RADIUS, remove from RADIUS
+                if (!$user->isActiveForRadius()) {
                     $user->removeFromRadius();
-                    Log::info("Customer {$user->username} removed from RADIUS (suspended/inactive)", ['user_id' => $user->id]);
+                    Log::info("Customer {$user->username} removed from RADIUS (not active)", ['user_id' => $user->id]);
                 } else {
                     // Update RADIUS attributes
                     $attributes = [];
@@ -135,7 +135,7 @@ class UserObserver
         }
 
         try {
-            if ($user->username && $user->radius_password && $user->status === 'active') {
+            if ($user->username && $user->radius_password && $user->isActiveForRadius()) {
                 $user->syncToRadius(['password' => $user->radius_password]);
                 Log::info("Customer {$user->username} re-provisioned to RADIUS on restore", ['user_id' => $user->id]);
             }
