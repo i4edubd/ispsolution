@@ -508,8 +508,8 @@ All device types are shown on a single page with filtering capabilities. Use the
 **Location:** `/panel/admin/network/routers`
 
 **Available Operations:**
-- ✅ **List Routers** - View all configured routers and NAS devices in one unified view
-- ✅ **Filter by Type** - Use dropdown to filter by MikroTik, NAS, Cisco, or view all
+- ✅ **List Routers** - View all configured routers and devices in one unified view
+- ✅ **Filter by Type** - Use dropdown to filter by MikroTik, Cisco, Juniper, or view all
 - ✅ **Create Router** - Add new router with authentication settings
 - ✅ **Edit Router** - Update router configuration (IP, ports, credentials)
 - ✅ **Delete Router** - Remove routers
