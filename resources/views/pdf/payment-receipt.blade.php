@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Payment Receipt - {{ $payment->payment_number }}</title>
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         body { font-family: Arial, sans-serif; margin: 20px; }
         .header { text-align: center; margin-bottom: 30px; }
         .receipt-info { margin-bottom: 20px; }

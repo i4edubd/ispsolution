@@ -229,7 +229,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function routerDashboard() {
     return {
         isRefreshing: false,

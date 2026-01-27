@@ -145,7 +145,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function failoverStatus() {
     return {
         isLoading: false,

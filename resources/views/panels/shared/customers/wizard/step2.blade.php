@@ -181,7 +181,7 @@
     </div>
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
     [x-cloak] { display: none !important; }
 </style>
 @endsection

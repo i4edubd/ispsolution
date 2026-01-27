@@ -247,7 +247,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     function setMonthlyLimit(mb) {
         document.getElementById('monthly_limit_mb').value = mb;
     }

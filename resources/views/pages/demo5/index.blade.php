@@ -138,7 +138,7 @@
                 </div>
                 <div class="lg:col-span-1">
                     <div class="grid grid-cols-1 gap-5 lg:gap-7.5 h-full items-stretch">
-                        <style>
+                        <style nonce="{{ csp_nonce() }}">
                             .channel-stats-bg {
                                 background-image: url('{{ asset("assets/media/images/2600x1600/bg-3.png") }}');
                             }

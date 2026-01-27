@@ -129,7 +129,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     document.addEventListener('DOMContentLoaded', function() {
         const messageField = document.getElementById('message');
         const charCount = document.getElementById('char-count');

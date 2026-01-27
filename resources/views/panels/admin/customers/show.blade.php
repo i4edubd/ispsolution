@@ -247,7 +247,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     document.addEventListener('DOMContentLoaded', function() {
         // Handle check usage button with AJAX
         const checkUsageBtn = document.getElementById('checkUsageBtn');

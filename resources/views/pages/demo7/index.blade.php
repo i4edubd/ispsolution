@@ -6,7 +6,7 @@
 	<div class="grid lg:grid-cols-3 gap-y-5 lg:gap-7.5 items-stretch">
 		<div class="lg:col-span-2">
 			<div class="grid md:grid-cols-2 gap-5 lg:gap-7.5 h-full items-stretch">
-				<style>
+				<style nonce="{{ csp_nonce() }}">
 					.channel-stats-bg {
 						background-image: url('{{ asset("assets/media/images/2600x1600/bg-3.png") }}');
 					}
@@ -197,7 +197,7 @@
 	<!-- begin: grid -->
 	<div class="grid lg:grid-cols-3 gap-5 lg:gap-7.5 items-stretch">
 		<div class="lg:col-span-2">
-			<style>
+			<style nonce="{{ csp_nonce() }}">
 				.entry-callout-bg {
 					background-image: url('{{ asset("assets/media/images/2600x1600/2.png") }}');
 				}

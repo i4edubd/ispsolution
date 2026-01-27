@@ -104,7 +104,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function() {
     // Handle IP Pools import
     document.getElementById('import-pools-form').addEventListener('submit', function(e) {

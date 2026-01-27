@@ -140,7 +140,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.config-form').forEach(form => {
         form.addEventListener('submit', function(e) {

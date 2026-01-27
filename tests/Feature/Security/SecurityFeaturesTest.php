@@ -45,6 +45,12 @@ class SecurityFeaturesTest extends TestCase
         
         // Verify nonce is present
         $this->assertStringContainsString("'nonce-", $cspHeader);
+        
+        // Verify unsafe-hashes is present for inline event handlers and style attributes
+        $this->assertStringContainsString("'unsafe-hashes'", $cspHeader);
+        
+        // Verify style-src has unsafe-hashes for inline style attributes
+        $this->assertMatchesRegularExpression("/style-src[^;]*'unsafe-hashes'/", $cspHeader);
     }
 
     public function test_csp_nonce_helper_works(): void

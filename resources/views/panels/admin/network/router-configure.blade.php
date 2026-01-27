@@ -194,7 +194,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function routerConfiguration() {
     return {
         isLoading: false,

@@ -8,7 +8,7 @@
         <div class="grid lg:grid-cols-3 gap-y-5 lg:gap-7.5 items-stretch">
         <div class="lg:col-span-2">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-7.5 h-full items-stretch">
-            <style>
+            <style nonce="{{ csp_nonce() }}">
                 .channel-stats-bg {
             background-image: url('assets/media/images/2600x1600/bg-3.png');
         }

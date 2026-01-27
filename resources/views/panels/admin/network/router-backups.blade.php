@@ -178,7 +178,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function routerBackups() {
     return {
         showCreateModal: false,

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>IP Pool Analytics Report</title>
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
