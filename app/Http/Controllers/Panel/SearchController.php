@@ -13,7 +13,7 @@ class SearchController extends Controller
 {
     /**
      * Global search for customers and invoices.
-     * Searches by: mobile no, username, email, invoice number, or name.
+     * Searches by: mobile number, username, email, invoice number, or name.
      * Results respect permissions and ownership.
      */
     public function search(Request $request): View

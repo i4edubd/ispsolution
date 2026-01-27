@@ -121,12 +121,10 @@
                                                 $userRole = auth()->user()->roles->first()?->slug ?? '';
                                                 $viewRoute = null;
                                                 
-                                                if ($userRole === 'admin') {
+                                                if ($userRole === 'admin' && Route::has('panel.admin.customers.show')) {
                                                     $viewRoute = route('panel.admin.customers.show', $customer->id);
-                                                } elseif ($userRole === 'operator') {
-                                                    $viewRoute = route('panel.operator.customers.show', $customer->id);
-                                                } elseif ($userRole === 'manager') {
-                                                    $viewRoute = route('panel.manager.customers.show', $customer->id);
+                                                } elseif ($userRole === 'developer' && Route::has('panel.developer.customers.show')) {
+                                                    $viewRoute = route('panel.developer.customers.show', $customer->id);
                                                 }
                                             @endphp
                                             
@@ -134,6 +132,8 @@
                                                 <a href="{{ $viewRoute }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
                                                     <i class="bi bi-eye"></i> View
                                                 </a>
+                                            @else
+                                                <span class="text-gray-400">N/A</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -215,10 +215,8 @@
                                                 $userRole = auth()->user()->roles->first()?->slug ?? '';
                                                 $viewRoute = null;
                                                 
-                                                if (in_array($userRole, ['admin', 'manager', 'accountant'])) {
-                                                    $viewRoute = route('panel.admin.invoices.show', $invoice->id);
-                                                } elseif ($userRole === 'operator') {
-                                                    $viewRoute = route('panel.operator.invoices.show', $invoice->id);
+                                                if (Route::has('panel.admin.export.invoice.view')) {
+                                                    $viewRoute = route('panel.admin.export.invoice.view', $invoice->id);
                                                 }
                                             @endphp
                                             
@@ -226,6 +224,8 @@
                                                 <a href="{{ $viewRoute }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
                                                     <i class="bi bi-eye"></i> View
                                                 </a>
+                                            @else
+                                                <span class="text-gray-400">N/A</span>
                                             @endif
                                         </td>
                                     </tr>
