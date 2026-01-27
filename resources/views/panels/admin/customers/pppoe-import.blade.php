@@ -205,10 +205,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Check if at least one hidden field has a value
             if (!nasIdInput.value && !routerIdInput.value) {
                 e.preventDefault();
-                alert('Please select a NAS device or Mikrotik router before submitting.');
                 if (deviceSelect) {
+                    deviceSelect.setCustomValidity('Please select a NAS device or Mikrotik router before submitting.');
+                    deviceSelect.reportValidity();
                     deviceSelect.focus();
                 }
+            } else if (deviceSelect) {
+                // Clear any previous custom validation message
+                deviceSelect.setCustomValidity('');
             }
         });
     }
