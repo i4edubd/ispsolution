@@ -75,7 +75,7 @@
     </div>
 </div>
 
-<style>
+<style nonce="{{ csp_nonce() }}">
     .timeframe-btn {
         background: white;
         border-color: #d1d5db;

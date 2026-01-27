@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Customer Statement - {{ $user->name }}</title>
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         body { font-family: Arial, sans-serif; margin: 20px; }
         .header { text-align: center; margin-bottom: 30px; }
         .customer-info { margin-bottom: 20px; }

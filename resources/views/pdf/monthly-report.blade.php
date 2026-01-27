@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Monthly Report - {{ $monthName }} {{ $year }}</title>
-    <style>
+    <style nonce="{{ csp_nonce() }}">
         body { font-family: Arial, sans-serif; margin: 20px; }
         .header { text-align: center; margin-bottom: 30px; }
         .stats { display: flex; flex-wrap: wrap; margin-bottom: 30px; }

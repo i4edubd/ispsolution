@@ -31,7 +31,7 @@
             <div class="grid items-stretch gap-y-5 lg:grid-cols-3 lg:gap-7.5">
                 <div class="lg:col-span-1">
                     <div class="grid h-full grid-cols-2 items-stretch gap-5 lg:gap-7.5">
-                        <style>
+                        <style nonce="{{ csp_nonce() }}">
                             .channel-stats-bg {
                                 background-image: url('assets/media/images/2600x1600/bg-3.png');
                             }
@@ -94,7 +94,7 @@
                     </div>
                 </div>
                 <div class="lg:col-span-2">
-                    <style>
+                    <style nonce="{{ csp_nonce() }}">
                         .entry-callout-bg {
                             background-image: url('assets/media/images/2600x1600/2.png');
                         }
