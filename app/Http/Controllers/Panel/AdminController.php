@@ -1283,8 +1283,8 @@ class AdminController extends Controller
                 // MikroTik integration: Disconnect active sessions
                 if ($customer->username) {
                     try {
-                        // Get customer's router if applicable
-                        $router = $customer->package?->mikrotikRouter ?? MikrotikRouter::where('is_active', true)->first();
+                        // Get first active router
+                        $router = MikrotikRouter::where('is_active', true)->first();
                         
                         if ($router) {
                             // Get active sessions
@@ -1423,7 +1423,8 @@ class AdminController extends Controller
                 // MikroTik integration: Provision network access
                 if ($customer->service_type === 'pppoe' && $customer->username) {
                     try {
-                        $router = $customer->package?->mikrotikRouter ?? MikrotikRouter::where('is_active', true)->first();
+                        // Get first active router
+                        $router = MikrotikRouter::where('is_active', true)->first();
                         
                         if ($router) {
                             // Create or update PPPoE user on router

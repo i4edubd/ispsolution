@@ -163,7 +163,7 @@ class CustomerMacBindController extends Controller
             // Clear MikroTik MAC binding if applicable
             if ($networkUser) {
                 try {
-                    $router = $networkUser->package?->mikrotikRouter ?? MikrotikRouter::where('is_active', true)->first();
+                    $router = MikrotikRouter::where('is_active', true)->first();
                     
                     if ($router) {
                         // Disconnect any active sessions with this MAC

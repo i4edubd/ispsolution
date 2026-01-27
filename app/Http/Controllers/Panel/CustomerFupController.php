@@ -126,7 +126,7 @@ class CustomerFupController extends Controller
 
             // Disconnect customer to apply new speed
             try {
-                $router = $networkUser->package?->mikrotikRouter ?? MikrotikRouter::where('is_active', true)->first();
+                $router = MikrotikRouter::where('is_active', true)->first();
                 
                 if ($router) {
                     $sessions = $mikrotikService->getActiveSessions($router->id);
@@ -218,7 +218,7 @@ class CustomerFupController extends Controller
 
             // Disconnect customer to apply new speed
             try {
-                $router = $networkUser->package?->mikrotikRouter ?? MikrotikRouter::where('is_active', true)->first();
+                $router = MikrotikRouter::where('is_active', true)->first();
                 
                 if ($router) {
                     $sessions = $mikrotikService->getActiveSessions($router->id);
