@@ -661,7 +661,7 @@ class OltService implements OltServiceInterface
     private function getVendorCommands(Olt $olt): array
     {
         $model = strtolower($olt->model ?? '');
-        
+
         // Detect vendor from model string
         if (str_contains($model, 'vsol') || str_contains($model, 'v-sol')) {
             return $this->getVsolCommands();
@@ -672,7 +672,7 @@ class OltService implements OltServiceInterface
         } elseif (str_contains($model, 'fiberhome')) {
             return $this->getFiberhomeCommands();
         }
-        
+
         // Default to Huawei-style commands (most common)
         return $this->getHuaweiCommands();
     }
