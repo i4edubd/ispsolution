@@ -23,7 +23,7 @@ class MikrotikRouterObserver
             // Create a NAS entry for this router
             $nas = Nas::create([
                 'tenant_id' => $mikrotikRouter->tenant_id,
-                'name' => $mikrotikRouter->name . ' (Auto-created)',
+                'name' => 'NAS-' . $mikrotikRouter->name,
                 'nas_name' => $mikrotikRouter->name,
                 'short_name' => $this->generateShortName($mikrotikRouter->name),
                 'type' => 'mikrotik',
@@ -110,6 +110,12 @@ class MikrotikRouterObserver
         $shortName = preg_replace('/\s+/', '-', trim($shortName));
         $shortName = substr($shortName, 0, 20);
 
-        return $shortName ?: substr($name, 0, 20);
+        // Ensure we have a meaningful short name
+        if (strlen($shortName) < 3) {
+            // Fallback to using the original name
+            $shortName = substr($name, 0, 20);
+        }
+
+        return $shortName ?: 'router-' . time();
     }
 }

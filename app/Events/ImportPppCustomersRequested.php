@@ -14,6 +14,10 @@ class ImportPppCustomersRequested
 
     /**
      * Create a new event instance.
+     *
+     * @param int $operatorId The operator initiating the import
+     * @param int|null $nasId The NAS device ID (nullable for backward compatibility; router_id can be passed via options)
+     * @param array $options Additional options including router_id, filter_disabled, generate_bills, package_id
      */
     public function __construct(
         public int $operatorId,
