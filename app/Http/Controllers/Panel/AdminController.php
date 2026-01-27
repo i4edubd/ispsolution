@@ -2363,11 +2363,19 @@ class AdminController extends Controller
     /**
      * Display activity logs.
      */
-    public function activityLogs(): View
+    public function activityLogs(Request $request): View
     {
-        $logs = \App\Models\AuditLog::with(['user', 'auditable'])
-            ->latest()
-            ->paginate(50);
+        $query = \App\Models\AuditLog::with(['user', 'auditable']);
+
+        // Filter by customer_id if provided
+        if ($request->filled('customer_id')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('user_id', $request->customer_id)
+                  ->orWhere('auditable_id', $request->customer_id);
+            });
+        }
+
+        $logs = $query->latest()->paginate(50);
 
         $stats = [
             'total' => \App\Models\AuditLog::count(),

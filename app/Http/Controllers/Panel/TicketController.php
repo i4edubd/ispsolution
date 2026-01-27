@@ -41,6 +41,10 @@ class TicketController extends Controller
         // Admins, Super Admins, and Developers can see all tickets in their tenant
 
         // Apply filters
+        if ($request->filled('customer_id') && !$user->isCustomer()) {
+            $query->where('customer_id', $request->customer_id);
+        }
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
