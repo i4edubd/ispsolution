@@ -28,7 +28,7 @@ class MikrotikRouterObserver
                 'short_name' => $this->generateShortName($mikrotikRouter->name),
                 'type' => 'mikrotik',
                 'ports' => 1812, // Standard RADIUS port
-                'secret' => $mikrotikRouter->radius_secret ?? 'secret',
+                'secret' => $mikrotikRouter->radius_secret ?? \Illuminate\Support\Str::random(32),
                 'server' => $mikrotikRouter->ip_address,
                 'description' => 'Auto-created NAS entry for Mikrotik router: ' . $mikrotikRouter->name,
                 'status' => $mikrotikRouter->status === 'active' ? 'active' : 'inactive',
@@ -116,6 +116,6 @@ class MikrotikRouterObserver
             $shortName = substr($name, 0, 20);
         }
 
-        return $shortName ?: 'router-' . time();
+        return $shortName ?: 'router-' . \Illuminate\Support\Str::random(8);
     }
 }

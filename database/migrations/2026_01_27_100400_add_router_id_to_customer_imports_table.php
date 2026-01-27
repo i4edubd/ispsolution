@@ -15,14 +15,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('customer_imports', function (Blueprint $table) {
-            // Make nas_id nullable since we might use router_id instead
-            $table->foreignId('nas_id')->nullable()->change();
+            // Drop existing foreign key constraint
+            $table->dropForeign(['nas_id']);
+
+            // Make nas_id nullable by modifying the column definition
+            // Using change() without doctrine/dbal in Laravel 12+
+            $table->unsignedBigInteger('nas_id')->nullable()->change();
+
+            // Re-add the foreign key constraint with nullable support
+            $table->foreign('nas_id')
+                ->references('id')
+                ->on('nas')
+                ->onDelete('cascade');
 
             // Add router_id as optional alternative to nas_id
+            // Note: Foreign key automatically creates an index, so no explicit index needed
             $table->foreignId('router_id')->nullable()->after('nas_id')
                 ->constrained('mikrotik_routers')->nullOnDelete();
-
-            $table->index('router_id');
         });
     }
 
@@ -35,8 +44,15 @@ return new class extends Migration
             $table->dropForeign(['router_id']);
             $table->dropColumn('router_id');
 
+            // Drop the modified nas_id foreign key
+            $table->dropForeign(['nas_id']);
+
             // Note: Not restoring nas_id to non-nullable to prevent data loss
-            // It remains nullable for backward compatibility
+            // Re-add foreign key constraint
+            $table->foreign('nas_id')
+                ->references('id')
+                ->on('nas')
+                ->onDelete('cascade');
         });
     }
 };

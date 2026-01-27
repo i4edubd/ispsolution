@@ -60,7 +60,7 @@
                         @if($nasDevices && $nasDevices->count() > 0)
                             <optgroup label="NAS Devices">
                                 @foreach($nasDevices as $nas)
-                                    <option value="nas-{{ $nas->id }}">{{ $nas->nasname }} ({{ $nas->shortname }}) - NAS</option>
+                                    <option value="nas-{{ $nas->id }}">{{ $nas->nas_name }} ({{ $nas->short_name }}) - NAS</option>
                                 @endforeach
                             </optgroup>
                         @endif

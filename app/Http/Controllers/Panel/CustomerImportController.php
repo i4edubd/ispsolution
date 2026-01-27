@@ -57,6 +57,14 @@ class CustomerImportController extends Controller
             ], 422);
         }
 
+        // Ensure nas_id and router_id are not both provided simultaneously
+        if (! empty($validated['nas_id']) && ! empty($validated['router_id'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please select either a NAS device or a Mikrotik router, not both.',
+            ], 422);
+        }
+
         try {
             // Determine which ID to use for duplicate check
             $deviceId = $validated['nas_id'] ?? $validated['router_id'];

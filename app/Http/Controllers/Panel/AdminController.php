@@ -1986,8 +1986,10 @@ class AdminController extends Controller
             $updateData['password'] = $validated['password'];
         }
 
-        // Only update radius_secret if provided
-        if (! empty($validated['radius_secret'])) {
+        // Only update radius_secret if a non-empty value was provided
+        if (array_key_exists('radius_secret', $validated)
+            && $validated['radius_secret'] !== null
+            && $validated['radius_secret'] !== '') {
             $updateData['radius_secret'] = $validated['radius_secret'];
         }
 
