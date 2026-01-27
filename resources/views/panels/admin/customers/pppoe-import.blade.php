@@ -167,22 +167,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const deviceSelect = document.getElementById('device_select');
     const nasIdInput = document.getElementById('nas_id');
     const routerIdInput = document.getElementById('router_id');
-    
+
     if (deviceSelect) {
         deviceSelect.addEventListener('change', function() {
             const value = this.value;
-            
+
             // Clear both hidden fields
             nasIdInput.value = '';
             routerIdInput.value = '';
-            
+
             if (value) {
-                const [type, id] = value.split('-');
-                
-                if (type === 'nas') {
-                    nasIdInput.value = id;
-                } else if (type === 'router') {
-                    routerIdInput.value = id;
+                // Split on first hyphen only to handle IDs or names with hyphens
+                const hyphenIndex = value.indexOf('-');
+                if (hyphenIndex !== -1) {
+                    const type = value.substring(0, hyphenIndex);
+                    const id = value.substring(hyphenIndex + 1);
+
+                    if (type === 'nas') {
+                        nasIdInput.value = id;
+                    } else if (type === 'router') {
+                        routerIdInput.value = id;
+                    }
                 }
             }
         });

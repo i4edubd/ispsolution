@@ -133,7 +133,7 @@ class CustomerImportController extends Controller
     public function history(Request $request): JsonResponse
     {
         $imports = CustomerImport::where('operator_id', auth()->id())
-            ->with(['nas'])
+            ->with(['nas', 'router'])
             ->latest()
             ->paginate($request->input('per_page', 20));
 

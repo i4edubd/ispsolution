@@ -32,8 +32,8 @@ return new class extends Migration
             $table->dropForeign(['router_id']);
             $table->dropColumn('router_id');
             
-            // Restore nas_id to non-nullable
-            $table->foreignId('nas_id')->nullable(false)->change();
+            // Note: Not restoring nas_id to non-nullable to prevent data loss
+            // It remains nullable for backward compatibility
         });
     }
 };
