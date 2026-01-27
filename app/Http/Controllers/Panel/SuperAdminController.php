@@ -41,12 +41,25 @@ class SuperAdminController extends Controller
     /**
      * Display users listing.
      * Excludes developers as super-admin should not see or manage developer accounts.
+     * Super Admin can only see users in tenants they created.
      */
     public function users(): View
     {
+        $superAdmin = auth()->user();
+        
         $users = User::with('roles')
             ->whereDoesntHave('roles', function ($query) {
                 $query->where('slug', 'developer');
+            })
+            ->where(function ($query) use ($superAdmin) {
+                // Show users in tenants created by this Super Admin
+                $query->whereIn('tenant_id', function ($q) use ($superAdmin) {
+                    $q->select('id')
+                        ->from('tenants')
+                        ->where('created_by', $superAdmin->id);
+                })
+                // Also show the Super Admin themselves
+                ->orWhere('id', $superAdmin->id);
             })
             ->latest()
             ->paginate(20);
@@ -76,13 +89,26 @@ class SuperAdminController extends Controller
             'role_id' => 'required|exists:roles,id',
         ]);
 
+        // Get the role to check its level
+        $role = \App\Models\Role::findOrFail($validated['role_id']);
+        
+        // Authorization check: Super Admin can only create Admins (level 20)
+        if (!auth()->user()->canCreateUserWithLevel($role->level)) {
+            abort(403, 'You are not authorized to create users with this role.');
+        }
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
+            'tenant_id' => auth()->user()->tenant_id, // Enforce tenant isolation
+            'operator_level' => $role->level,
+            'created_by' => auth()->id(),
         ]);
 
-        $user->roles()->attach($validated['role_id']);
+        $user->roles()->attach($validated['role_id'], [
+            'tenant_id' => auth()->user()->tenant_id,
+        ]);
 
         return redirect()->route('panel.super-admin.users')
             ->with('success', 'User created successfully.');

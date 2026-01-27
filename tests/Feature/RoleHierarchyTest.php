@@ -180,4 +180,85 @@ class RoleHierarchyTest extends TestCase
         // Operator cannot manage sub-operator in different tenant
         $this->assertFalse($operator1->canManage($subOperator2));
     }
+
+    public function test_super_admin_can_only_create_admins(): void
+    {
+        $superAdmin = User::factory()->create(['operator_level' => 10]);
+
+        // Super Admin can create Admins (level 20)
+        $this->assertTrue($superAdmin->canCreateUserWithLevel(20));
+
+        // Super Admin cannot create Operators (level 30)
+        $this->assertFalse($superAdmin->canCreateUserWithLevel(30));
+
+        // Super Admin cannot create Sub-Operators (level 40)
+        $this->assertFalse($superAdmin->canCreateUserWithLevel(40));
+
+        // Super Admin cannot create Managers (level 50)
+        $this->assertFalse($superAdmin->canCreateUserWithLevel(50));
+
+        // Super Admin cannot create Accountants (level 70)
+        $this->assertFalse($superAdmin->canCreateUserWithLevel(70));
+
+        // Super Admin cannot create Staff (level 80)
+        $this->assertFalse($superAdmin->canCreateUserWithLevel(80));
+
+        // Super Admin cannot create Customers (level 100)
+        $this->assertFalse($superAdmin->canCreateUserWithLevel(100));
+    }
+
+    public function test_admin_can_create_specific_roles_only(): void
+    {
+        $admin = User::factory()->create(['operator_level' => 20]);
+
+        // Admin cannot create Super Admins (level 10)
+        $this->assertFalse($admin->canCreateUserWithLevel(10));
+
+        // Admin cannot create other Admins (level 20)
+        $this->assertFalse($admin->canCreateUserWithLevel(20));
+
+        // Admin can create Operators (level 30)
+        $this->assertTrue($admin->canCreateUserWithLevel(30));
+
+        // Admin can create Sub-Operators (level 40)
+        $this->assertTrue($admin->canCreateUserWithLevel(40));
+
+        // Admin can create Managers (level 50)
+        $this->assertTrue($admin->canCreateUserWithLevel(50));
+
+        // Admin can create Accountants (level 70)
+        $this->assertTrue($admin->canCreateUserWithLevel(70));
+
+        // Admin can create Staff (level 80)
+        $this->assertTrue($admin->canCreateUserWithLevel(80));
+
+        // Admin can create Customers (level 100)
+        $this->assertTrue($admin->canCreateUserWithLevel(100));
+    }
+
+    public function test_operator_can_only_create_sub_operators_and_customers(): void
+    {
+        $operator = User::factory()->create(['operator_level' => 30]);
+
+        // Operator cannot create Admins (level 20)
+        $this->assertFalse($operator->canCreateUserWithLevel(20));
+
+        // Operator cannot create other Operators (level 30)
+        $this->assertFalse($operator->canCreateUserWithLevel(30));
+
+        // Operator can create Sub-Operators (level 40)
+        $this->assertTrue($operator->canCreateUserWithLevel(40));
+
+        // Operator cannot create Managers (level 50)
+        $this->assertFalse($operator->canCreateUserWithLevel(50));
+
+        // Operator cannot create Accountants (level 70)
+        $this->assertFalse($operator->canCreateUserWithLevel(70));
+
+        // Operator cannot create Staff (level 80)
+        $this->assertFalse($operator->canCreateUserWithLevel(80));
+
+        // Operator can create Customers (level 100)
+        $this->assertTrue($operator->canCreateUserWithLevel(100));
+    }
 }

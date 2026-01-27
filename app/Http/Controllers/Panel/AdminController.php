@@ -97,10 +97,14 @@ class AdminController extends Controller
 
     /**
      * Display users listing.
+     * Admin can only see users within their own tenant.
      */
     public function users(): View
     {
-        $users = User::with('roles')->latest()->paginate(20);
+        $users = User::with('roles')
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->latest()
+            ->paginate(20);
 
         return view('panels.admin.users.index', compact('users'));
     }
@@ -125,12 +129,23 @@ class AdminController extends Controller
             'role' => 'required|exists:roles,slug',
         ]);
 
-        // Create the user
+        // Get the role to check its level
+        $role = Role::where('slug', $validated['role'])->firstOrFail();
+        
+        // Authorization check: Verify current user can create users with this role level
+        if (!auth()->user()->canCreateUserWithLevel($role->level)) {
+            abort(403, 'You are not authorized to create users with this role.');
+        }
+
+        // Create the user with proper tenant isolation
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
             'is_active' => true,
+            'tenant_id' => auth()->user()->tenant_id, // Enforce tenant isolation
+            'operator_level' => $role->level,
+            'created_by' => auth()->id(),
         ]);
 
         // Assign role using the model method that handles tenant_id
@@ -142,20 +157,24 @@ class AdminController extends Controller
 
     /**
      * Show edit user form.
+     * Enforce tenant isolation - Admin can only edit users in their own tenant.
      */
     public function usersEdit($id): View
     {
-        $user = User::with('roles')->findOrFail($id);
+        $user = User::with('roles')
+            ->where('tenant_id', auth()->user()->tenant_id)
+            ->findOrFail($id);
 
         return view('panels.admin.users.edit', compact('user'));
     }
 
     /**
      * Update the specified user.
+     * Enforce tenant isolation - Admin can only update users in their own tenant.
      */
     public function usersUpdate(Request $request, $id)
     {
-        $user = User::findOrFail($id);
+        $user = User::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -189,10 +208,11 @@ class AdminController extends Controller
 
     /**
      * Remove the specified user.
+     * Enforce tenant isolation - Admin can only delete users in their own tenant.
      */
     public function usersDestroy($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
 
         // Prevent deleting own account
         if ($user->id === auth()->id()) {
@@ -208,16 +228,22 @@ class AdminController extends Controller
 
     /**
      * Display network users listing.
+     * Enforce tenant isolation - Admin can only see network users in their own tenant.
      */
     public function networkUsers(): View
     {
-        $networkUsers = NetworkUser::with(['user', 'package'])->latest()->paginate(20);
+        $tenantId = auth()->user()->tenant_id;
+        
+        $networkUsers = NetworkUser::with(['user', 'package'])
+            ->where('tenant_id', $tenantId)
+            ->latest()
+            ->paginate(20);
 
         $stats = [
-            'active' => NetworkUser::where('status', 'active')->count(),
-            'suspended' => NetworkUser::where('status', 'suspended')->count(),
-            'inactive' => NetworkUser::where('status', 'inactive')->count(),
-            'total' => NetworkUser::count(),
+            'active' => NetworkUser::where('tenant_id', $tenantId)->where('status', 'active')->count(),
+            'suspended' => NetworkUser::where('tenant_id', $tenantId)->where('status', 'suspended')->count(),
+            'inactive' => NetworkUser::where('tenant_id', $tenantId)->where('status', 'inactive')->count(),
+            'total' => NetworkUser::where('tenant_id', $tenantId)->count(),
         ];
 
         return view('panels.admin.network-users.index', compact('networkUsers', 'stats'));
@@ -225,14 +251,18 @@ class AdminController extends Controller
 
     /**
      * Show the form for creating a new network user.
+     * Enforce tenant isolation - Only show customers, packages, and routers from Admin's tenant.
      */
     public function networkUsersCreate(): View
     {
-        $customers = User::whereHas('roles', function ($query) {
-            $query->where('slug', 'customer');
-        })->get();
-        $packages = Package::where('status', 'active')->get();
-        $routers = MikrotikRouter::where('status', 'active')->get();
+        $tenantId = auth()->user()->tenant_id;
+        
+        $customers = User::where('tenant_id', $tenantId)
+            ->whereHas('roles', function ($query) {
+                $query->where('slug', 'customer');
+            })->get();
+        $packages = Package::where('tenant_id', $tenantId)->where('status', 'active')->get();
+        $routers = MikrotikRouter::where('tenant_id', $tenantId)->where('status', 'active')->get();
 
         return view('panels.admin.network-users.create', compact('customers', 'packages', 'routers'));
     }
@@ -1030,7 +1060,7 @@ class AdminController extends Controller
      */
     public function customersDestroy($id)
     {
-        $customer = NetworkUser::findOrFail($id);
+        $customer = NetworkUser::where('tenant_id', auth()->user()->tenant_id)->findOrFail($id);
         $customer->delete();
 
         return redirect()->route('panel.admin.customers')
@@ -1039,9 +1069,12 @@ class AdminController extends Controller
 
     /**
      * Show customer detail.
+     * Enforce tenant isolation - Admin can only view customers in their own tenant.
      */
     public function customersShow($id): View
     {
+        $tenantId = auth()->user()->tenant_id;
+        
         // Load the User model which is what all customer actions expect
         // The $id could be either User ID or NetworkUser ID, so we need to handle both cases
         $customer = User::with([
@@ -1049,7 +1082,7 @@ class AdminController extends Controller
             'networkUser.sessions',
             'ipAllocations',
             'macAddresses'
-        ])->find($id);
+        ])->where('tenant_id', $tenantId)->find($id);
         
         // If not found as User, try finding as NetworkUser and get the related User
         if (!$customer) {
@@ -1059,7 +1092,7 @@ class AdminController extends Controller
                 'user.macAddresses',
                 'package',
                 'sessions',
-            ])->find($id);
+            ])->where('tenant_id', $tenantId)->find($id);
             
             if ($networkUser && $networkUser->user) {
                 $customer = $networkUser->user;
@@ -1078,15 +1111,17 @@ class AdminController extends Controller
             $onu = \App\Models\Onu::where('network_user_id', $customer->networkUser->id)->with('olt')->first();
         }
 
-        // Load additional data for inline editing
-        $packages = ServicePackage::select('id', 'name')->orderBy('name')->get();
-        $operators = \App\Models\User::where('role', 'operator')
-            ->orWhere('role', 'sub-operator')
+        // Load additional data for inline editing - enforcing tenant isolation
+        $packages = ServicePackage::where('tenant_id', $tenantId)->select('id', 'name')->orderBy('name')->get();
+        $operators = \App\Models\User::where('tenant_id', $tenantId)
+            ->where(function ($q) {
+                $q->where('operator_level', 30)->orWhere('operator_level', 40);
+            })
             ->select('id', 'name', 'email')
             ->orderBy('name')
             ->get();
-        $zones = \App\Models\Zone::select('id', 'name')->orderBy('name')->get();
-        $routers = \App\Models\MikrotikRouter::select('id', 'name', 'ip_address')->orderBy('name')->get();
+        $zones = \App\Models\Zone::where('tenant_id', $tenantId)->select('id', 'name')->orderBy('name')->get();
+        $routers = \App\Models\MikrotikRouter::where('tenant_id', $tenantId)->select('id', 'name', 'ip_address')->orderBy('name')->get();
 
         return view('panels.admin.customers.show', compact('customer', 'onu', 'packages', 'operators', 'zones', 'routers'));
     }

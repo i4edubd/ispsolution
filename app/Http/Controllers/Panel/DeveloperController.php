@@ -480,10 +480,11 @@ class DeveloperController extends Controller
 
     /**
      * Display Super Admin management.
+     * Developer can see Super Admins across all tenants.
      */
     public function superAdmins(): View
     {
-        $superAdmins = User::whereHas('roles', function ($q) {
+        $superAdmins = User::allTenants()->whereHas('roles', function ($q) {
             $q->where('slug', 'super-admin');
         })->with('tenant')->latest()->paginate(20);
 

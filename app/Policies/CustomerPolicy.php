@@ -153,7 +153,8 @@ class CustomerPolicy
             return true;
         }
 
-        // Only Operators and above can delete (Sub-Operators and below cannot)
+        // Operators (level 30) can delete customers
+        // Sub-Operators (level 40+) and below cannot delete
         if ($user->operator_level > 30) {
             return false;
         }
