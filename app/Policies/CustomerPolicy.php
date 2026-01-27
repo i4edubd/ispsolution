@@ -140,13 +140,22 @@ class CustomerPolicy
      */
     public function delete(User $user, User $customer): bool
     {
-        // Developer, Super Admin, and Admin can delete customers (level <= 20)
-        if ($user->operator_level > 20) {
+        // Developer, Super Admin, and Admin have automatic access
+        if ($user->operator_level <= 20) {
+            // Check tenant isolation
+            if ($user->tenant_id && $customer->tenant_id !== $user->tenant_id) {
+                return false;
+            }
+            return true;
+        }
+
+        // Only Operators and above can delete (Sub-Operators and below cannot)
+        if ($user->operator_level > 30) {
             return false;
         }
 
-        // Check permission for non-super-admin roles
-        if ($user->operator_level > 10 && ! $user->hasPermission('delete_customers')) {
+        // Check permission for Operator role
+        if (! $user->hasPermission('delete_customers')) {
             return false;
         }
 
@@ -319,17 +328,17 @@ class CustomerPolicy
      */
     public function changeOperator(User $user, User $customer): bool
     {
-        // Only Developer, Super Admin, and Admin can transfer customers
-        if ($user->operator_level > 20) {
-            return false;
-        }
-        
-        // Developer and Super Admin have automatic access
-        if ($user->operator_level <= 10) {
+        // Developer, Super Admin, and Admin have automatic access
+        if ($user->operator_level <= 20) {
             return true;
         }
         
-        // Admin needs permission
+        // Only Operators and above can transfer customers (Sub-Operators and below cannot)
+        if ($user->operator_level > 30) {
+            return false;
+        }
+        
+        // Operators need permission
         return $user->hasPermission('change_operator');
     }
 
