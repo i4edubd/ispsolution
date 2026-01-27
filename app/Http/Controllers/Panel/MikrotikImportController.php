@@ -70,7 +70,7 @@ class MikrotikImportController extends Controller
         ]);
 
         try {
-            $result = $this->importService->importPppProfiles($validated['router_id']);
+            $result = $this->importService->importPppProfiles((int) $validated['router_id']);
 
             return response()->json([
                 'success' => $result['success'],
@@ -104,7 +104,7 @@ class MikrotikImportController extends Controller
                 'generate_bills' => $validated['generate_bills'] ?? false,
             ];
 
-            $result = $this->importService->importPppSecrets($validated['router_id'], $options);
+            $result = $this->importService->importPppSecrets((int) $validated['router_id'], $options);
 
             return response()->json([
                 'success' => $result['success'],
