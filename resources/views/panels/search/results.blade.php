@@ -119,13 +119,18 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             @php
                                                 $userRole = auth()->user()->roles->first()?->slug ?? '';
+                                                $operatorLevel = auth()->user()->operator_level;
                                                 $viewRoute = null;
                                                 
-                                                if ($userRole === 'admin' && Route::has('panel.admin.customers.show')) {
-                                                    $viewRoute = route('panel.admin.customers.show', $customer->id);
-                                                } elseif ($userRole === 'developer' && Route::has('panel.developer.customers.show')) {
+                                                // Determine appropriate route based on role
+                                                if ($operatorLevel === 0 && Route::has('panel.developer.customers.show')) {
+                                                    // Developer
                                                     $viewRoute = route('panel.developer.customers.show', $customer->id);
+                                                } elseif (in_array($operatorLevel, [10, 20, 50, 70]) && Route::has('panel.admin.customers.show')) {
+                                                    // Super Admin, Admin, Manager, Accountant
+                                                    $viewRoute = route('panel.admin.customers.show', $customer->id);
                                                 }
+                                                // Note: Operators, Sub-Operators, and Staff typically don't have customer detail views
                                             @endphp
                                             
                                             @if($viewRoute)
@@ -213,10 +218,21 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             @php
                                                 $userRole = auth()->user()->roles->first()?->slug ?? '';
+                                                $operatorLevel = auth()->user()->operator_level;
                                                 $viewRoute = null;
                                                 
-                                                if (Route::has('panel.admin.export.invoice.view')) {
+                                                // Determine appropriate route based on role
+                                                if ($operatorLevel === 100) {
+                                                    // Customer - view their own invoice
+                                                    if ($invoice->user_id === auth()->user()->id && Route::has('panel.customer.invoice.view')) {
+                                                        $viewRoute = route('panel.customer.invoice.view', $invoice->id);
+                                                    }
+                                                } elseif (in_array($operatorLevel, [0, 10, 20, 50, 70]) && Route::has('panel.admin.export.invoice.view')) {
+                                                    // Super Admin, Developer, Admin, Manager, Accountant
                                                     $viewRoute = route('panel.admin.export.invoice.view', $invoice->id);
+                                                } elseif (Route::has('payments.show')) {
+                                                    // Fallback to payment view for operators/staff
+                                                    $viewRoute = route('payments.show', $invoice->id);
                                                 }
                                             @endphp
                                             
