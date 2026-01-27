@@ -280,7 +280,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 function updatePackageDetails(select) {
     const option = select.options[select.selectedIndex];
     

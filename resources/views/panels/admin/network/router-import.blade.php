@@ -156,7 +156,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 function routerImport() {
     return {
         importType: 'all',

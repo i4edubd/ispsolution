@@ -224,7 +224,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     document.addEventListener('DOMContentLoaded', function() {
         const uploadInput = document.getElementById('upload_speed');
         const downloadInput = document.getElementById('download_speed');

@@ -81,7 +81,7 @@
     @endif
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.getElementById('quickActionForm')?.addEventListener('submit', function(e) {
     e.preventDefault();
     

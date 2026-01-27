@@ -163,7 +163,7 @@ $widthClasses = match($width) {
 
 @once
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 // Customer Action Handlers
 function suspendCustomer(customerId) {
     if (!confirm('Are you sure you want to suspend this customer?')) return;

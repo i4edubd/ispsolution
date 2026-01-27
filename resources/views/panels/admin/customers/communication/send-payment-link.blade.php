@@ -173,7 +173,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.querySelector('form');
         const smsCheckbox = document.getElementById('send_via_sms');

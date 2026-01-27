@@ -120,7 +120,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         // OTP Countdown Timer
         let expiresAt = {{ $expires_at }};
         let now = Math.floor(Date.now() / 1000);

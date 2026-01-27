@@ -157,7 +157,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
     // Calculate and update time remaining
     const expiresAt = {{ $expires_at }};
     const startTime = {{ $logged_in_at }}; // Use actual login time from session

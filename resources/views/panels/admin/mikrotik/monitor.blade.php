@@ -111,7 +111,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.getElementById('test-connection').addEventListener('click', function() {
     const button = this;
     const resultDiv = document.getElementById('connection-result');

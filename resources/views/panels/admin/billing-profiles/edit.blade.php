@@ -79,7 +79,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 function toggleBillingFields() {
     const type = document.getElementById('type').value;
     document.getElementById('billing-day-field').classList.toggle('hidden', type !== 'monthly');

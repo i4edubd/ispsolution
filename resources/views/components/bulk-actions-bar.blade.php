@@ -41,7 +41,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce() }}">
 // Show/hide bulk actions bar based on selection
 document.addEventListener('DOMContentLoaded', function() {
     const bar = document.getElementById('bulkActionsBar');

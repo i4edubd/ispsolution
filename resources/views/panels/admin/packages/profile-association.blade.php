@@ -158,7 +158,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function() {
     // Add any dynamic profile loading or validation here
     const profileSelects = document.querySelectorAll('.profile-select');

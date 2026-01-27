@@ -117,7 +117,7 @@
 </div>
 
 @if($networkUser)
-<script>
+<script nonce="{{ csp_nonce() }}">
     const bandwidthData = @json($bandwidthData);
     
     // Daily Chart (Last 24 Hours)

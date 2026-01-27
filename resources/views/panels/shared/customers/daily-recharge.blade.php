@@ -186,7 +186,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script nonce="{{ csp_nonce() }}">
 document.addEventListener('DOMContentLoaded', function() {
     const packageSelect = document.getElementById('package_id');
     const daysInput = document.getElementById('days');
