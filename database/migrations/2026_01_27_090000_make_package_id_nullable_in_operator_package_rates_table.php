@@ -26,7 +26,7 @@ return new class extends Migration
         // Make package_id nullable using raw SQL (avoids needing doctrine/dbal)
         DB::statement('ALTER TABLE `operator_package_rates` MODIFY `package_id` BIGINT UNSIGNED NULL');
 
-        // Re-add foreign key constraint with nullable support
+        // Re-add foreign key constraint with nullable support and add new unique constraint
         Schema::table('operator_package_rates', function (Blueprint $table) {
             $table->foreign('package_id')
                 ->references('id')
@@ -34,7 +34,8 @@ return new class extends Migration
                 ->onDelete('cascade');
             
             // Add unique constraint for master package based records (new system)
-            // Keep the old unique constraint for legacy records (MySQL allows multiple NULLs in UNIQUE)
+            // The existing unique_tenant_operator_package constraint remains for legacy records
+            // MySQL UNIQUE constraints allow multiple NULLs, so both constraints can coexist
             $table->unique(['tenant_id', 'operator_id', 'master_package_id'], 'unique_tenant_operator_master_package');
         });
     }
