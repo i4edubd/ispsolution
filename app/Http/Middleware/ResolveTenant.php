@@ -50,6 +50,9 @@ class ResolveTenant
             'login',
             'register',
             'health',
+            'panel/admin/*',
+            'panel/operator/*',
+            'panel/manager/*',
         ];
 
         foreach ($publicRoutes as $pattern) {
