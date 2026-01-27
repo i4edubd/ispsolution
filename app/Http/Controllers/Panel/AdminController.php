@@ -899,7 +899,17 @@ class AdminController extends Controller
             $onu = \App\Models\Onu::where('network_user_id', $customer->networkUser->id)->with('olt')->first();
         }
 
-        return view('panels.admin.customers.show', compact('customer', 'onu'));
+        // Load additional data for inline editing
+        $packages = \App\Models\Package::select('id', 'name')->orderBy('name')->get();
+        $operators = \App\Models\User::where('role', 'operator')
+            ->orWhere('role', 'sub-operator')
+            ->select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+        $zones = \App\Models\Zone::select('id', 'name')->orderBy('name')->get();
+        $routers = \App\Models\MikrotikRouter::select('id', 'name', 'ip_address')->orderBy('name')->get();
+
+        return view('panels.admin.customers.show', compact('customer', 'onu', 'packages', 'operators', 'zones', 'routers'));
     }
 
     /**
