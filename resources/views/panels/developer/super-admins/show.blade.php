@@ -45,7 +45,7 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
                 <p class="mt-1 text-sm text-gray-900 dark:text-white">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                        {{ $admin->role_label ?? 'Super Admin' }}
+                        {{ $admin->role_label ?? __('Super Admin') }}
                     </span>
                 </p>
             </div>
