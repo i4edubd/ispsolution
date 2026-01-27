@@ -1253,8 +1253,13 @@ class AdminController extends Controller
                 ], 400);
             }
 
+            // Validate request data
+            $validatedData = $request->validate([
+                'reason' => ['sometimes', 'nullable', 'string', 'max:255'],
+            ]);
+
             // Get suspend reason from request
-            $reason = $request->input('reason', 'Manual suspension by admin');
+            $reason = $validatedData['reason'] ?? 'Manual suspension by admin';
 
             DB::beginTransaction();
 
@@ -1286,7 +1291,7 @@ class AdminController extends Controller
                         // Get first active router
                         $router = MikrotikRouter::where('is_active', true)->first();
                         
-                        if ($router) {
+                        if ($router && $mikrotikService->connectRouter($router->id)) {
                             // Get active sessions
                             $sessions = $mikrotikService->getActiveSessions($router->id);
                             
@@ -1421,20 +1426,31 @@ class AdminController extends Controller
                 }
 
                 // MikroTik integration: Provision network access
-                if ($customer->service_type === 'pppoe' && $customer->username) {
+                if ($customer->service_type === 'pppoe' && $customer->username && $customer->password) {
                     try {
                         // Get first active router
                         $router = MikrotikRouter::where('is_active', true)->first();
                         
-                        if ($router) {
-                            // Create or update PPPoE user on router
-                            $mikrotikService->createPppoeUser([
-                                'router_id' => $router->id,
-                                'username' => $customer->username,
-                                'password' => $customer->password,
-                                'profile' => $customer->package?->mikrotik_profile ?? 'default',
-                                'service' => 'pppoe',
-                            ]);
+                        if ($router && $mikrotikService->connectRouter($router->id)) {
+                            // Check if user exists on router, update if exists, create if not
+                            try {
+                                $mikrotikService->updatePppoeUser([
+                                    'router_id' => $router->id,
+                                    'username' => $customer->username,
+                                    'password' => $customer->password,
+                                    'profile' => $customer->package?->mikrotik_profile ?? 'default',
+                                    'service' => 'pppoe',
+                                ]);
+                            } catch (\Exception $updateException) {
+                                // If update fails, try create
+                                $mikrotikService->createPppoeUser([
+                                    'router_id' => $router->id,
+                                    'username' => $customer->username,
+                                    'password' => $customer->password,
+                                    'profile' => $customer->package?->mikrotik_profile ?? 'default',
+                                    'service' => 'pppoe',
+                                ]);
+                            }
                         }
                     } catch (\Exception $e) {
                         Log::warning('Failed to provision MikroTik for activated customer', [

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Mail\CustomerActivated;
+use App\Mail\CustomerSuspended;
 use App\Mail\InvoiceExpiringSoon;
 use App\Mail\InvoiceGenerated;
 use App\Mail\InvoiceOverdue;
@@ -297,19 +299,8 @@ class NotificationService
 
         try {
             if ($user && $user->email) {
-                // Send simple email notification
-                Mail::raw(
-                    "Dear {$user->name},\n\n" .
-                    "Your account has been suspended.\n" .
-                    "Reason: {$reason}\n\n" .
-                    "Please contact support for more information.\n\n" .
-                    "Best regards,\n" .
-                    config('app.name'),
-                    function ($message) use ($user) {
-                        $message->to($user->email)
-                            ->subject('Account Suspended - ' . config('app.name'));
-                    }
-                );
+                Mail::to($user->email)
+                    ->send(new CustomerSuspended($user, $reason));
 
                 Log::info('Customer suspended email sent', [
                     'user_id' => $user->id,
@@ -351,23 +342,37 @@ class NotificationService
 
         try {
             if ($user && $user->email) {
-                // Send simple email notification
-                Mail::raw(
-                    "Dear {$user->name},\n\n" .
-                    "Your account has been activated successfully.\n" .
-                    "You can now access our services.\n\n" .
-                    "Thank you for choosing " . config('app.name') . ".\n\n" .
-                    "Best regards,\n" .
-                    config('app.name'),
-                    function ($message) use ($user) {
-                        $message->to($user->email)
-                            ->subject('Account Activated - ' . config('app.name'));
-                    }
-                );
+                Mail::to($user->email)
+                    ->send(new CustomerActivated($user));
 
                 Log::info('Customer activated email sent', [
                     'user_id' => $user->id,
                 ]);
+
+                $emailSent = true;
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send customer activated email', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Send SMS if enabled
+        if (config('sms.enabled', false) && $this->smsService && $user->phone) {
+            try {
+                $message = "Your account has been activated successfully. Welcome to " . config('app.name') . "!";
+                $smsSent = $this->smsService->sendSms($user->phone, $message);
+            } catch (\Exception $e) {
+                Log::error('Failed to send customer activated SMS', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $emailSent || $smsSent;
+    }
 
                 $emailSent = true;
             }

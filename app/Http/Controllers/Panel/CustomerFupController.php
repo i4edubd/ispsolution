@@ -47,18 +47,11 @@ class CustomerFupController extends Controller
                 ->first();
             
             if ($radReply && $fupConfig) {
-                $fupRateLimit = sprintf(
-                    '%dk/%dk',
-                    $fupConfig->reduced_upload_speed,
-                    $fupConfig->reduced_download_speed
-                );
+                $fupRateLimit = $fupConfig->reduced_speed;
                 
                 if ($radReply->value === $fupRateLimit) {
                     $fupActive = true;
-                    $fupSpeed = [
-                        'upload' => $fupConfig->reduced_upload_speed,
-                        'download' => $fupConfig->reduced_download_speed,
-                    ];
+                    $fupSpeed = $fupRateLimit;
                 }
             }
         }
@@ -100,24 +93,21 @@ class CustomerFupController extends Controller
             // Get current usage
             $usage = $this->getCurrentUsage($networkUser);
 
-            // Check if threshold is exceeded
-            if ($usage['total_mb'] < $fupConfig->threshold_mb) {
+            // Check if threshold is exceeded (convert bytes to MB)
+            $thresholdMB = $fupConfig->data_limit_bytes / (1024 * 1024);
+            if ($usage['total_mb'] < $thresholdMB) {
                 return response()->json([
                     'success' => false,
                     'message' => sprintf(
                         'FUP threshold not exceeded. Current usage: %.2f GB, Threshold: %.2f GB',
                         $usage['total_mb'] / 1024,
-                        $fupConfig->threshold_mb / 1024
+                        $thresholdMB / 1024
                     ),
                 ], 400);
             }
 
             // Apply reduced speed
-            $rateLimit = sprintf(
-                '%dk/%dk',
-                $fupConfig->reduced_upload_speed,
-                $fupConfig->reduced_download_speed
-            );
+            $rateLimit = $fupConfig->reduced_speed;
 
             RadReply::updateOrCreate(
                 ['username' => $networkUser->username, 'attribute' => 'Mikrotik-Rate-Limit'],
@@ -128,7 +118,7 @@ class CustomerFupController extends Controller
             try {
                 $router = MikrotikRouter::where('is_active', true)->first();
                 
-                if ($router) {
+                if ($router && $mikrotikService->connectRouter($router->id)) {
                     $sessions = $mikrotikService->getActiveSessions($router->id);
                     
                     foreach ($sessions as $session) {
@@ -150,10 +140,9 @@ class CustomerFupController extends Controller
                 $networkUser,
                 [],
                 [
-                    'upload_speed' => $fupConfig->reduced_upload_speed,
-                    'download_speed' => $fupConfig->reduced_download_speed,
+                    'reduced_speed' => $fupConfig->reduced_speed,
                     'usage_mb' => $usage['total_mb'],
-                    'threshold_mb' => $fupConfig->threshold_mb,
+                    'threshold_mb' => $thresholdMB,
                 ],
                 []
             );
@@ -163,10 +152,7 @@ class CustomerFupController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'FUP activated successfully. Speed has been reduced.',
-                'fup_speed' => [
-                    'upload' => $fupConfig->reduced_upload_speed,
-                    'download' => $fupConfig->reduced_download_speed,
-                ],
+                'fup_speed' => $fupConfig->reduced_speed,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -220,7 +206,7 @@ class CustomerFupController extends Controller
             try {
                 $router = MikrotikRouter::where('is_active', true)->first();
                 
-                if ($router) {
+                if ($router && $mikrotikService->connectRouter($router->id)) {
                     $sessions = $mikrotikService->getActiveSessions($router->id);
                     
                     foreach ($sessions as $session) {
@@ -278,29 +264,65 @@ class CustomerFupController extends Controller
     ): JsonResponse {
         $this->authorize('activateFup', $customer);
 
+        DB::beginTransaction();
         try {
-            $networkUser = NetworkUser::where('user_id', $customer->id)->firstOrFail();
+            $networkUser = NetworkUser::with('package.fup')->where('user_id', $customer->id)->firstOrFail();
 
-            // Note: In a real implementation, you would reset the usage counter
-            // This might involve updating a custom table or resetting RADIUS accounting
+            if (!$networkUser->package || !$networkUser->package->fup) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'FUP is not configured for this customer\'s package.',
+                ], 400);
+            }
+
+            $fupConfig = $networkUser->package->fup;
+            
+            // Calculate the reset period start date
+            $startDate = match($fupConfig->reset_period) {
+                'daily' => now()->startOfDay(),
+                'weekly' => now()->startOfWeek(),
+                'monthly' => now()->startOfMonth(),
+                default => now()->subDays(30)
+            };
+
+            // Delete accounting records for the current period to reset usage
+            $deletedCount = RadAcct::where('username', $networkUser->username)
+                ->where('acctstarttime', '>=', $startDate)
+                ->delete();
+
+            Log::info('FUP usage counter reset', [
+                'username' => $networkUser->username,
+                'records_deleted' => $deletedCount,
+                'reset_period' => $fupConfig->reset_period,
+                'start_date' => $startDate->toDateTimeString(),
+            ]);
 
             // Audit logging
             $auditLogService->log(
                 'fup_reset',
                 $networkUser,
                 [],
-                [],
+                [
+                    'records_deleted' => $deletedCount,
+                    'reset_period' => $fupConfig->reset_period,
+                ],
                 []
             );
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'FUP usage counter reset successfully.',
+                'records_deleted' => $deletedCount,
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Failed to reset FUP', [
                 'customer_id' => $customer->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
@@ -325,8 +347,18 @@ class CustomerFupController extends Controller
         }
 
         try {
-            // Get usage for current billing cycle (last 30 days)
-            $startDate = now()->subDays(30);
+            // Get FUP configuration to determine reset period
+            $fupConfig = $networkUser->package?->fup;
+            
+            // Calculate start date based on FUP reset period
+            $startDate = $fupConfig && $fupConfig->reset_period 
+                ? match($fupConfig->reset_period) {
+                    'daily' => now()->startOfDay(),
+                    'weekly' => now()->startOfWeek(),
+                    'monthly' => now()->startOfMonth(),
+                    default => now()->subDays(30)
+                }
+                : now()->subDays(30);
 
             $usage = RadAcct::where('username', $networkUser->username)
                 ->where('acctstarttime', '>=', $startDate)

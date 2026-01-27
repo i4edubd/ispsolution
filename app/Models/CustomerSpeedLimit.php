@@ -59,10 +59,8 @@ class CustomerSpeedLimit extends Model
             $q->where('is_temporary', false)
               ->orWhere(function ($q2) {
                   $q2->where('is_temporary', true)
-                     ->where(function ($q3) {
-                         $q3->whereNull('expires_at')
-                            ->orWhere('expires_at', '>', now());
-                     });
+                     ->whereNotNull('expires_at')
+                     ->where('expires_at', '>', now());
               });
         });
     }

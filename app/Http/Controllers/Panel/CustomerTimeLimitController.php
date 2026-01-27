@@ -114,10 +114,10 @@ class CustomerTimeLimitController extends Controller
             }
 
             // Update Idle-Timeout attribute (disconnect after idle period)
-            // Set to 5 minutes idle timeout as a reasonable default
+            $idleTimeoutSeconds = (int) config('radius.idle_timeout_seconds', 300);
             RadReply::updateOrCreate(
                 ['username' => $username, 'attribute' => 'Idle-Timeout'],
-                ['op' => ':=', 'value' => '300']
+                ['op' => ':=', 'value' => (string) $idleTimeoutSeconds]
             );
         } catch (\Exception $e) {
             Log::warning('Failed to update RADIUS time limits', [

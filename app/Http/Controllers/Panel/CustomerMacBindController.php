@@ -165,7 +165,7 @@ class CustomerMacBindController extends Controller
                 try {
                     $router = MikrotikRouter::where('is_active', true)->first();
                     
-                    if ($router) {
+                    if ($router && $mikrotikService->connectRouter($router->id)) {
                         // Disconnect any active sessions with this MAC
                         $sessions = $mikrotikService->getActiveSessions($router->id);
                         
