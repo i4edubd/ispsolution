@@ -264,15 +264,19 @@ function customerDetailsEditor() {
         },
         
         async saveSection(section) {
-            const formId = `${section}-form` || `${section}-info-form`;
+            const formId = section === 'general' ? 'general-info-form' : `${section}-form`;
             const form = document.getElementById(formId);
-            if (!form) return;
+            if (!form) {
+                console.error(`Form not found: ${formId}`);
+                return;
+            }
             
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
             
             try {
-                const response = await fetch('{{ route("panel.admin.customers.update", $customer->id) }}', {
+                const updateUrl = form.dataset.updateUrl || '{{ route("panel.admin.customers.update", $customer->id) }}';
+                const response = await fetch(updateUrl, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
