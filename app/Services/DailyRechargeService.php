@@ -113,6 +113,7 @@ class DailyRechargeService
             $payment = Payment::create([
                 'user_id' => $customer->id,
                 'tenant_id' => $customer->tenant_id,
+                'payment_number' => $this->generatePaymentNumber(),
                 'invoice_id' => $rechargeResult['invoice']->id,
                 'amount' => $rechargeResult['amount'],
                 'payment_method' => $paymentMethod,
@@ -174,5 +175,13 @@ class DailyRechargeService
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
+    }
+
+    /**
+     * Generate a unique payment number
+     */
+    protected function generatePaymentNumber(): string
+    {
+        return 'PAY-' . date('Ymd') . '-' . str_pad(Payment::whereDate('created_at', today())->count() + 1, 5, '0', STR_PAD_LEFT);
     }
 }

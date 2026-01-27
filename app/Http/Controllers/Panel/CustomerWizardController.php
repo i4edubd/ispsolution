@@ -10,6 +10,7 @@ use App\Models\ServicePackage;
 use App\Models\TempCustomer;
 use App\Models\User;
 use App\Models\Zone;
+use App\Services\BillingService;
 use App\Services\MikrotikService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,7 +24,8 @@ class CustomerWizardController extends Controller
     private const TOTAL_STEPS = 7;
 
     public function __construct(
-        private MikrotikService $mikrotikService
+        private MikrotikService $mikrotikService,
+        private BillingService $billingService
     ) {
     }
 
@@ -451,11 +453,12 @@ class CustomerWizardController extends Controller
             if (isset($allData['payment_amount']) && $allData['payment_amount'] > 0) {
                 $payment = Payment::create([
                     'tenant_id' => getCurrentTenantId(),
+                    'payment_number' => $this->billingService->generatePaymentNumber(),
                     'user_id' => $customer->id,
                     'invoice_id' => $invoice->id,
                     'amount' => $allData['payment_amount'],
                     'payment_method' => $allData['payment_method'],
-                    'payment_reference' => $allData['payment_reference'] ?? null,
+                    'transaction_id' => $allData['payment_reference'] ?? null,
                     'status' => 'completed',
                     'paid_at' => now(),
                     'collected_by' => $allData['collected_by'] ?? auth()->id(),

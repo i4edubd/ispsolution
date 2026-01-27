@@ -65,6 +65,7 @@ class CableTvBillingService
             $payment = Payment::create([
                 'tenant_id' => $subscription->tenant_id,
                 'user_id' => $subscription->user_id,
+                'payment_number' => $this->generatePaymentNumber(),
                 'invoice_id' => $invoice->id,
                 'amount' => $paymentData['amount'],
                 'payment_method' => $paymentData['payment_method'] ?? 'cash',
@@ -288,5 +289,13 @@ class CableTvBillingService
         }
 
         return $expiredCount;
+    }
+
+    /**
+     * Generate a unique payment number
+     */
+    protected function generatePaymentNumber(): string
+    {
+        return 'PAY-' . date('Ymd') . '-' . str_pad(Payment::whereDate('created_at', today())->count() + 1, 5, '0', STR_PAD_LEFT);
     }
 }
