@@ -100,7 +100,7 @@ Route::prefix('v1')->middleware('rate_limit:public_api')->group(function () {
 
         // Statistics
         Route::get('/users/{username}/stats', [RadiusController::class, 'getUserStats'])->name('api.radius.users.stats');
-        
+
         // Real-time stats (requires authentication)
         Route::get('/users/{customerId}/realtime-stats', [RadiusController::class, 'getRealTimeStats'])
             ->middleware('auth:sanctum')
@@ -207,7 +207,7 @@ Route::prefix('v1')->middleware('rate_limit:public_api')->group(function () {
     });
 
     // OLT Routes
-    Route::prefix('olt')->group(function () {
+    Route::prefix('olt')->middleware(['auth:sanctum', 'rate_limit:api'])->group(function () {
         // OLT Management
         Route::get('/', [OltController::class, 'index'])->name('api.olt.index');
         Route::get('/{id}', [OltController::class, 'show'])->name('api.olt.show');
@@ -269,4 +269,3 @@ Route::prefix('routers')->middleware(['web', 'auth'])->group(function () {
         ->middleware('can:update,router')
         ->name('api.routers.reconnect');
 });
-

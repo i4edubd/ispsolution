@@ -41,8 +41,8 @@
                             <option value="">Select Brand</option>
                             <option value="huawei">Huawei</option>
                             <option value="zte">ZTE</option>
-                            <option value="nokia">Nokia</option>
                             <option value="fiberhome">FiberHome</option>
+                            <option value="vsol">VSOL</option>
                             <option value="other">Other</option>
                         </select>
                     </div>
