@@ -2369,10 +2369,14 @@ class AdminController extends Controller
 
         // Filter by customer_id if provided
         if ($request->filled('customer_id')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('user_id', $request->customer_id)
-                  ->orWhere('auditable_id', $request->customer_id);
-            });
+            // Verify user has permission to view this customer's logs
+            $customer = \App\Models\User::find($request->customer_id);
+            if ($customer && \Illuminate\Support\Facades\Gate::allows('view', $customer)) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('user_id', $request->customer_id)
+                      ->orWhere('auditable_id', $request->customer_id);
+                });
+            }
         }
 
         $logs = $query->latest()->paginate(50);

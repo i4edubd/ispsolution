@@ -7,6 +7,7 @@ use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class TicketController extends Controller
@@ -42,7 +43,11 @@ class TicketController extends Controller
 
         // Apply filters
         if ($request->filled('customer_id') && !$user->isCustomer()) {
-            $query->where('customer_id', $request->customer_id);
+            // Verify user has permission to view this customer's tickets
+            $customerToFilter = User::find($request->customer_id);
+            if ($customerToFilter && Gate::allows('view', $customerToFilter)) {
+                $query->where('customer_id', $request->customer_id);
+            }
         }
 
         if ($request->filled('status')) {
