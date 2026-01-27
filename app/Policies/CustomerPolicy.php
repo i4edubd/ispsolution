@@ -22,8 +22,12 @@ class CustomerPolicy
      */
     public function view(User $user, User $customer): bool
     {
-        // Developer and Super Admin can view all
-        if ($user->operator_level <= 10) {
+        // Developer, Super Admin, and Admin can view all
+        if ($user->operator_level <= 20) {
+            // Check tenant isolation
+            if ($user->tenant_id && $customer->tenant_id !== $user->tenant_id) {
+                return false;
+            }
             return true;
         }
 
