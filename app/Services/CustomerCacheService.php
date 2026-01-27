@@ -153,7 +153,7 @@ class CustomerCacheService
             return User::where('tenant_id', $tenantId)
                 ->where('operator_level', 100) // Customers only
                 ->with([
-                    'package:id,name,price,bandwidth_download,bandwidth_upload',
+                    'package:id,name,price,bandwidth_down,bandwidth_up',
                     'zone:id,name',
                 ])
                 ->select($selectColumns)
