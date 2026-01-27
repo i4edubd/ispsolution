@@ -32,10 +32,10 @@ class NetworkUserController extends Controller
     {
         $query = User::select([
             'id', 'name', 'username', 'email', 'service_type',
-            'package_id', 'status', 'tenant_id',
+            'service_package_id as package_id', 'status', 'tenant_id',
             'created_at', 'updated_at',
         ])->where('operator_level', 100)
-          ->with(['package:id,name,price,bandwidth_upload,bandwidth_download']);
+          ->with(['servicePackage:id,name,price,bandwidth_upload,bandwidth_download']);
 
         if ($request->has('service_type')) {
             $query->where('service_type', $request->service_type);
@@ -67,19 +67,28 @@ class NetworkUserController extends Controller
     {
         $data = $request->validated();
         $password = $data['radius_password'] ?? $data['password'] ?? null;
-        unset($data['password']); // Don't store plain password
-
+        
+        // Map package_id to service_package_id
+        if (isset($data['package_id'])) {
+            $data['service_package_id'] = $data['package_id'];
+            unset($data['package_id']);
+        }
+        
         $data['operator_level'] = 100;
+        $data['radius_password'] = $password;
+        unset($data['password']); // Don't use the hashed password field
+        
         $user = User::create($data);
 
-        // Sync to RADIUS if password provided
-        if ($password) {
-            $this->radiusService->syncUser($user, $password);
+        // Sync to RADIUS using User's method (observer will handle this automatically)
+        // But we'll call it explicitly for immediate sync
+        if ($password && $user->username) {
+            $user->syncToRadius(['password' => $password]);
         }
 
         return response()->json([
             'message' => 'Customer created successfully',
-            'data' => $user->load('package'),
+            'data' => $user->load('servicePackage'),
         ], 201);
     }
 
@@ -91,11 +100,11 @@ class NetworkUserController extends Controller
     {
         $user = User::select([
             'id', 'name', 'username', 'email', 'service_type',
-            'package_id', 'status', 'tenant_id',
+            'service_package_id as package_id', 'status', 'tenant_id',
             'created_at', 'updated_at',
         ])->where('operator_level', 100)
           ->with([
-            'package:id,name,price,bandwidth_upload,bandwidth_download',
+            'servicePackage:id,name,price,bandwidth_upload,bandwidth_download',
         ])->findOrFail($id);
 
         return response()->json($user);
@@ -123,9 +132,9 @@ class NetworkUserController extends Controller
                     }
                 }
             ],
-            'service_type' => 'sometimes|in:pppoe,hotspot,static_ip',
+            'service_type' => 'sometimes|in:pppoe,hotspot,static,static_ip',
             'package_id' => 'nullable|exists:packages,id',
-            'status' => 'nullable|in:active,suspended,expired',
+            'status' => 'nullable|in:active,suspended,expired,inactive',
         ]);
 
         if ($validator->fails()) {
@@ -135,16 +144,22 @@ class NetworkUserController extends Controller
             ], 422);
         }
 
-        $user->update($validator->validated());
-
-        // If status changed, sync to RADIUS
-        if ($request->has('status') || $request->has('package_id')) {
-            $this->radiusService->syncUser($user, []);
+        $data = $validator->validated();
+        
+        // Map package_id to service_package_id
+        if (isset($data['package_id'])) {
+            $data['service_package_id'] = $data['package_id'];
+            unset($data['package_id']);
         }
+        
+        $user->update($data);
+
+        // Observer will handle RADIUS sync automatically
+        // No need to call radiusService directly
 
         return response()->json([
             'message' => 'Customer updated successfully',
-            'data' => $user->load('package'),
+            'data' => $user->load('servicePackage'),
         ]);
     }
 
@@ -156,9 +171,7 @@ class NetworkUserController extends Controller
     {
         $user = User::where('operator_level', 100)->findOrFail($id);
 
-        // Delete from RADIUS
-        $this->radiusService->deleteUser($user->username);
-
+        // Observer will handle RADIUS deletion automatically
         $user->delete();
 
         return response()->json([
@@ -185,9 +198,10 @@ class NetworkUserController extends Controller
             ], 422);
         }
 
-        $password = $request->password ?? null;
+        $password = $request->password ?? $user->radius_password;
 
-        $success = $this->radiusService->syncUser($user, $password);
+        // Use User's syncToRadius method instead of radiusService
+        $success = $user->syncToRadius(['password' => $password]);
 
         if (! $success) {
             return response()->json([

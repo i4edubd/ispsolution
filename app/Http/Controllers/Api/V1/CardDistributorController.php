@@ -351,7 +351,7 @@ class CardDistributorController extends Controller
         if ($customer) {
             // Update user's package and expiry (User model with operator_level = 100)
             $customer->update([
-                'package_id' => $card->package_id,
+                'service_package_id' => $card->package_id,
                 'expiry_date' => $expiresAt,
                 'status' => 'active',
             ]);

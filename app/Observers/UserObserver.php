@@ -53,11 +53,12 @@ class UserObserver
 
         try {
             // Check if network-related fields changed
+            // Use wasChanged() because updated() fires after save (isDirty() would always be false)
             $networkFields = ['status', 'is_active', 'ip_address', 'mac_address', 'service_type', 'radius_password'];
             $changed = false;
             
             foreach ($networkFields as $field) {
-                if ($user->isDirty($field)) {
+                if ($user->wasChanged($field)) {
                     $changed = true;
                     break;
                 }

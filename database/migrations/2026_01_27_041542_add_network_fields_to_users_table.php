@@ -19,7 +19,6 @@ return new class extends Migration
             // Network service fields
             if (!Schema::hasColumn('users', 'username')) {
                 $table->string('username', 100)->nullable()->unique()->after('email');
-                $table->index('username');
             }
             
             // Store plain text password for RADIUS (separate from hashed login password)
@@ -28,12 +27,12 @@ return new class extends Migration
             }
             
             if (!Schema::hasColumn('users', 'service_type')) {
-                $table->enum('service_type', ['pppoe', 'hotspot', 'static', 'dhcp', 'vpn', 'cable_tv'])->nullable()->after('radius_password');
+                $table->enum('service_type', ['pppoe', 'hotspot', 'static', 'static_ip', 'dhcp', 'vpn', 'cable_tv'])->nullable()->after('radius_password');
                 $table->index('service_type');
             }
             
             if (!Schema::hasColumn('users', 'connection_type')) {
-                $table->enum('connection_type', ['pppoe', 'hotspot', 'static', 'dhcp', 'vpn'])->nullable()->after('service_type');
+                $table->enum('connection_type', ['pppoe', 'hotspot', 'static', 'static_ip', 'dhcp', 'vpn'])->nullable()->after('service_type');
             }
             
             if (!Schema::hasColumn('users', 'billing_type')) {
@@ -80,25 +79,16 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Drop indexes first
-            $columns = ['username', 'service_type', 'mac_address', 'ip_address', 'status', 'expiry_date', 'zone_id'];
-            
-            foreach ($columns as $column) {
-                if (Schema::hasColumn('users', $column)) {
-                    // Drop foreign key for zone_id
-                    if ($column === 'zone_id') {
-                        $table->dropForeign(['zone_id']);
-                    }
-                    // Drop indexes
-                    try {
-                        $table->dropIndex(['users_' . $column . '_index']);
-                    } catch (\Exception $e) {
-                        // Index might not exist, continue
-                    }
+            // Drop foreign key for zone_id first
+            if (Schema::hasColumn('users', 'zone_id')) {
+                try {
+                    $table->dropForeign(['zone_id']);
+                } catch (\Exception $e) {
+                    // Foreign key might not exist
                 }
             }
             
-            // Drop columns
+            // Drop columns (dropColumn will automatically drop associated indexes)
             $allColumns = ['username', 'radius_password', 'service_type', 'connection_type', 'billing_type', 'device_type', 
                           'mac_address', 'ip_address', 'status', 'expiry_date', 'zone_id'];
             

@@ -22,42 +22,48 @@ return new class extends Migration
         }
 
         try {
-            DB::beginTransaction();
+            // Get total count for logging without loading all rows into memory
+            $totalNetworkUsers = DB::table('network_users')->count();
 
-            // Get all network users
-            $networkUsers = DB::table('network_users')->get();
+            Log::info("Migrating {$totalNetworkUsers} network users to users table");
 
-            Log::info("Migrating {$networkUsers->count()} network users to users table");
+            $processedCount = 0;
 
-            foreach ($networkUsers as $networkUser) {
-                // Update the corresponding user record
-                if ($networkUser->user_id) {
-                    DB::table('users')
-                        ->where('id', $networkUser->user_id)
-                        ->update([
-                            'username' => $networkUser->username,
-                            // SECURITY NOTE: radius_password stores plain text for RADIUS authentication
-                            // This is required by RADIUS protocol (Cleartext-Password attribute)
-                            // Ensure the database has appropriate access controls
-                            // Consider using database encryption at rest for additional security
-                            'radius_password' => $networkUser->password,
-                            'service_type' => $networkUser->service_type,
-                            'connection_type' => $networkUser->connection_type ?? null,
-                            'billing_type' => $networkUser->billing_type ?? null,
-                            'device_type' => $networkUser->device_type ?? null,
-                            'mac_address' => $networkUser->mac_address ?? null,
-                            'ip_address' => $networkUser->ip_address ?? null,
-                            'status' => $networkUser->status,
-                            'expiry_date' => $networkUser->expiry_date ?? null,
-                            'updated_at' => now(),
-                        ]);
-                }
-            }
+            // Process in chunks to avoid memory issues with large datasets
+            DB::table('network_users')
+                ->orderBy('id')
+                ->chunkById(1000, function ($networkUsers) use (&$processedCount) {
+                    DB::transaction(function () use ($networkUsers, &$processedCount) {
+                        foreach ($networkUsers as $networkUser) {
+                            // Update the corresponding user record
+                            if ($networkUser->user_id) {
+                                DB::table('users')
+                                    ->where('id', $networkUser->user_id)
+                                    ->update([
+                                        'username' => $networkUser->username,
+                                        // SECURITY NOTE: radius_password stores plain text for RADIUS authentication
+                                        // This is required by RADIUS protocol (Cleartext-Password attribute)
+                                        // Ensure the database has appropriate access controls
+                                        // Consider using database encryption at rest for additional security
+                                        'radius_password' => $networkUser->password,
+                                        'service_type' => $networkUser->service_type,
+                                        'connection_type' => $networkUser->connection_type ?? null,
+                                        'billing_type' => $networkUser->billing_type ?? null,
+                                        'device_type' => $networkUser->device_type ?? null,
+                                        'mac_address' => $networkUser->mac_address ?? null,
+                                        'ip_address' => $networkUser->ip_address ?? null,
+                                        'status' => $networkUser->status,
+                                        'expiry_date' => $networkUser->expiry_date ?? null,
+                                        'updated_at' => now(),
+                                    ]);
+                                $processedCount++;
+                            }
+                        }
+                    });
+                }, $column = 'id');
 
-            DB::commit();
-            Log::info('Network users data migration completed successfully');
+            Log::info("Network users data migration completed successfully. Processed {$processedCount} records");
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('Network users data migration failed: ' . $e->getMessage());
             throw $e;
         }
@@ -68,33 +74,15 @@ return new class extends Migration
      * 
      * Note: This does not restore data back to network_users table.
      * If you need to rollback, restore from backup.
+     * 
+     * WARNING: This is a no-op to prevent data loss. Rollback by restoring from backup.
      */
     public function down(): void
     {
-        Log::warning('Rollback for network_user data migration: Data will remain in users table');
+        Log::warning('Rollback for network_user data migration requested. This is a NO-OP to prevent data loss.');
+        Log::warning('To rollback, restore database from backup taken before migration.');
         
-        // Optionally clear network fields from users where operator_level = 100
-        // Update each customer individually to avoid DB-specific SQL
-        $customers = DB::table('users')
-            ->where('operator_level', 100)
-            ->select('id')
-            ->get();
-        
-        foreach ($customers as $customer) {
-            DB::table('users')
-                ->where('id', $customer->id)
-                ->update([
-                    'username' => 'user_' . $customer->id, // Generate temporary username
-                    'radius_password' => null,
-                    'service_type' => null,
-                    'connection_type' => null,
-                    'billing_type' => null,
-                        'device_type' => null,
-                    'mac_address' => null,
-                    'ip_address' => null,
-                    'status' => 'active',
-                    'expiry_date' => null,
-                ]);
-        }
+        // Do nothing - data should be restored from backup, not programmatically cleared
+        // as that would result in permanent data loss
     }
 };

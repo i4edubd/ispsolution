@@ -225,15 +225,16 @@ class User extends Authenticatable
     }
 
     /**
-     * DEPRECATED: Network user relationship no longer needed.
-     * Network credentials are now stored directly on the User model.
+     * Get the network user for this customer.
      * 
-     * @deprecated Use User model fields directly (username, service_type, etc.)
+     * @deprecated Network credentials now stored directly on User model.
+     *             This relationship maintained for backward compatibility only.
+     *             Use User model fields directly (username, service_type, etc.)
      */
-    // public function networkUser(): HasOne
-    // {
-    //     return $this->hasOne(NetworkUser::class, 'user_id');
-    // }
+    public function networkUser(): HasOne
+    {
+        return $this->hasOne(NetworkUser::class, 'user_id');
+    }
 
     /**
      * Get the roles for the user.
