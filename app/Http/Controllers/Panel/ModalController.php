@@ -7,11 +7,17 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\NetworkUser;
 use App\Models\Package;
+use App\Services\BillingService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ModalController extends Controller
 {
+    public function __construct(
+        private BillingService $billingService
+    ) {
+    }
+
     /**
      * Show Fair Usage Policy modal content
      */
@@ -100,6 +106,7 @@ class ModalController extends Controller
                     // Create a payment transaction for the recharge
                     $payment = \App\Models\Payment::create([
                         'tenant_id' => $customer->tenant_id,
+                        'payment_number' => $this->billingService->generatePaymentNumber(),
                         'user_id' => $customer->user_id,
                         'amount' => $validated['amount'],
                         'payment_method' => $validated['payment_method'] ?? 'cash',
