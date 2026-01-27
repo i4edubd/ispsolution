@@ -35,6 +35,10 @@ class TenantIsolationSecurityTest extends TestCase
         // Super Admin should not be able to create an Operator (level 30)
         $this->assertFalse($superAdmin->canCreateUserWithLevel(30));
         $this->assertFalse($superAdmin->canCreateOperator());
+        
+        // Super Admin should also not be able to create Sub-Operators or Customers
+        $this->assertFalse($superAdmin->canCreateSubOperator());
+        $this->assertFalse($superAdmin->canCreateCustomer());
     }
 
     public function test_super_admin_cannot_create_managers_staff_accountants(): void

@@ -625,20 +625,20 @@ class User extends Authenticatable
 
     /**
      * Check if this user can create a Sub-Operator.
-     * Developers, Super Admins, Admins, and Operators can create Sub-Operators.
+     * Only Developers, Admins, and Operators can create Sub-Operators (not Super Admins).
      */
     public function canCreateSubOperator(): bool
     {
-        return $this->operator_level <= 30; // Developer, Super Admin, Admin, or Operator
+        return $this->isDeveloper() || $this->isAdmin() || $this->isOperatorRole();
     }
 
     /**
      * Check if this user can create a Customer.
-     * All operator roles can create customers (Developer through Sub-Operator).
+     * Developers, Admins, Operators, and Sub-Operators can create customers (not Super Admins).
      */
     public function canCreateCustomer(): bool
     {
-        return $this->operator_level <= 40; // Developer through Sub-Operator
+        return $this->isDeveloper() || $this->isAdmin() || $this->isOperatorRole() || $this->isSubOperator();
     }
 
     /**
