@@ -600,10 +600,10 @@ All device types are shown on a single page with filtering capabilities. Use the
 - ✅ **Import PPP Secrets** - Import customer accounts from router
 - ✅ **Import All** - Bulk import all data
 
-**Access:** Navigate to `/panel/admin/network/router-import`
+**Access:** Navigate to `/panel/admin/mikrotik/import` (route name: `panel.admin.mikrotik.import.index`)
 
 **Controller:** `App\Http\Controllers\Panel\MikrotikImportController`
-**Views:** `resources/views/panels/admin/network/router-import.blade.php`
+**Views:** `resources/views/panels/admin/mikrotik/import.blade.php`
 
 ### Console Commands (All Functional)
 
@@ -654,22 +654,24 @@ All services are fully implemented and production-ready:
 To verify the implementation in your Admin Panel:
 
 1. **Login as Admin**
-2. **Navigate to Network Devices → Routers** - Opens unified router management page showing all device types
+2. **Navigate to Network Devices → Routers** - Opens the unified router management page showing the configured device types
 3. **Filter Device Types:**
-   - Use the "Router Type" dropdown filter to view specific types (MikroTik, NAS, Cisco)
-   - Or select "All Types" to view all routers and NAS devices together
-4. **Access Router Actions** (from any router in the list):
-   - Click "Configure" - RADIUS and PPP setup
-   - Click "Backups" - Backup management
-   - Click "Failover" - Authentication mode switching
-   - Click "Provision" - Customer provisioning
+   - Use the "Router Type" dropdown filter to view specific types (MikroTik, Cisco, Juniper), according to the options available in your UI
+   - Or select "All Types" to view all configured routers together
+4. **Access Router Actions:**
+   - From the router list, click **"View / Edit"** on any router to open its details page
+   - On the router details page, use the available sections or buttons:
+     - **Configure** - RADIUS and PPP setup (where provided)
+     - **Backups** - Backup management (where provided)
+     - **Failover** - Authentication mode switching (where provided)
+     - **Provision** - Customer provisioning (where provided)
 5. **Test RADIUS Functionality:**
-   - Create a test router/NAS device (recognizing that MikroTik/Cisco routers also function as NAS devices)
+   - Create a test router or NAS-capable device (noting that MikroTik/Cisco routers can also function as NAS devices depending on configuration)
    - Configure RADIUS on a MikroTik router
    - Provision a test user
    - Check RADIUS logs
 
-All device types (MikroTik routers, NAS devices, Cisco devices) are managed through the single unified interface with filtering capabilities.
+All supported device types (MikroTik and Cisco routers, and routers acting as NAS devices) are managed through the unified interface, with filtering based on the Router Type options available in your deployment.
 
 ---
 
