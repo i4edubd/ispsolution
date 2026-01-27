@@ -283,13 +283,29 @@ function onuMonitor(oltId) {
         },
         async loadData() {
             try {
-                const response = await fetch(`/api/v1/olt/${this.oltId}/monitor-onus`);
+                const response = await fetch(`/api/v1/olt/${this.oltId}/monitor-onus`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
                     this.onus = data.data.onus;
                     this.summary = data.data.summary;
                     this.lastUpdated = new Date().toLocaleTimeString();
+                } else {
+                    console.error('API returned error:', data.message || 'Unknown error');
                 }
             } catch (error) {
                 console.error('Failed to load ONU data:', error);
@@ -329,9 +345,17 @@ function onuMonitor(oltId) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -339,6 +363,7 @@ function onuMonitor(oltId) {
                 }
             } catch (error) {
                 console.error('Refresh failed:', error);
+                alert('Refresh failed: ' + error.message);
             }
         },
         async authorizeOnu(onuId) {
@@ -349,9 +374,17 @@ function onuMonitor(oltId) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 alert(data.message);
@@ -360,6 +393,7 @@ function onuMonitor(oltId) {
                 }
             } catch (error) {
                 console.error('Authorization failed:', error);
+                alert('Authorization failed: ' + error.message);
             }
         },
         async rebootOnu(onuId) {
@@ -370,14 +404,23 @@ function onuMonitor(oltId) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 alert(data.message);
             } catch (error) {
                 console.error('Reboot failed:', error);
+                alert('Reboot failed: ' + error.message);
             }
         },
         async bulkOperation(operation) {
@@ -393,13 +436,21 @@ function onuMonitor(oltId) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
                         onu_ids: this.selectedOnus,
                         operation: operation
                     })
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 alert(data.message);

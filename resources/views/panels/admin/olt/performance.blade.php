@@ -285,7 +285,21 @@ function performanceMetrics(oltId) {
         async loadMetrics() {
             try {
                 // Get latest metrics
-                const statsResponse = await fetch(`/api/v1/olt/${this.oltId}/statistics`);
+                const statsResponse = await fetch(`/api/v1/olt/${this.oltId}/statistics`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (!statsResponse.ok) {
+                    throw new Error(`HTTP error! status: ${statsResponse.status}`);
+                }
+                
                 const statsData = await statsResponse.json();
                 
                 if (statsData.success) {
@@ -293,7 +307,21 @@ function performanceMetrics(oltId) {
                 }
 
                 // Get port utilization
-                const portResponse = await fetch(`/api/v1/olt/${this.oltId}/port-utilization`);
+                const portResponse = await fetch(`/api/v1/olt/${this.oltId}/port-utilization`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (!portResponse.ok) {
+                    throw new Error(`HTTP error! status: ${portResponse.status}`);
+                }
+                
                 const portData = await portResponse.json();
                 
                 if (portData.success) {

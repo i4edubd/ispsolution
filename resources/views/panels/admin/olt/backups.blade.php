@@ -342,14 +342,23 @@ function backupManagement() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 alert(data.message);
                 this.loadBackups();
             } catch (error) {
                 console.error('Backup failed:', error);
+                alert('Backup failed: ' + error.message);
             }
         },
         async downloadBackup(backupId) {

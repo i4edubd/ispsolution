@@ -283,7 +283,21 @@ function firmwareUpdates() {
         },
         async loadOlts() {
             try {
-                const response = await fetch('/api/v1/olt/');
+                const response = await fetch('/api/v1/olt/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 if (data.success) {
                     this.olts = data.data;

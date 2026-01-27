@@ -183,12 +183,28 @@ function oltDashboard() {
         },
         async loadData() {
             try {
-                const response = await fetch('/api/v1/olt/');
+                const response = await fetch('/api/v1/olt/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
                     this.olts = data.data;
                     this.calculateStats();
+                } else {
+                    console.error('API returned error:', data.message || 'Unknown error');
                 }
             } catch (error) {
                 console.error('Failed to load OLT data:', error);
@@ -211,20 +227,28 @@ function oltDashboard() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
                     alert(data.message);
                     this.loadData();
                 } else {
-                    alert('Sync failed: ' + data.message);
+                    alert('Sync failed: ' + (data.message || 'Unknown error'));
                 }
             } catch (error) {
                 console.error('Sync failed:', error);
-                alert('Sync failed');
+                alert('Sync failed: ' + error.message);
             }
         },
         async createBackup(oltId) {
@@ -235,19 +259,27 @@ function oltDashboard() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
                     alert(data.message);
                 } else {
-                    alert('Backup failed: ' + data.message);
+                    alert('Backup failed: ' + (data.message || 'Unknown error'));
                 }
             } catch (error) {
                 console.error('Backup failed:', error);
-                alert('Backup failed');
+                alert('Backup failed: ' + error.message);
             }
         }
     }
