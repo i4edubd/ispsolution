@@ -10,10 +10,15 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+use Illuminate\Support\Facades\Schema;
+
 class CustomerCacheService
 {
     private const CACHE_TTL = 300; // 300 seconds (5 minutes) as per TODO
     private const ONLINE_STATUS_TTL = 60; // 60 seconds for online status
+    private const COLUMN_CACHE_TTL = 3600; // 1 hour for column listing cache
+    
+    private static ?array $cachedColumns = null;
 
     /**
      * Get cached customer list.
@@ -76,34 +81,66 @@ class CustomerCacheService
     }
 
     /**
+     * Get available columns for network_users table (cached).
+     */
+    private function getAvailableColumns(): array
+    {
+        // Use static cache to avoid repeated database calls within the same request
+        if (self::$cachedColumns === null) {
+            // Use Laravel cache for cross-request caching
+            self::$cachedColumns = Cache::remember(
+                'network_users:available_columns',
+                self::COLUMN_CACHE_TTL,
+                fn() => Schema::getColumnListing('network_users')
+            );
+        }
+        
+        return self::$cachedColumns;
+    }
+
+    /**
      * Fetch customers from database.
      */
     private function fetchCustomers(int $tenantId): Collection
     {
         try {
+            // Build the select array dynamically based on available columns
+            $selectColumns = [
+                'id',
+                'user_id',
+                'tenant_id',
+                'username',
+                'package_id',
+                'status',
+            ];
+            
+            // Add columns only if they exist in the table
+            $availableColumns = $this->getAvailableColumns();
+            $optionalColumns = [
+                'expiry_date',
+                'connection_type',
+                'billing_type',
+                'device_type',
+                'mac_address',
+                'ip_address',
+                'is_active',
+                'created_at',
+                'updated_at',
+            ];
+            
+            foreach ($optionalColumns as $column) {
+                if (in_array($column, $availableColumns)) {
+                    $selectColumns[] = $column;
+                }
+            }
+            
             return NetworkUser::where('tenant_id', $tenantId)
                 ->with([
                     'package:id,name,price,bandwidth_download,bandwidth_upload',
                     'user:id,name,mobile,email,zone_id,created_at',
                     'user.zone:id,name',
                 ])
-                ->select([
-                    'id',
-                    'user_id',
-                    'tenant_id',
-                    'username',
-                    'package_id',
-                    'status',
-                    'expiry_date',
-                    'connection_type',
-                    'billing_type',
-                    'device_type',
-                    'mac_address',
-                    'ip_address',
-                    'is_active',
-                    'created_at',
-                    'updated_at',
-                ])
+                ->select($selectColumns)
                 ->get()
                 ->map(function ($customer) {
                     // Add computed attributes
