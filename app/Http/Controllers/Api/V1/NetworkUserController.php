@@ -69,7 +69,9 @@ class NetworkUserController extends Controller
         $userData = $request->transformForUserModel();
         
         // Get additional fields that might need special handling
-        $additionalFields = $request->getAdditionalFields();
+        // TODO: Store these in a customer_details table or handle appropriately
+        // $additionalFields = $request->getAdditionalFields();
+        // For now, these fields (phone, address, notes, etc.) are validated but not persisted
         
         $user = User::create($userData);
 

@@ -30,7 +30,7 @@ class StoreNetworkUserRequest extends FormRequest
             
             // Customer information fields (mapped to User model)
             'customer_name' => 'required|string|max:255',
-            'customer_email' => 'nullable|email|max:255|unique:users,email',
+            'customer_email' => 'required|email|max:255|unique:users,email',
             'customer_phone' => 'required|string|max:20',
             'customer_address' => 'nullable|string|max:500',
             
@@ -60,6 +60,7 @@ class StoreNetworkUserRequest extends FormRequest
             'package_id.exists' => 'The selected package is invalid.',
             'service_type.required' => 'Please select a service type.',
             'customer_name.required' => 'Customer name is required.',
+            'customer_email.required' => 'Customer email is required.',
             'customer_email.unique' => 'This email is already registered.',
             'customer_phone.required' => 'Customer phone number is required.',
             'ip_address.ip' => 'Please enter a valid IP address.',
@@ -82,6 +83,11 @@ class StoreNetworkUserRequest extends FormRequest
      * 
      * For now, access them via getAdditionalFields() method and handle in the controller.
      *
+     * Security Note: radius_password is stored as plain-text for RADIUS compatibility.
+     * Most RADIUS servers require cleartext or specific hash formats (PAP, CHAP, MS-CHAP).
+     * If your RADIUS server supports hashed passwords, consider implementing encryption
+     * at rest or using RADIUS-compatible hashing algorithms.
+     *
      * @return array<string, mixed>
      */
     public function transformForUserModel(): array
@@ -91,11 +97,12 @@ class StoreNetworkUserRequest extends FormRequest
         return [
             // Map customer fields to User model fields
             'name' => $validated['customer_name'],
-            'email' => $validated['customer_email'] ?? null,
+            'email' => $validated['customer_email'],
             
             // Network authentication fields
             'username' => $validated['username'],
-            'radius_password' => $validated['password'],
+            'password' => $validated['password'], // Laravel will hash this via User::$casts
+            'radius_password' => $validated['password'], // Store plain for RADIUS
             'service_type' => $validated['service_type'],
             'service_package_id' => $validated['package_id'],
             
