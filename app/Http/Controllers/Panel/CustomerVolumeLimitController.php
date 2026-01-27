@@ -128,9 +128,6 @@ class CustomerVolumeLimitController extends Controller
         }
     }
 
-        return back()->with('success', 'Volume limit updated successfully.');
-    }
-
     /**
      * Reset volume limit counters.
      */

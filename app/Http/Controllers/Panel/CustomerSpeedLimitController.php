@@ -213,10 +213,13 @@ class CustomerSpeedLimitController extends Controller
 
         DB::beginTransaction();
         try {
-            // Remove custom rate limit
+            // Remove custom rate limit from RADIUS
             RadReply::where('username', $networkUser->username)
                 ->where('attribute', 'Mikrotik-Rate-Limit')
                 ->delete();
+
+            // Delete speed limit configuration from database
+            CustomerSpeedLimit::where('user_id', $customer->id)->delete();
 
             // Log action
             $this->logAction($customer, 'Speed limit removed - now managed by router');
