@@ -459,6 +459,7 @@ function onuMonitor(oltId) {
                 this.loadData();
             } catch (error) {
                 console.error('Bulk operation failed:', error);
+                alert('Bulk operation failed: ' + error.message);
             }
         }
     }
