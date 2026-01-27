@@ -373,29 +373,4 @@ class NotificationService
 
         return $emailSent || $smsSent;
     }
-
-                $emailSent = true;
-            }
-        } catch (\Exception $e) {
-            Log::error('Failed to send customer activated email', [
-                'user_id' => $user->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        // Send SMS if enabled
-        if (config('sms.enabled', false) && $this->smsService && $user->phone) {
-            try {
-                $message = "Your account has been activated successfully. Welcome to " . config('app.name') . "!";
-                $smsSent = $this->smsService->sendSms($user->phone, $message);
-            } catch (\Exception $e) {
-                Log::error('Failed to send customer activated SMS', [
-                    'user_id' => $user->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
-
-        return $emailSent || $smsSent;
-    }
 }
