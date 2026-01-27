@@ -74,15 +74,12 @@ class AdminController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             // Swallow "table not found" (42S02) and "permission denied" (42000) errors
             $sqlState = $e->getCode();
-            if ($sqlState === '42S02' || str_contains($e->getMessage(), '42S02')) {
-                Log::warning('Unable to query radacct table for online/offline status (table not found)', [
-                    'sql_state' => $sqlState,
-                    'error' => $e->getMessage(),
-                ]);
-                $onlineCustomers = 0;
-                $offlineCustomers = 0;
-            } elseif ($sqlState === '42000' || str_contains($e->getMessage(), '42000')) {
-                Log::warning('Unable to query radacct table for online/offline status (permission denied)', [
+            $isTableNotFound = $sqlState === '42S02' || str_contains($e->getMessage(), '42S02');
+            $isPermissionDenied = $sqlState === '42000' || str_contains($e->getMessage(), '42000');
+            
+            if ($isTableNotFound || $isPermissionDenied) {
+                $reason = $isTableNotFound ? 'table not found' : 'permission denied';
+                Log::warning("Unable to query radacct table for online/offline status ({$reason})", [
                     'sql_state' => $sqlState,
                     'error' => $e->getMessage(),
                 ]);
