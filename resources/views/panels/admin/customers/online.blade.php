@@ -240,6 +240,6 @@
 </div>
 
 @push('scripts')
-<script src="{{ asset('js/bulk-selection.js') }}"></script>
+@vite('resources/js/bulk-selection.js')
 @endpush
 @endsection
