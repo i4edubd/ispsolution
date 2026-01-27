@@ -125,12 +125,23 @@ class AdminController extends Controller
             'role' => 'required|exists:roles,slug',
         ]);
 
-        // Create the user
+        // Get the role to check its level
+        $role = Role::where('slug', $validated['role'])->firstOrFail();
+        
+        // Authorization check: Verify current user can create users with this role level
+        if (!auth()->user()->canCreateUserWithLevel($role->level)) {
+            abort(403, 'You are not authorized to create users with this role.');
+        }
+
+        // Create the user with proper tenant isolation
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
             'is_active' => true,
+            'tenant_id' => auth()->user()->tenant_id, // Enforce tenant isolation
+            'operator_level' => $role->level,
+            'created_by' => auth()->id(),
         ]);
 
         // Assign role using the model method that handles tenant_id
