@@ -49,7 +49,6 @@
                 'children' => [
                     ['label' => 'All Packages', 'route' => 'panel.admin.packages'],
                     ['label' => 'Create Package', 'route' => 'panel.admin.packages.create'],
-                    ['label' => 'Package Profile Mapping', 'route' => 'panel.admin.packages.profiles'],
                     ['label' => 'Master Packages', 'route' => 'panel.admin.master-packages.index'],
                     ['label' => 'Operator Packages', 'route' => 'panel.admin.operator-packages.index'],
                 ]
