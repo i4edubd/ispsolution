@@ -22,29 +22,12 @@ class OltService implements OltServiceInterface
     private array $connections = [];
 
     /**
-     * @var array<int, Olt>
-     */
-    private array $oltCache = [];
-
-    /**
-     * Get OLT from cache or database.
-     */
-    private function getOlt(int $oltId): Olt
-    {
-        if (! isset($this->oltCache[$oltId])) {
-            $this->oltCache[$oltId] = Olt::findOrFail($oltId);
-        }
-
-        return $this->oltCache[$oltId];
-    }
-
-    /**
      * Connect to an OLT device.
      */
     public function connect(int $oltId): bool
     {
         try {
-            $olt = $this->getOlt($oltId);
+            $olt = Olt::findOrFail($oltId);
 
             if (! $olt->canConnect()) {
                 Log::warning("OLT {$oltId} cannot be connected: invalid configuration");
@@ -102,7 +85,7 @@ class OltService implements OltServiceInterface
         $startTime = microtime(true);
 
         try {
-            $olt = $this->getOlt($oltId);
+            $olt = Olt::findOrFail($oltId);
 
             if (! $olt->canConnect()) {
                 return [
@@ -169,7 +152,7 @@ class OltService implements OltServiceInterface
                 throw new RuntimeException("Failed to connect to OLT {$oltId}");
             }
 
-            $olt = $this->getOlt($oltId);
+            $olt = Olt::findOrFail($oltId);
             $connection = $this->connections[$oltId];
             $commands = $this->getVendorCommands($olt);
             $onus = [];
@@ -213,7 +196,7 @@ class OltService implements OltServiceInterface
     public function syncOnus(int $oltId): int
     {
         try {
-            $olt = $this->getOlt($oltId);
+            $olt = Olt::findOrFail($oltId);
             $discoveredOnus = $this->discoverOnus($oltId);
             $syncedCount = 0;
 
@@ -263,9 +246,13 @@ class OltService implements OltServiceInterface
             }
 
             $connection = $this->connections[$onu->olt_id];
+            $commands = $this->getVendorCommands($onu->olt);
 
             // Execute ONU status command (vendor-specific)
-            $command = "show gpon onu detail-info gpon-onu_{$onu->pon_port}:{$onu->onu_id}";
+            $command = $this->replaceCommandPlaceholders($commands['onu_detail'], [
+                'port' => $onu->pon_port,
+                'id' => $onu->onu_id,
+            ]);
             $output = $connection->exec($command);
 
             if ($output === false) {
@@ -334,9 +321,13 @@ class OltService implements OltServiceInterface
             }
 
             $connection = $this->connections[$onu->olt_id];
+            $commands = $this->getVendorCommands($onu->olt);
 
             // Execute authorization command (vendor-specific)
-            $command = "gpon onu authorize gpon-onu_{$onu->pon_port}:{$onu->onu_id}";
+            $command = $this->replaceCommandPlaceholders($commands['authorize'], [
+                'port' => $onu->pon_port,
+                'id' => $onu->onu_id,
+            ]);
             $output = $connection->exec($command);
 
             if ($output === false) {
@@ -368,9 +359,13 @@ class OltService implements OltServiceInterface
             }
 
             $connection = $this->connections[$onu->olt_id];
+            $commands = $this->getVendorCommands($onu->olt);
 
             // Execute unauthorization command (vendor-specific)
-            $command = "no gpon onu authorize gpon-onu_{$onu->pon_port}:{$onu->onu_id}";
+            $command = $this->replaceCommandPlaceholders($commands['unauthorize'], [
+                'port' => $onu->pon_port,
+                'id' => $onu->onu_id,
+            ]);
             $output = $connection->exec($command);
 
             if ($output === false) {
@@ -402,9 +397,13 @@ class OltService implements OltServiceInterface
             }
 
             $connection = $this->connections[$onu->olt_id];
+            $commands = $this->getVendorCommands($onu->olt);
 
             // Execute reboot command (vendor-specific)
-            $command = "gpon onu reboot gpon-onu_{$onu->pon_port}:{$onu->onu_id}";
+            $command = $this->replaceCommandPlaceholders($commands['reboot'], [
+                'port' => $onu->pon_port,
+                'id' => $onu->onu_id,
+            ]);
             $output = $connection->exec($command);
 
             if ($output === false) {
@@ -427,7 +426,7 @@ class OltService implements OltServiceInterface
     public function createBackup(int $oltId): bool
     {
         try {
-            $olt = $this->getOlt($oltId);
+            $olt = Olt::findOrFail($oltId);
 
             if (! $this->ensureConnected($oltId)) {
                 throw new RuntimeException("Failed to connect to OLT {$oltId}");
@@ -693,6 +692,20 @@ class OltService implements OltServiceInterface
 
         // Default to Huawei-style commands (most common)
         return $this->getHuaweiCommands();
+    }
+
+    /**
+     * Replace command placeholders with actual values.
+     */
+    private function replaceCommandPlaceholders(string $command, array $params): string
+    {
+        $replacements = [
+            '{port}' => $params['port'] ?? '',
+            '{id}' => $params['id'] ?? '',
+            '{slot}' => $params['slot'] ?? '0',
+        ];
+
+        return str_replace(array_keys($replacements), array_values($replacements), $command);
     }
 
     /**
