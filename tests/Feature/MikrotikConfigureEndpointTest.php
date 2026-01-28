@@ -30,9 +30,8 @@ class MikrotikConfigureEndpointTest extends TestCase
             'description' => 'Administrator',
         ]);
 
-        $this->admin = User::factory()->create([
-            'role_id' => $adminRole->id,
-        ]);
+        $this->admin = User::factory()->create();
+        $this->admin->roles()->attach($adminRole->id);
 
         // Create test router
         $this->router = MikrotikRouter::create([
@@ -49,7 +48,7 @@ class MikrotikConfigureEndpointTest extends TestCase
     public function test_configure_endpoint_returns_success_with_valid_config(): void
     {
         Http::fake([
-            'localhost:8728/api/configure' => Http::response(['success' => true], 200),
+            'http://localhost:8728/api/configure' => Http::response(['success' => true], 200),
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -80,7 +79,7 @@ class MikrotikConfigureEndpointTest extends TestCase
     public function test_configure_endpoint_returns_400_when_router_connection_fails(): void
     {
         Http::fake([
-            'localhost:8728/api/configure' => Http::response(['error' => 'Connection failed'], 500),
+            'http://localhost:8728/api/configure' => Http::response(['error' => 'Connection failed'], 500),
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -164,7 +163,7 @@ class MikrotikConfigureEndpointTest extends TestCase
     public function test_configure_endpoint_handles_firewall_config(): void
     {
         Http::fake([
-            'localhost:8728/api/configure' => Http::response(['success' => true], 200),
+            'http://localhost:8728/api/configure' => Http::response(['success' => true], 200),
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -186,7 +185,7 @@ class MikrotikConfigureEndpointTest extends TestCase
     public function test_configure_endpoint_handles_queue_config(): void
     {
         Http::fake([
-            'localhost:8728/api/configure' => Http::response(['success' => true], 200),
+            'http://localhost:8728/api/configure' => Http::response(['success' => true], 200),
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -202,6 +201,62 @@ class MikrotikConfigureEndpointTest extends TestCase
             ->assertJson([
                 'success' => true,
                 'config_type' => 'queue',
+            ]);
+    }
+
+    public function test_configure_endpoint_blocks_ssrf_to_private_ips(): void
+    {
+        // Create router with private IP
+        $privateRouter = MikrotikRouter::create([
+            'tenant_id' => $this->admin->tenant_id,
+            'name' => 'Private IP Router',
+            'ip_address' => '192.168.1.1',
+            'api_port' => 8728,
+            'username' => 'admin',
+            'password' => 'password',
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('panel.admin.mikrotik.configure', $privateRouter->id), [
+                'config_type' => 'pppoe',
+                'settings' => [
+                    'interface' => 'ether1',
+                ],
+            ]);
+
+        // Should fail with 400 due to SSRF protection
+        $response->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+            ]);
+    }
+
+    public function test_configure_endpoint_blocks_ssrf_to_metadata_service(): void
+    {
+        // Create router pointing to AWS metadata service
+        $metadataRouter = MikrotikRouter::create([
+            'tenant_id' => $this->admin->tenant_id,
+            'name' => 'Metadata Router',
+            'ip_address' => '169.254.169.254',
+            'api_port' => 80,
+            'username' => 'admin',
+            'password' => 'password',
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('panel.admin.mikrotik.configure', $metadataRouter->id), [
+                'config_type' => 'pppoe',
+                'settings' => [
+                    'interface' => 'ether1',
+                ],
+            ]);
+
+        // Should fail with 400 due to SSRF protection
+        $response->assertStatus(400)
+            ->assertJson([
+                'success' => false,
             ]);
     }
 }
