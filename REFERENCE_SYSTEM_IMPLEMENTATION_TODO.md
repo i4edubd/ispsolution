@@ -553,19 +553,19 @@ CREATE INDEX idx_subscription_plans_parent ON subscription_plans(parent_id);
 
 ---
 
-#### 2.5 Automatic Mikrotik Pool Import
-**Reference Files:** `MikrotikDbSyncController.php`, `Mikmon2RadiusCommand.php`
+#### 2.5 Automatic MikroTik Pool Import
+**Reference Files:** `MikroTikDbSyncController.php`, `Mikmon2RadiusCommand.php`
 
 **Features to Implement:**
-- [ ] Import IP pools from Mikrotik to database
-- [ ] Import PPPoE profiles from Mikrotik
-- [ ] Import PPP secrets (users) from Mikrotik
-- [ ] Sync Mikrotik queues to database
+- [ ] Import IP pools from MikroTik to database
+- [ ] Import PPPoE profiles from MikroTik
+- [ ] Import PPP secrets (users) from MikroTik
+- [ ] Sync MikroTik queues to database
 - [ ] Schedule automatic sync jobs
 - [ ] Conflict resolution (database vs router)
 
 **UI Requirements:**
-- [ ] "Import from Mikrotik" button on IP pool page
+- [ ] "Import from MikroTik" button on IP pool page
 - [ ] Import progress indicator
 - [ ] Import conflict resolution interface
 - [ ] Import history and logs
@@ -574,20 +574,20 @@ CREATE INDEX idx_subscription_plans_parent ON subscription_plans(parent_id);
 **Implementation Approach:**
 ```php
 // New command
-class ImportMikrotikPoolsCommand extends Command
+class ImportMikroTikPoolsCommand extends Command
 {
     protected $signature = 'mikrotik:import-pools {router_id}';
     
     public function handle()
     {
-        $router = MikrotikRouter::findOrFail($this->argument('router_id'));
+        $router = MikroTikRouter::findOrFail($this->argument('router_id'));
         $client = $router->getConnection();
         
         // Fetch pools from router
         $pools = $client->query('/ip/pool/print')->read();
         
         foreach ($pools as $pool) {
-            MikrotikIpPool::updateOrCreate(
+            MikroTikIpPool::updateOrCreate(
                 ['router_id' => $router->id, 'name' => $pool['name']],
                 [
                     'ranges' => $pool['ranges'],
@@ -602,19 +602,19 @@ class ImportMikrotikPoolsCommand extends Command
 ```
 
 **Controllers to Create:**
-- `app/Http/Controllers/Admin/MikrotikSyncController.php`
+- `app/Http/Controllers/Admin/MikroTikSyncController.php`
 
 **Jobs to Create:**
-- `app/Jobs/ImportMikrotikDataJob.php`
-- `app/Jobs/SyncMikrotikPoolsJob.php`
+- `app/Jobs/ImportMikroTikDataJob.php`
+- `app/Jobs/SyncMikroTikPoolsJob.php`
 
 **Commands to Create:**
-- `app/Console/Commands/ImportMikrotikPoolsCommand.php`
-- `app/Console/Commands/ImportMikrotikProfilesCommand.php`
-- `app/Console/Commands/ImportMikrotikSecretsCommand.php`
+- `app/Console/Commands/ImportMikroTikPoolsCommand.php`
+- `app/Console/Commands/ImportMikroTikProfilesCommand.php`
+- `app/Console/Commands/ImportMikroTikSecretsCommand.php`
 
 **Testing:**
-- [ ] Unit tests with mock Mikrotik API responses
+- [ ] Unit tests with mock MikroTik API responses
 - [ ] Feature tests for import workflow
 - [ ] Conflict resolution tests
 
@@ -1116,7 +1116,7 @@ public function validityInDays(): Attribute
 - Package hierarchy
 
 ### Week 17-20: Medium Priority Phase 2
-- Mikrotik auto-import
+- MikroTik auto-import
 - RADIUS attributes UI
 - Testing and bug fixes
 - Documentation updates

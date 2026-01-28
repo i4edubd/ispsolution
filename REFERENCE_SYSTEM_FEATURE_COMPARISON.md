@@ -296,7 +296,7 @@
 2. **Advanced Caching** - Performance improvement
 3. **Date Formatting** - Better UX
 4. **Customer Overall Status** - Combined status field
-5. **Auto Mikrotik Import** - Convenience feature
+5. **Auto MikroTik Import** - Convenience feature
 6. **RADIUS Attributes UI** - Better management interface
 7. **Package Hierarchy** - Parent/child packages
 
