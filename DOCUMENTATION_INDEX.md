@@ -147,6 +147,8 @@ Key steps:
 ## 📚 Additional Resources
 
 ### Reference System Analysis ⭐ NEW
+- **[REFERENCE_ANALYSIS_SUMMARY.md](REFERENCE_ANALYSIS_SUMMARY.md)** - Executive summary with ROI analysis and key findings
+- **[REFERENCE_SYSTEM_QUICK_GUIDE.md](REFERENCE_SYSTEM_QUICK_GUIDE.md)** - Quick reference guide for developers
 - **[REFERENCE_SYSTEM_IMPLEMENTATION_TODO.md](REFERENCE_SYSTEM_IMPLEMENTATION_TODO.md)** - Comprehensive TODO list from reference ISP system analysis
 - **[REFERENCE_SYSTEM_FEATURE_COMPARISON.md](REFERENCE_SYSTEM_FEATURE_COMPARISON.md)** - Feature-by-feature comparison with reference system
 - **[REFERENCE_SYSTEM_ANALYSIS.md](REFERENCE_SYSTEM_ANALYSIS.md)** - Original analysis of 10 reference files

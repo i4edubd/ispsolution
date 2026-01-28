@@ -17,10 +17,10 @@
 Our current system is **SUPERIOR** in 13 out of 16 categories. We only need to implement 4 high-priority features from the reference system.
 
 **Time Investment:**
-- HIGH priority: 8-12 weeks
+- HIGH priority: 20 weeks (sum of 4 features; ~8-12 calendar weeks with parallel work)
 - MEDIUM priority: 8-12 weeks  
 - LOW priority: 4-8 weeks
-- **Total: 20-32 weeks**
+- **Total: 32-40 weeks**
 
 ---
 

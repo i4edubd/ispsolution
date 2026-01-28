@@ -284,7 +284,7 @@
 3. **Subscription Payments** - Operator platform subscription fees
 4. **SMS Balance Tracking** - Per-operator SMS credit management
 
-**Total Effort:** 8-12 weeks  
+**Total Effort:** 20 weeks  
 **Business Impact:** High  
 **Technical Risk:** Medium
 
@@ -300,7 +300,7 @@
 6. **RADIUS Attributes UI** - Better management interface
 7. **Package Hierarchy** - Parent/child packages
 
-**Total Effort:** 8-12 weeks  
+**Total Effort:** Refer to individual feature estimates; overall timeline depends on sequencing and parallelisation.  
 **Business Impact:** Medium  
 **Technical Risk:** Low
 

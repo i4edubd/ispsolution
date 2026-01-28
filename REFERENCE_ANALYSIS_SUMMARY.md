@@ -440,7 +440,7 @@ For each feature:
 
 ---
 
-## �� Success Criteria
+## 🎯 Success Criteria
 
 Implementation is successful when:
 ```

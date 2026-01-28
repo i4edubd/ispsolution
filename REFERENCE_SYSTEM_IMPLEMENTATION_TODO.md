@@ -1139,7 +1139,7 @@ public function validityInDays(): Attribute
 5. MikroTik API Documentation
 
 ### Internal References
-1. `REFERENCE_SYSTEM_ANALYSIS.md` - Detailed comparison
+1. `REFERENCE_ANALYSIS_SUMMARY.md` - Detailed comparison
 2. `FEATURE_IMPLEMENTATION_STATUS.md` - Current features
 3. `ROLES_AND_PERMISSIONS.md` - Authorization guide
 4. `API.md` - API reference
