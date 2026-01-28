@@ -7,6 +7,7 @@ use App\Models\PaymentGateway;
 use App\Models\Tenant;
 use App\Services\CacheService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 
 class CacheWarmCommand extends Command
 {
@@ -92,6 +93,23 @@ class CacheWarmCommand extends Command
             ->get();
         $this->cacheService->cachePackages($tenantId, $packages);
         $this->line("  - Cached {$packages->count()} packages");
+
+        // Task 1.4: Pre-populate package customer count caches
+        // Use withCount to avoid N+1 queries
+        $packagesWithCounts = Package::where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->withCount('users')
+            ->get();
+        
+        foreach ($packagesWithCounts as $package) {
+            // Manually populate the cache with the count
+            Cache::put(
+                "package_customerCount_{$package->id}",
+                $package->users_count,
+                150
+            );
+        }
+        $this->line("  - Cached customer counts for {$packagesWithCounts->count()} packages");
 
         // Warm payment gateways cache
         $gateways = PaymentGateway::where('tenant_id', $tenantId)

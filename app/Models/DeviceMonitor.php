@@ -37,6 +37,7 @@ class DeviceMonitor extends Model
      */
     protected $fillable = [
         'tenant_id',
+        'operator_id',
         'monitorable_type',
         'monitorable_id',
         'status',
@@ -74,6 +75,15 @@ class DeviceMonitor extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * Get the operator for this device monitor
+     * Task 10.2: Add operator() relationship
+     */
+    public function operator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'operator_id');
     }
 
     /**
@@ -149,5 +159,26 @@ class DeviceMonitor extends Model
         }
 
         return implode(' ', $parts);
+    }
+
+    /**
+     * Scope a query by operator
+     * Task 10.3: Add device monitoring delegation
+     */
+    public function scopeByOperator($query, int $operatorId)
+    {
+        return $query->where('operator_id', $operatorId);
+    }
+
+    /**
+     * Scope a query to only include devices monitored by a specific operator or unassigned
+     * Task 10.3: Add device monitoring delegation
+     */
+    public function scopeForOperator($query, int $userId)
+    {
+        return $query->where(function ($q) use ($userId) {
+            $q->where('operator_id', $userId)
+              ->orWhereNull('operator_id');
+        });
     }
 }

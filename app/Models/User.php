@@ -85,6 +85,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'language',
+        'parent_id',
         'tenant_id',
         'service_package_id',
         'is_active',
@@ -242,6 +244,32 @@ class User extends Authenticatable
     public function networkUser(): HasOne
     {
         return $this->hasOne(NetworkUser::class, 'user_id');
+    }
+
+    /**
+     * Get the parent operator/sub-operator
+     * Task 7.2: Add relationships to Customer model
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'parent_id');
+    }
+
+    /**
+     * Get child operator/sub-operator accounts
+     * Task 7.2: Add relationships to Customer model
+     */
+    public function childAccounts(): HasMany
+    {
+        return $this->hasMany(User::class, 'parent_id');
+    }
+
+    /**
+     * Check if user has child accounts (operates as parent operator)
+     */
+    public function isReseller(): bool
+    {
+        return $this->childAccounts()->exists();
     }
 
     /**
@@ -1061,5 +1089,143 @@ class User extends Authenticatable
     public function isActiveForRadius(): bool
     {
         return $this->status === 'active' && $this->is_active;
+    }
+
+    /**
+     * Get overall status combining payment type and service status
+     * Task 3.2: Add overall_status computed attribute to Customer model
+     *
+     * @return \App\Enums\CustomerOverallStatus|null
+     */
+    public function getOverallStatusAttribute(): ?\App\Enums\CustomerOverallStatus
+    {
+        // Only for customers (operator_level 100)
+        if ($this->operator_level !== self::OPERATOR_LEVEL_CUSTOMER) {
+            return null;
+        }
+
+        $paymentType = $this->payment_type ?? 'postpaid';
+        $status = $this->status ?? 'inactive';
+
+        return match ($paymentType) {
+            'prepaid' => match ($status) {
+                'active' => \App\Enums\CustomerOverallStatus::PREPAID_ACTIVE,
+                'suspended' => \App\Enums\CustomerOverallStatus::PREPAID_SUSPENDED,
+                'expired' => \App\Enums\CustomerOverallStatus::PREPAID_EXPIRED,
+                default => \App\Enums\CustomerOverallStatus::PREPAID_INACTIVE,
+            },
+            'postpaid' => match ($status) {
+                'active' => \App\Enums\CustomerOverallStatus::POSTPAID_ACTIVE,
+                'suspended' => \App\Enums\CustomerOverallStatus::POSTPAID_SUSPENDED,
+                'expired' => \App\Enums\CustomerOverallStatus::POSTPAID_EXPIRED,
+                default => \App\Enums\CustomerOverallStatus::POSTPAID_INACTIVE,
+            },
+            default => null,
+        };
+    }
+
+    /**
+     * Get remaining validity with timezone support
+     * Task 9.1: Add timezone support to validity calculations
+     * Task 9.2: Add "today is last payment date" detection
+     * Task 9.3: Add past tense for expired accounts
+     *
+     * @return string
+     */
+    public function getRemainingValidityAttribute(): string
+    {
+        if (!$this->expiry_date) {
+            return __('billing.no_expiry');
+        }
+
+        // Task 9.1: Use timezone from billing profile or config fallback
+        $timezone = $this->billingProfile?->timezone ?? config('app.timezone', 'UTC');
+        $now = now($timezone);
+        $expiryDate = \Carbon\Carbon::parse($this->expiry_date)->timezone($timezone);
+
+        // Task 9.2: Check if today is the last payment date
+        if ($expiryDate->isToday()) {
+            return __('billing.expires_today');
+        }
+
+        // Task 9.3: Use past tense for expired accounts
+        if ($expiryDate->isPast()) {
+            $daysAgo = $now->diffInDays($expiryDate);
+            return __('billing.expired_on', [
+                'days' => $daysAgo,
+                'date' => $expiryDate->format('Y-m-d')
+            ]);
+        }
+
+        // Future expiration
+        $daysRemaining = $now->diffInDays($expiryDate);
+        
+        if ($daysRemaining <= 1) {
+            return __('billing.expires_tomorrow');
+        }
+        
+        return __('billing.will_expire', [
+            'days' => $daysRemaining,
+            'date' => $expiryDate->format('Y-m-d')
+        ]);
+    }
+
+    /**
+     * Check if expiry is approaching (within warning period)
+     * Task 9.4: Add expiration warnings
+     *
+     * @param int $days Days before expiry to warn
+     * @return bool
+     */
+    public function isExpiryApproaching(int $days = 7): bool
+    {
+        if (!$this->expiry_date) {
+            return false;
+        }
+
+        // Use same timezone as remaining_validity for consistency
+        $timezone = $this->billingProfile?->timezone ?? config('app.timezone', 'UTC');
+        $expiryDate = \Carbon\Carbon::parse($this->expiry_date)->timezone($timezone);
+        $now = now($timezone);
+
+        return $expiryDate->isFuture() && $now->diffInDays($expiryDate) <= $days;
+    }
+
+    /**
+     * Get expiry warning level
+     * Task 9.4: Add expiration warnings
+     *
+     * @return string|null urgent/warning/info
+     */
+    public function getExpiryWarningLevelAttribute(): ?string
+    {
+        if (!$this->expiry_date) {
+            return null;
+        }
+
+        // Use same timezone as remaining_validity for consistency
+        $timezone = $this->billingProfile?->timezone ?? config('app.timezone', 'UTC');
+        $expiryDate = \Carbon\Carbon::parse($this->expiry_date)->timezone($timezone);
+        $now = now($timezone);
+
+        if ($expiryDate->isPast()) {
+            return 'urgent';
+        }
+
+        $daysRemaining = $now->diffInDays($expiryDate);
+
+        if ($daysRemaining <= 1) {
+            return 'urgent';
+        }
+
+        if ($daysRemaining <= 3) {
+            return 'warning';
+        }
+
+        if ($daysRemaining <= 7) {
+            return 'info';
+        }
+
+        return null;
     }
 }

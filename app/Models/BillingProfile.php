@@ -105,4 +105,63 @@ class BillingProfile extends Model
     {
         return $this->users()->count() === 0;
     }
+
+    /**
+     * Get due date with ordinal suffix
+     * Task 2.1: Add ordinal suffix to billing due dates
+     */
+    public function getDueDateWithOrdinal(): string
+    {
+        $day = $this->billing_day ?? 1;
+        $suffix = $this->getOrdinalSuffix($day);
+        
+        return "{$day}{$suffix} day";
+    }
+
+    /**
+     * Get ordinal suffix for a number
+     */
+    private function getOrdinalSuffix(int $number): string
+    {
+        $lastDigit = $number % 10;
+        $lastTwoDigits = $number % 100;
+        
+        // Handle special cases (11th, 12th, 13th)
+        if ($lastTwoDigits >= 11 && $lastTwoDigits <= 13) {
+            return 'th';
+        }
+        
+        return match ($lastDigit) {
+            1 => 'st',
+            2 => 'nd',
+            3 => 'rd',
+            default => 'th',
+        };
+    }
+
+    /**
+     * Get due date figure attribute
+     * Task 2.2: Add due_date_figure computed attribute
+     */
+    public function getDueDateFigureAttribute(): string
+    {
+        if ($this->type === 'monthly') {
+            return $this->getDueDateWithOrdinal() . ' of each month';
+        }
+        
+        if ($this->type === 'daily') {
+            return 'Daily at ' . ($this->billing_time ?? '00:00');
+        }
+        
+        return 'No billing';
+    }
+
+    /**
+     * Enhanced grace period calculation
+     * Task 2.4: Enhance grace period calculation
+     */
+    public function gracePeriod(): int
+    {
+        return max($this->grace_period_days ?? 0, 0);
+    }
 }
