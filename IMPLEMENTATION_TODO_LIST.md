@@ -28,12 +28,13 @@
 - [x] **Task 1.1:** Add caching to Package model customer count
   - Location: `app/Models/Package.php`
   - Add `Cache::remember()` in `customerCount()` accessor
-  - TTL: 300 seconds (5 minutes)
+  - TTL: 150 seconds (2.5 minutes)
   - Cache key pattern: `package_customerCount_{id}`
   
 - [x] **Task 1.2:** Add caching to MasterPackage model customer count
   - Location: `app/Models/MasterPackage.php`
   - Similar pattern as Package
+  - TTL: 150 seconds (2.5 minutes)
   - Cache key pattern: `master_package_customerCount_{id}`
   
 - [x] **Task 1.3:** Add `shouldCache()` to frequently accessed attributes
@@ -45,7 +46,7 @@
   - Command: `php artisan cache:warm`
   - Pre-populate package/customer count caches
   - Uses bulk withCount() to avoid N+1 queries
-  - Schedule to run every 5 minutes
+  - Cache TTL: 150 seconds (2.5 minutes)
 
 **Estimated Effort:** 4 hours  
 **Impact:** High - Reduces database queries significantly  
@@ -377,22 +378,22 @@
 
 ### 10. Device Monitor Enhancements
 
-**Why:** Reference system tracks group admin relationships
+**Why:** Reference system tracks operator relationships
 
 #### Tasks:
-- [x] **Task 10.1:** Add group_admin_id to device_monitors table
-  - Migration: `ALTER TABLE device_monitors ADD group_admin_id BIGINT UNSIGNED NULL`
+- [x] **Task 10.1:** Add operator_id to device_monitors table
+  - Migration: `ALTER TABLE device_monitors ADD operator_id BIGINT UNSIGNED NULL`
   - Foreign key to users.id
   - For hierarchical monitoring
 
-- [x] **Task 10.2:** Add groupAdmin() relationship
+- [x] **Task 10.2:** Add operator() relationship
   - In DeviceMonitor model
-  - belongsTo(User::class)
+  - belongsTo(User::class, 'operator_id')
   - Used for delegation
 
 - [x] **Task 10.3:** Add device monitoring delegation
-  - Group admins can monitor devices
-  - Scoped queries based on group
+  - Operators can monitor devices
+  - Scoped queries based on operator
   - Better multi-tenant support
 
 **Estimated Effort:** 4 hours  

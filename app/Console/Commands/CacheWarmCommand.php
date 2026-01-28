@@ -7,6 +7,7 @@ use App\Models\PaymentGateway;
 use App\Models\Tenant;
 use App\Services\CacheService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 
 class CacheWarmCommand extends Command
 {

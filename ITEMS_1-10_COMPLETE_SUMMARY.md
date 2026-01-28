@@ -32,7 +32,7 @@ Successfully completed the backend implementation for items 1-10 of the IMPLEMEN
 
 **What Was Done:**
 - Added `Cache::remember()` to Package and MasterPackage customer counts
-- TTL set to 300 seconds (5 minutes)
+- TTL set to 150 seconds (2.5 minutes)
 - Cache key patterns: `package_customerCount_{id}` and `master_package_customerCount_{id}`
 - Enhanced CacheWarmCommand to pre-populate package customer count caches
 - Used Laravel's `shouldCache()` attribute for optimal performance
@@ -52,13 +52,11 @@ Successfully completed the backend implementation for items 1-10 of the IMPLEMEN
 **What Was Done:**
 - Added `getDueDateWithOrdinal()` method for ordinal suffix display (1st, 2nd, 3rd, 21st)
 - Created `due_date_figure` computed attribute returning "21st day of each month"
-- Added `minimum_validity` accessor with fallback to prevent 0-day validity
-- Enhanced `gracePeriod()` method with month-end edge case handling
+- Simplified `gracePeriod()` method to align with existing billing profile configuration
 
 **Impact:**
 - Better UX with human-readable billing dates
-- Prevents configuration errors
-- Handles edge cases like Feb 29th
+- Clearer billing logic documentation matching current implementation
 
 ---
 
@@ -205,13 +203,13 @@ Successfully completed the backend implementation for items 1-10 of the IMPLEMEN
 
 **Files Changed:**
 - `app/Models/DeviceMonitor.php`
-- `database/migrations/2026_01_28_003400_add_group_admin_id_to_device_monitors_table.php` (NEW)
+- `database/migrations/2026_01_28_003400_add_operator_id_to_device_monitors_table.php` (NEW)
 
 **What Was Done:**
-- Added group_admin_id column to device_monitors table
-- Created `groupAdmin()` belongsTo relationship
-- Added `scopeByGroupAdmin()` query scope
-- Added `scopeForAdmin()` for hierarchical filtering
+- Added operator_id column to device_monitors table
+- Created `operator()` belongsTo relationship
+- Added `scopeByOperator()` query scope
+- Added `scopeForOperator()` for hierarchical filtering
 
 **Impact:**
 - Delegated device monitoring

@@ -1138,8 +1138,8 @@ class User extends Authenticatable
             return __('billing.no_expiry');
         }
 
-        // Task 9.1: Use timezone from config or user preference
-        $timezone = $this->timezone ?? config('app.timezone', 'UTC');
+        // Task 9.1: Use timezone from billing profile or config fallback
+        $timezone = $this->billingProfile?->timezone ?? config('app.timezone', 'UTC');
         $now = now($timezone);
         $expiryDate = \Carbon\Carbon::parse($this->expiry_date)->timezone($timezone);
 
@@ -1183,8 +1183,10 @@ class User extends Authenticatable
             return false;
         }
 
-        $expiryDate = \Carbon\Carbon::parse($this->expiry_date);
-        $now = now();
+        // Use same timezone as remaining_validity for consistency
+        $timezone = $this->billingProfile?->timezone ?? config('app.timezone', 'UTC');
+        $expiryDate = \Carbon\Carbon::parse($this->expiry_date)->timezone($timezone);
+        $now = now($timezone);
 
         return $expiryDate->isFuture() && $now->diffInDays($expiryDate) <= $days;
     }
@@ -1201,8 +1203,10 @@ class User extends Authenticatable
             return null;
         }
 
-        $expiryDate = \Carbon\Carbon::parse($this->expiry_date);
-        $now = now();
+        // Use same timezone as remaining_validity for consistency
+        $timezone = $this->billingProfile?->timezone ?? config('app.timezone', 'UTC');
+        $expiryDate = \Carbon\Carbon::parse($this->expiry_date)->timezone($timezone);
+        $now = now($timezone);
 
         if ($expiryDate->isPast()) {
             return 'urgent';

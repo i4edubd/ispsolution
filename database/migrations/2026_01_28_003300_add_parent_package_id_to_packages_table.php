@@ -20,7 +20,7 @@ return new class extends Migration
                     ->after('id')
                     ->constrained('packages')
                     ->nullOnDelete();
-                $table->index('parent_package_id');
+                // foreignId()->constrained() already creates an index
             }
         });
     }

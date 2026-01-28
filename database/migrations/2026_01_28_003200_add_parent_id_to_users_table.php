@@ -20,7 +20,7 @@ return new class extends Migration
                     ->after('id')
                     ->constrained('users')
                     ->nullOnDelete();
-                $table->index('parent_id');
+                // foreignId()->constrained() already creates an index
             }
         });
     }

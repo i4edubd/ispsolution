@@ -20,7 +20,7 @@ return new class extends Migration
                     ->after('tenant_id')
                     ->constrained('users')
                     ->nullOnDelete();
-                $table->index('operator_id');
+                // foreignId()->constrained() already creates an index
             }
         });
     }
