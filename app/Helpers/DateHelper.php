@@ -10,7 +10,7 @@ use Carbon\Carbon;
  * Date Formatting Helper
  * 
  * Provides utility functions for consistent date formatting across the application
- * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Quick Win #2
+ * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Quick Win #3 (Date Formatting Enhancement)
  */
 class DateHelper
 {
@@ -221,9 +221,9 @@ class DateHelper
      */
     public static function duration(int $seconds, bool $short = false): string
     {
-        $hours = floor($seconds / 3600);
-        $minutes = floor(($seconds % 3600) / 60);
-        $secs = $seconds % 60;
+        $hours = (int) floor($seconds / 3600);
+        $minutes = (int) floor(($seconds % 3600) / 60);
+        $secs = (int) ($seconds % 60);
 
         $parts = [];
         

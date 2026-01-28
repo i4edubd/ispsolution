@@ -17,8 +17,8 @@ use Illuminate\Support\Facades\Log;
  */
 class OperatorStatsCacheService
 {
-    private const CACHE_TTL = 300; // 5 minutes as per TODO
-    private const SHORT_TTL = 60; // 1 minute for frequently changing data
+    private const CACHE_TTL = 300; // 5 minutes for dashboard and customer stats
+    private const SHORT_TTL = 60; // 1 minute for revenue statistics (frequently changing)
 
     /**
      * Get cached operator dashboard statistics

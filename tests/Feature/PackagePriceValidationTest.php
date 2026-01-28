@@ -12,7 +12,7 @@ use Tests\TestCase;
  * Test package price validation
  * 
  * Ensures that packages cannot be created with prices below $1
- * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Quick Win #4
+ * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Quick Win #1 (Package Price Validation)
  */
 class PackagePriceValidationTest extends TestCase
 {

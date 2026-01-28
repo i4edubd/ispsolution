@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
  */
 class BillingProfileCacheService
 {
-    private const CACHE_TTL = 300; // 5 minutes as per TODO
+    private const CACHE_TTL = 300; // 5 minutes for billing profile caching
 
     /**
      * Get cached billing profiles for a tenant

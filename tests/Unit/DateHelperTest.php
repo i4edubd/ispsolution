@@ -11,7 +11,7 @@ use Tests\TestCase;
 /**
  * Test Date Helper Functions
  * 
- * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Quick Win #2
+ * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Quick Win #3 (Date Formatting Enhancement)
  */
 class DateHelperTest extends TestCase
 {
@@ -197,7 +197,7 @@ class DateHelperTest extends TestCase
      */
     public function test_duration(): void
     {
-        $this->assertEquals('1 hours 5 minutes 30 seconds', DateHelper::duration(3930));
+        $this->assertEquals('1 hour 5 minutes 30 seconds', DateHelper::duration(3930));
         $this->assertEquals('2 hours', DateHelper::duration(7200));
         $this->assertEquals('30 seconds', DateHelper::duration(30));
     }

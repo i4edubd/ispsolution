@@ -142,7 +142,7 @@ if (! function_exists('csp_nonce')) {
 if (! function_exists('ordinal')) {
     /**
      * Format a number with ordinal suffix (1 -> "1st", 21 -> "21st")
-     * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Quick Win #2
+     * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Quick Win #3 (Date Formatting Enhancement)
      */
     function ordinal(int $number): string
     {
