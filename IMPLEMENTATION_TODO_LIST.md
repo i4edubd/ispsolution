@@ -72,8 +72,9 @@
   - Used in UI and reports
 
 - [ ] **Task 2.3:** Add minimum validity with fallback
-  - Note: Deferred - billing_profiles table does not have minimum_validity column
-  - Would require schema migration if needed in future
+  - ✅ COMPLETE: Added getMinimumValidityAttribute() to BillingProfile
+  - Returns default of 1 day as fallback
+  - Can be extended when minimum_validity column is added to schema
 
 - [x] **Task 2.4:** Enhance grace period calculation
   - Update `BillingProfile::gracePeriod()` method
@@ -132,12 +133,13 @@
   - Migration: Add composite index on `(payment_type, status)`
   - Speeds up filtering by overall status
 
-- [ ] **Task 3.4:** Update customer filters to use overall status
-  - Location: `app/Services/CustomerFilterService.php`
-  - Add filter option for overall_status
-  - Update UI dropdowns
+- [x] **Task 3.4:** Update customer filters to use overall status
+  - Already implemented in CustomerFilterService
+  - Filter by overall_status working correctly
+  - UI dropdowns available
 
-- [ ] **Task 3.5:** Add color coding for overall status in UI
+- [x] **Task 3.5:** Add color coding for overall status in UI
+  - Component: customer-status-badge.blade.php
   - Green: PREPAID_ACTIVE
   - Blue: POSTPAID_ACTIVE
   - Orange: *_SUSPENDED
@@ -176,9 +178,11 @@
   - Handle GB/MB units
   - Used for RADIUS attributes
 
-- [ ] **Task 4.5:** Update API responses to include all formats
-  - Include all validity formats in JSON
-  - Frontend can choose appropriate display
+- [x] **Task 4.5:** Update API responses to include all formats
+  - Enhanced DataController::getPackages() method
+  - Includes validity_formats: {days, hours, minutes}
+  - Added readable_rate_unit and total_octet_limit
+  - Frontend can choose appropriate display format
 
 **Estimated Effort:** 4 hours  
 **Impact:** Medium - Better API and display  
@@ -196,17 +200,21 @@
   - Returns `$value > 0 ? $value : 1`
   - Fallback to $1 if price is 0 or negative
 
-- [ ] **Task 5.2:** Add validation rule to PackageController
-  - `'price' => 'required|numeric|min:1'`
-  - Prevent creation of free packages by mistake
+- [x] **Task 5.2:** Add validation rule to PackageController
+  - Already implemented in MasterPackageController
+  - Validation: 'base_price' => 'required|numeric|min:1'
+  - Prevents creation of free packages by mistake
 
-- [ ] **Task 5.3:** Add warning in UI for low-priced packages
+- [x] **Task 5.3:** Add warning in UI for low-priced packages
+  - JavaScript validation in create/edit forms
   - Alert if price < $10 (configurable threshold)
-  - Confirm user intention
+  - Real-time warning indicator
+  - Confirmation dialog before submission
 
-- [ ] **Task 5.4:** Update package seeder
-  - Ensure all seed packages have price >= 1
-  - Add test packages with reasonable pricing
+- [x] **Task 5.4:** Update package seeder
+  - Already has reasonable pricing (all packages >= $25)
+  - All seed packages have price >= 1
+  - No changes needed
 
 **Estimated Effort:** 2 hours  
 **Impact:** Medium - Prevents pricing errors  
@@ -227,10 +235,13 @@
   - Create `lang/en/` directory (English)
   - Add language files for common terms
 
-- [ ] **Task 6.2:** Add language switcher to UI
-  - Location: Header/Navbar
-  - Store preference in session/database
-  - Support per-operator language settings
+- [x] **Task 6.2:** Add language switcher to UI
+  - Created language-switcher.blade.php component
+  - Added to navigation bar (panels/partials/navigation.blade.php)
+  - Created LanguageController with switch() method
+  - Created SetLocale middleware for auto locale detection
+  - Stores preference in session and database
+  - Registered middleware in bootstrap/app.php
 
 - [x] **Task 6.3:** Translate billing terms
   - File: `lang/bn/billing.php`
@@ -279,10 +290,12 @@
   - `childAccounts()` - hasMany relationship
   - Already in reference system pattern
 
-- [ ] **Task 7.3:** Create reseller management UI
-  - View: `resources/views/admin/customers/resellers.blade.php`
-  - List customers with child accounts
-  - Show hierarchy tree
+- [x] **Task 7.3:** Create reseller management UI
+  - Created ResellerController
+  - Created resellers/index.blade.php view
+  - Added routes for reseller management
+  - Grid layout showing reseller stats and child counts
+  - Links to view details and child accounts
 
 - [ ] **Task 7.4:** Add reseller billing roll-up
   - Service: `ResellerBillingService`
@@ -592,10 +605,11 @@
   - Drag-and-drop reordering
   - Expand/collapse nodes
 
-- [ ] **Task 16.2:** Show customer count on package cards
-  - Display cached count
-  - Update frequency indicator
-  - Click to view customers
+- [x] **Task 16.2:** Show customer count on package cards
+  - Added customer_count column to master packages index
+  - Display cached count with info tooltip
+  - Update frequency indicator (2.5 minutes cache TTL)
+  - Click to view customers (via customer count attribute)
 
 - [ ] **Task 16.3:** Add package comparison view
   - Side-by-side package comparison
@@ -627,10 +641,12 @@
   - Map integration (Google Maps)
   - Copy to clipboard button
 
-- [ ] **Task 17.3:** Add online status indicator
-  - Real-time status badge
+- [x] **Task 17.3:** Add online status indicator
+  - Component: customer-online-status.blade.php (already exists)
+  - Real-time status badge with animated ping
   - Last seen timestamp
   - Connection history link
+  - Session details display
 
 - [ ] **Task 17.4:** Create customer activity feed
   - Recent payments
@@ -640,7 +656,7 @@
 
 **Estimated Effort:** 8 hours  
 **Impact:** Medium - Better customer overview
-**Status:** 🔄 PARTIAL (1/4 complete)
+**Status:** 🔄 IN PROGRESS (3/4 complete) - Task 17.3 already implemented
 
 ---
 
@@ -833,7 +849,7 @@ Schema::table('packages', function (Blueprint $table) {
 - ✅ Task 5: Package price validation
 
 **Deliverable:** Core improvements with immediate performance gains
-**Status:** ✅ COMPLETE - Models and backend logic implemented
+**Status:** ✅ COMPLETE - All high priority tasks done (including previously pending items)
 
 ---
 
@@ -865,7 +881,7 @@ Schema::table('packages', function (Blueprint $table) {
 - [ ] Documentation updates
 
 **Deliverable:** Multi-language platform
-**Status:** 🔄 FOUNDATION COMPLETE - Extensive UI translation pending
+**Status:** ✅ FOUNDATION COMPLETE - Language switcher UI added, extensive UI translation pending
 
 ---
 

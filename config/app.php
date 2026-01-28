@@ -86,6 +86,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Available Locales
+    |--------------------------------------------------------------------------
+    |
+    | List of available locales for multi-language support. This provides a
+    | single source of truth for all language-related components.
+    |
+    */
+
+    'available_locales' => ['en', 'bn'],
+
+    'available_languages' => [
+        'en' => ['name' => 'English', 'flag' => '🇺🇸'],
+        'bn' => ['name' => 'বাংলা', 'flag' => '🇧🇩'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Currency Symbol
     |--------------------------------------------------------------------------
     |
