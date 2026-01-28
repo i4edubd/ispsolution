@@ -19,7 +19,8 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
-/public/build/*
+# Build assets are now tracked for deployment
+# /public/build/*
 # Docker
 /docker/data
 docker-compose.override.yml
