@@ -32,15 +32,52 @@ class NotificationService
 
         try {
             if ($invoice->user && $invoice->user->email) {
-                Mail::to($invoice->user->email)
-                    ->send(new InvoiceGenerated($invoice));
+                // Validate email format
+                if (!filter_var($invoice->user->email, FILTER_VALIDATE_EMAIL)) {
+                    Log::warning('Invalid email format for invoice notification', [
+                        'invoice_id' => $invoice->id,
+                        'user_id' => $invoice->user_id,
+                        'email' => $invoice->user->email,
+                    ]);
+                    return false;
+                }
 
-                Log::info('Invoice generated email sent', [
-                    'invoice_id' => $invoice->id,
-                    'user_id' => $invoice->user_id,
-                ]);
+                // Retry logic for email sending
+                $maxRetries = config('mail.max_retries', 3);
+                $retryDelay = config('mail.retry_delay', 2); // seconds
+                
+                for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                    try {
+                        Mail::to($invoice->user->email)
+                            ->send(new InvoiceGenerated($invoice));
 
-                $emailSent = true;
+                        Log::info('Invoice generated email sent', [
+                            'invoice_id' => $invoice->id,
+                            'user_id' => $invoice->user_id,
+                            'attempt' => $attempt,
+                        ]);
+
+                        $emailSent = true;
+                        break;
+                    } catch (\Exception $e) {
+                        Log::warning('Email send attempt failed', [
+                            'invoice_id' => $invoice->id,
+                            'attempt' => $attempt,
+                            'error' => $e->getMessage(),
+                        ]);
+                        
+                        if ($attempt < $maxRetries) {
+                            sleep($retryDelay);
+                        }
+                    }
+                }
+                
+                if (!$emailSent) {
+                    Log::error('Failed to send invoice generated email after all retries', [
+                        'invoice_id' => $invoice->id,
+                        'max_retries' => $maxRetries,
+                    ]);
+                }
             }
         } catch (\Exception $e) {
             Log::error('Failed to send invoice generated email', [
@@ -67,6 +104,16 @@ class NotificationService
 
         try {
             if ($invoice->user && $invoice->user->email) {
+                // Validate email format
+                if (!filter_var($invoice->user->email, FILTER_VALIDATE_EMAIL)) {
+                    Log::warning('Invalid email format for payment notification', [
+                        'invoice_id' => $invoice->id,
+                        'user_id' => $invoice->user_id,
+                        'email' => $invoice->user->email,
+                    ]);
+                    return false;
+                }
+
                 // Create a temporary payment object for the email template
                 // Note: This is not persisted to the database
                 $payment = new Payment([
@@ -78,16 +125,43 @@ class NotificationService
                 $payment->invoice = $invoice;
                 $payment->user = $invoice->user;
 
-                Mail::to($invoice->user->email)
-                    ->send(new PaymentReceived($payment));
+                // Retry logic for email sending
+                $maxRetries = config('mail.max_retries', 3);
+                $retryDelay = config('mail.retry_delay', 2); // seconds
+                
+                for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                    try {
+                        Mail::to($invoice->user->email)
+                            ->send(new PaymentReceived($payment));
 
-                Log::info('Payment received email sent', [
-                    'invoice_id' => $invoice->id,
-                    'user_id' => $invoice->user_id,
-                    'amount' => $amount,
-                ]);
+                        Log::info('Payment received email sent', [
+                            'invoice_id' => $invoice->id,
+                            'user_id' => $invoice->user_id,
+                            'amount' => $amount,
+                            'attempt' => $attempt,
+                        ]);
 
-                $emailSent = true;
+                        $emailSent = true;
+                        break;
+                    } catch (\Exception $e) {
+                        Log::warning('Email send attempt failed', [
+                            'invoice_id' => $invoice->id,
+                            'attempt' => $attempt,
+                            'error' => $e->getMessage(),
+                        ]);
+                        
+                        if ($attempt < $maxRetries) {
+                            sleep($retryDelay);
+                        }
+                    }
+                }
+                
+                if (!$emailSent) {
+                    Log::error('Failed to send payment received email after all retries', [
+                        'invoice_id' => $invoice->id,
+                        'max_retries' => $maxRetries,
+                    ]);
+                }
             }
         } catch (\Exception $e) {
             Log::error('Failed to send payment received email', [
