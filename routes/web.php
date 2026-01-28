@@ -14,6 +14,7 @@ use App\Http\Controllers\Panel\MasterPackageController;
 use App\Http\Controllers\Panel\NasController;
 use App\Http\Controllers\Panel\OnuController;
 use App\Http\Controllers\Panel\OperatorPackageController;
+use App\Http\Controllers\Panel\ResellerController;
 use App\Http\Controllers\Panel\RouterBackupController;
 use App\Http\Controllers\Panel\RouterConfigurationController;
 use App\Http\Controllers\Panel\RouterFailoverController;
@@ -475,6 +476,11 @@ Route::prefix('panel/admin')->name('panel.admin.')->middleware(['auth', 'tenant'
         Route::post('/{masterPackage}/assign', [MasterPackageController::class, 'storeOperatorAssignment'])->name('store-assignment');
         Route::delete('/{masterPackage}/operators/{operatorRate}', [MasterPackageController::class, 'removeOperatorAssignment'])->name('remove-operator');
         Route::get('/{masterPackage}/stats', [MasterPackageController::class, 'stats'])->name('stats');
+    });
+
+    // Reseller Management Routes (Task 7.3)
+    Route::prefix('resellers')->name('resellers.')->group(function () {
+        Route::get('/', [ResellerController::class, 'index'])->name('index');
     });
 
     // Operator SMS Rates
