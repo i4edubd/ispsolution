@@ -1,16 +1,17 @@
 @php
     $currentLocale = app()->getLocale();
-    $availableLanguages = [
+    $availableLanguages = config('app.available_languages', [
         'en' => ['name' => 'English', 'flag' => '🇺🇸'],
         'bn' => ['name' => 'বাংলা', 'flag' => '🇧🇩'],
-    ];
+    ]);
+    $currentLanguage = $availableLanguages[$currentLocale] ?? reset($availableLanguages);
 @endphp
 
 <div class="relative" x-data="{ open: false }">
     <button @click="open = !open" 
             class="flex items-center space-x-2 px-3 py-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-        <span class="text-lg">{{ $availableLanguages[$currentLocale]['flag'] }}</span>
-        <span class="hidden sm:block text-sm font-medium">{{ $availableLanguages[$currentLocale]['name'] }}</span>
+        <span class="text-lg">{{ $currentLanguage['flag'] }}</span>
+        <span class="hidden sm:block text-sm font-medium">{{ $currentLanguage['name'] }}</span>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
         </svg>

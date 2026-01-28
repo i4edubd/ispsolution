@@ -194,7 +194,6 @@ class DataController extends Controller
                 'hours' => $package->validity_in_hours,
                 'minutes' => $package->validity_in_minutes,
             ];
-            $package->readable_rate_unit = $package->readable_rate_unit;
             $package->total_octet_limit = $package->total_octet_limit;
             return $package;
         });

@@ -46,8 +46,11 @@ class SetLocale
         }
 
         // 2. Check session for locale
-        if (Session::has('locale') && $this->isValidLocale(Session::get('locale'))) {
-            return Session::get('locale');
+        if (Session::has('locale')) {
+            $sessionLocale = Session::get('locale');
+            if (is_string($sessionLocale) && $this->isValidLocale($sessionLocale)) {
+                return $sessionLocale;
+            }
         }
 
         // 3. Fall back to default locale
@@ -59,7 +62,7 @@ class SetLocale
      */
     private function isValidLocale(string $locale): bool
     {
-        $availableLocales = ['en', 'bn'];
+        $availableLocales = config('app.available_locales', ['en', 'bn']);
         return in_array($locale, $availableLocales);
     }
 }

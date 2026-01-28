@@ -28,6 +28,11 @@ class LanguageController extends Controller
     {
         $language = $request->input('language', 'en');
 
+        // Ensure language is a string
+        if (!is_string($language)) {
+            return redirect()->back()->with('error', 'Invalid language selected.');
+        }
+
         // Validate language code
         if (!in_array($language, self::AVAILABLE_LANGUAGES)) {
             return redirect()->back()->with('error', 'Invalid language selected.');

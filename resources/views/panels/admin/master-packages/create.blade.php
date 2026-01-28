@@ -162,16 +162,23 @@
         const form = document.querySelector('form');
         const priceInput = document.getElementById('base_price');
         const lowPriceThreshold = 10; // Configurable threshold
+        let lowPriceConfirmed = false; // Prevent infinite submit loop
 
         if (form && priceInput) {
             form.addEventListener('submit', function(e) {
+                // If the low price has already been confirmed, allow normal submission
+                if (lowPriceConfirmed) {
+                    return;
+                }
+
                 const price = parseFloat(priceInput.value);
                 
                 if (price > 0 && price < lowPriceThreshold) {
                     e.preventDefault();
                     
                     if (confirm(`Warning: The package price is $${price.toFixed(2)}, which is below the recommended minimum of $${lowPriceThreshold}.\n\nAre you sure you want to create this package with a low price?`)) {
-                        // User confirmed, submit the form
+                        // User confirmed, allow subsequent submit without re-prompting
+                        lowPriceConfirmed = true;
                         form.submit();
                     }
                 }
