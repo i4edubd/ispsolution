@@ -10,6 +10,7 @@ use App\Models\SmsPayment;
 use App\Services\SmsBalanceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * SMS Payment Controller
@@ -224,5 +225,42 @@ class SmsPaymentController extends Controller
                 'new_balance' => $operator->fresh()->sms_balance,
             ],
         ]);
+    }
+
+    /**
+     * Display SMS payment history page (Web UI)
+     *
+     * @param Request $request
+     * @return View
+     */
+    public function webIndex(Request $request): View
+    {
+        $user = $request->user();
+        
+        // Get paginated payments
+        $payments = SmsPayment::where('operator_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        // Get balance information
+        $balance = [
+            'current_balance' => $user->sms_balance ?? 0,
+            'low_balance_threshold' => $user->sms_low_balance_threshold ?? 100,
+            'is_low_balance' => $user->hasLowSmsBalance(),
+            'history' => $this->smsBalanceService->getHistory($user, 10),
+            'monthly_stats' => $this->smsBalanceService->getUsageStats($user, 'month'),
+        ];
+
+        return view('panels.operator.sms-payments.index', compact('payments', 'balance'));
+    }
+
+    /**
+     * Display SMS payment purchase page (Web UI)
+     *
+     * @return View
+     */
+    public function webCreate(): View
+    {
+        return view('panels.operator.sms-payments.create');
     }
 }
