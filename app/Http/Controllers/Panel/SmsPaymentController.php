@@ -10,10 +10,11 @@ use App\Models\SmsPayment;
 use App\Services\SmsBalanceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * SMS Payment Controller
- * 
+ *
  * Handles SMS credit purchases and payment processing
  * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Phase 2: SMS Payment Integration
  * Reference: REFERENCE_SYSTEM_IMPLEMENTATION_TODO.md - Section 1.1
@@ -29,22 +30,19 @@ class SmsPaymentController extends Controller
 
     /**
      * Display a listing of SMS payments for the authenticated operator
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Only allow operators, sub-operators, and admins
-        if (!$user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
+        if (! $user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized. Only operators, sub-operators, and admins can access SMS payments.',
             ], 403);
         }
-        
+
         $payments = SmsPayment::where('operator_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->paginate($request->input('per_page', 15));
@@ -57,19 +55,20 @@ class SmsPaymentController extends Controller
 
     /**
      * Store a newly created SMS payment in storage
-     *
-     * @param StoreSmsPaymentRequest $request
-     * @return JsonResponse
      */
     public function store(StoreSmsPaymentRequest $request): JsonResponse
     {
         $user = $request->user();
-        
+
+        // Calculate amount server-side based on quantity and pricing tiers
+        $quantity = $request->integer('sms_quantity');
+        $amount = $this->calculateSmsPrice($quantity);
+
         // Create SMS payment record
         $payment = SmsPayment::create([
             'operator_id' => $user->id,
-            'amount' => $request->input('amount'),
-            'sms_quantity' => $request->input('sms_quantity'),
+            'amount' => $amount, // Server-calculated, not from user input
+            'sms_quantity' => $quantity,
             'payment_method' => $request->input('payment_method'),
             'status' => 'pending',
         ]);
@@ -87,25 +86,22 @@ class SmsPaymentController extends Controller
 
     /**
      * Display the specified SMS payment
-     *
-     * @param SmsPayment $smsPayment
-     * @return JsonResponse
      */
     public function show(SmsPayment $smsPayment): JsonResponse
     {
         $user = auth()->user();
-        
+
         // Only allow operators, sub-operators, and admins
-        if (!$user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
+        if (! $user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
             ], 403);
         }
-        
+
         // Admins and superadmins can view all payments, others can only view their own
         $isAdmin = $user->hasAnyRole(['admin', 'superadmin']);
-        if (!$isAdmin && $smsPayment->operator_id !== $user->id) {
+        if (! $isAdmin && $smsPayment->operator_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -120,22 +116,19 @@ class SmsPaymentController extends Controller
 
     /**
      * Get SMS balance and history for the authenticated operator
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function balance(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Only allow operators, sub-operators, and admins
-        if (!$user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
+        if (! $user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized. Only operators, sub-operators, and admins can access SMS balance.',
             ], 403);
         }
-        
+
         $history = $this->smsBalanceService->getHistory($user, 20);
         $stats = $this->smsBalanceService->getUsageStats($user, 'month');
 
@@ -153,29 +146,24 @@ class SmsPaymentController extends Controller
 
     /**
      * Handle payment gateway webhook/callback
-     * 
+     *
      * This method will be called by payment gateways to update payment status
      * NOTE: This endpoint requires webhook signature verification before processing
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function webhook(Request $request): JsonResponse
     {
-        // TODO: CRITICAL - Implement webhook signature verification
+        // SECURITY: Reject all requests until proper verification is implemented
+        // This prevents unauthorized balance credits and payment manipulation
+        abort(403, 'Webhook endpoint disabled. Contact administrator for setup.');
+
+        // TODO: CRITICAL - Implement webhook signature verification before enabling
         // Payment gateway webhooks MUST verify the request authenticity
         // This prevents unauthorized balance credits
         // Example for Bkash:
         // 1. Verify signature using gateway's public key
         // 2. Validate request IP against gateway's whitelist
         // 3. Check request timestamp to prevent replay attacks
-        
-        // Reject all requests until proper verification is implemented
-        return response()->json([
-            'success' => false,
-            'message' => 'Webhook processing not yet implemented. Signature verification required.',
-        ], 501);
-        
+
         // TODO: After verification is implemented:
         // 1. Extract payment details from webhook payload
         // 2. Find the corresponding SmsPayment record
@@ -185,17 +173,24 @@ class SmsPaymentController extends Controller
     }
 
     /**
-     * Complete an SMS payment (admin/test use)
-     * 
-     * This endpoint allows manual completion of payments for testing
+     * Complete an SMS payment (admin/test use only)
      *
-     * @param SmsPayment $smsPayment
-     * @return JsonResponse
+     * This endpoint allows manual completion of payments for testing
      */
     public function complete(SmsPayment $smsPayment): JsonResponse
     {
+        $user = auth()->user();
+
+        // Only superadmins can manually complete payments
+        if (! $user->hasRole('superadmin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Only superadmins can manually complete payments.',
+            ], 403);
+        }
+
         // Only allow if payment is pending
-        if (!$smsPayment->isPending()) {
+        if (! $smsPayment->isPending()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Payment is not pending',
@@ -224,5 +219,64 @@ class SmsPaymentController extends Controller
                 'new_balance' => $operator->fresh()->sms_balance,
             ],
         ]);
+    }
+
+    /**
+     * Display SMS payment history page (Web UI)
+     */
+    public function webIndex(Request $request): View
+    {
+        $user = $request->user();
+
+        // Get paginated payments
+        $payments = SmsPayment::where('operator_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        // Get balance information
+        $balance = [
+            'current_balance' => $user->sms_balance ?? 0,
+            'low_balance_threshold' => $user->sms_low_balance_threshold ?? 100,
+            'is_low_balance' => $user->hasLowSmsBalance(),
+            'history' => $this->smsBalanceService->getHistory($user, 10),
+            'monthly_stats' => $this->smsBalanceService->getUsageStats($user, 'month'),
+        ];
+
+        return view('panels.operator.sms-payments.index', compact('payments', 'balance'));
+    }
+
+    /**
+     * Display SMS payment purchase page (Web UI)
+     */
+    public function webCreate(): View
+    {
+        $user = auth()->user();
+
+        // Only operators, sub-operators, and admins can purchase SMS credits
+        if (! $user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
+            abort(403, 'Unauthorized. Only operators can purchase SMS credits.');
+        }
+
+        return view('panels.operator.sms-payments.create');
+    }
+
+    /**
+     * Calculate SMS price based on quantity and pricing tiers
+     *
+     * @param int $quantity Number of SMS credits
+     *
+     * @return float Calculated price in local currency
+     */
+    private function calculateSmsPrice(int $quantity): float
+    {
+        // Pricing tiers (per SMS in BDT)
+        // TODO: Move these to config file or database for easier management
+        if ($quantity >= 10000) {
+            return $quantity * 0.40; // 20% discount
+        } elseif ($quantity >= 5000) {
+            return $quantity * 0.45; // 10% discount
+        } else {
+            return $quantity * 0.50; // Base rate
+        }
     }
 }

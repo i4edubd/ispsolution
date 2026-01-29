@@ -7,10 +7,15 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Services\SmsBalanceService;
 use Illuminate\View\View;
 
 class OperatorController extends Controller
 {
+    public function __construct(
+        private SmsBalanceService $smsBalanceService
+    ) {}
+
     /**
      * Display the operator dashboard.
      */
@@ -38,7 +43,15 @@ class OperatorController extends Controller
             'monthly_collection' => $paymentData->monthly_collection ?? 0,
         ];
 
-        return view('panels.operator.dashboard', compact('stats'));
+        // Get SMS balance data for widget
+        $sms_balance = [
+            'current_balance' => $user->sms_balance ?? 0,
+            'low_balance_threshold' => $user->sms_low_balance_threshold ?? 100,
+            'is_low_balance' => $user->hasLowSmsBalance(),
+            'monthly_stats' => $this->smsBalanceService->getUsageStats($user, 'month'),
+        ];
+
+        return view('panels.operator.dashboard', compact('stats', 'sms_balance'));
     }
 
     /**

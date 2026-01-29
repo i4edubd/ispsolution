@@ -91,6 +91,14 @@
         </div>
     </div>
 
+    <!-- Widgets Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- SMS Balance Widget -->
+        @include('panels.shared.widgets.sms-balance')
+        
+        <!-- Additional widgets can be added here -->
+    </div>
+
     <!-- Quick Actions -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6">

@@ -217,7 +217,7 @@ class SmsBalanceService
 
         // Check if we've already notified recently (within 24 hours)
         $lastNotified = $operator->sms_low_balance_notified_at;
-        if ($lastNotified && $lastNotified->isAfter(now()->subDay())) {
+        if ($lastNotified instanceof \Carbon\Carbon && $lastNotified->isAfter(now()->subDay())) {
             return false;
         }
 

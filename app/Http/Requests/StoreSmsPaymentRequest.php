@@ -42,12 +42,8 @@ class StoreSmsPaymentRequest extends FormRequest
                 'string',
                 'in:bkash,nagad,rocket,sslcommerz',
             ],
-            'amount' => [
-                'required',
-                'numeric',
-                'min:1',
-                'max:1000000',
-            ],
+            // Note: amount is calculated server-side based on sms_quantity
+            // We don't accept it from user input to prevent price manipulation
         ];
     }
 
