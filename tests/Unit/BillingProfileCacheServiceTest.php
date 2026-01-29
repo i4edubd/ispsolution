@@ -50,7 +50,7 @@ class BillingProfileCacheServiceTest extends TestCase
     }
 
     /**
-     * Test that refresh flag functionality
+     * Test refresh flag functionality by validating cache clearing
      */
     public function test_refresh_flag_clears_cache(): void
     {
