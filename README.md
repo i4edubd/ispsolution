@@ -592,6 +592,7 @@ All PRs are automatically tested:
 - **Changelog Workflow** - Automatic changelog generation
 
 📖 **Full guidelines**: [CONTRIBUTING.md](CONTRIBUTING.md) | [Changelog Guide](docs/CHANGELOG_GUIDE.md)
+
 ## 📄 License
 
 This project is licensed under the MIT License.
