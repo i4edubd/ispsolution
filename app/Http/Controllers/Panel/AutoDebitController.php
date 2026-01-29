@@ -63,14 +63,17 @@ class AutoDebitController extends Controller
     {
         $user = $request->user();
 
+        $autoDebitEnabled = $request->boolean('auto_debit_enabled');
+        $paymentMethod = $autoDebitEnabled ? $request->input('auto_debit_payment_method') : null;
+
         $user->update([
-            'auto_debit_enabled' => $request->boolean('auto_debit_enabled'),
-            'auto_debit_payment_method' => $request->input('auto_debit_payment_method'),
+            'auto_debit_enabled' => $autoDebitEnabled,
+            'auto_debit_payment_method' => $paymentMethod,
             'auto_debit_max_retries' => $request->integer('auto_debit_max_retries', 3),
         ]);
 
         // Reset retry count when re-enabling or updating settings
-        if ($request->boolean('auto_debit_enabled')) {
+        if ($autoDebitEnabled) {
             $user->update(['auto_debit_retry_count' => 0]);
         }
 
@@ -110,7 +113,7 @@ class AutoDebitController extends Controller
         $user = $request->user();
 
         // Only admins and operators can view this report
-        if (! $user->hasAnyRole(['admin', 'operator', 'superadmin'])) {
+        if (! $user->hasAnyRole(['admin', 'operator', 'super-admin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -122,7 +125,7 @@ class AutoDebitController extends Controller
             ->where('status', 'failed');
 
         // Filter by customer if not admin
-        if (! $user->hasAnyRole(['admin', 'superadmin'])) {
+        if (! $user->hasAnyRole(['admin', 'super-admin'])) {
             $query->whereHas('customer', function ($q) use ($user) {
                 $q->where('operator_id', $user->id);
             });
@@ -146,7 +149,7 @@ class AutoDebitController extends Controller
         $user = $request->user();
 
         // Only admins can manually trigger auto-debit
-        if (! $user->hasRole('superadmin')) {
+        if (! $user->hasRole('super-admin')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -178,7 +181,7 @@ class AutoDebitController extends Controller
         $user = $request->user();
 
         // Only admins can reset retry count
-        if (! $user->hasRole('superadmin')) {
+        if (! $user->hasRole('super-admin')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',

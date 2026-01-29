@@ -125,12 +125,14 @@ class ProcessAutoDebitJob implements ShouldQueue
                 $this->handleFailure($history, $result['message'] ?? 'Payment failed');
             }
         } catch (\Exception $e) {
-            $this->handleFailure($history, $e->getMessage());
-            
-            // Re-throw if we should retry
+            // If we still have retries left, let Laravel handle the retry
             if ($this->customer->auto_debit_retry_count < $this->customer->auto_debit_max_retries) {
+                $this->handleFailure($history, $e->getMessage());
                 throw $e;
             }
+
+            // No retries left, handle the failure explicitly
+            $this->handleFailure($history, $e->getMessage());
         }
     }
 
@@ -145,9 +147,10 @@ class ProcessAutoDebitJob implements ShouldQueue
         // Mark history as failed
         $history->markFailed($reason);
 
-        // Increment retry count
+        // Increment retry count and refresh model
         $this->customer->increment('auto_debit_retry_count');
         $this->customer->update(['auto_debit_last_attempt' => now()]);
+        $this->customer->refresh();
 
         // Check if max retries reached
         if ($this->customer->auto_debit_retry_count >= $this->customer->auto_debit_max_retries) {
@@ -177,9 +180,14 @@ class ProcessAutoDebitJob implements ShouldQueue
      */
     protected function calculateDueAmount(): float
     {
-        // TODO: Implement logic to calculate due amount based on customer's subscription
-        // This is a placeholder implementation
-        return 0.0;
+        // Calculate the total amount due from unpaid subscription bills
+        // This focuses on bills that are outstanding and whose due date is today or past
+        $unpaidBills = SubscriptionBill::where('customer_id', $this->customer->id)
+            ->whereIn('status', ['unpaid', 'overdue'])
+            ->where('due_date', '<=', now())
+            ->sum('amount');
+
+        return max((float) $unpaidBills, 0.0);
     }
 
     /**

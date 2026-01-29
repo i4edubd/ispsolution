@@ -146,7 +146,8 @@ async function subscribeToPlan(planId) {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Accept': 'application/json'
-            }
+            },
+            credentials: 'same-origin'
         });
 
         const result = await response.json();

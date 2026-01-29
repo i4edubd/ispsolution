@@ -843,6 +843,9 @@ Route::prefix('panel/operator')->name('panel.operator.')->middleware(['auth', 't
     
     // Auto-Debit Settings - Web UI routes
     Route::get('/auto-debit', [\App\Http\Controllers\Panel\AutoDebitController::class, 'index'])->name('auto-debit.index');
+    
+    // Subscription Plans - Web UI routes
+    Route::get('/subscriptions', [\App\Http\Controllers\Panel\SubscriptionPaymentController::class, 'index'])->name('subscriptions.index');
 });
 
 // Sub-Operator Panel

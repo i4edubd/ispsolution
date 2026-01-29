@@ -91,12 +91,16 @@ class SubscriptionPaymentController extends Controller
 
         try {
             // Create subscription
+            $endDate = $plan->trial_days > 0 
+                ? now()->addDays($plan->trial_days)
+                : now()->addDays($this->getBillingCycleDays($plan->billing_cycle));
+
             $subscription = Subscription::create([
                 'tenant_id' => $user->tenant_id,
                 'plan_id' => $plan->id,
                 'status' => $plan->trial_days > 0 ? 'trial' : 'active',
                 'start_date' => now(),
-                'end_date' => now()->addDays($this->getBillingCycleDays($plan->billing_cycle)),
+                'end_date' => $endDate,
                 'trial_ends_at' => $plan->trial_days > 0 ? now()->addDays($plan->trial_days) : null,
                 'amount' => $plan->price,
                 'currency' => $plan->currency,
@@ -154,8 +158,21 @@ class SubscriptionPaymentController extends Controller
         }
 
         try {
-            // TODO: Integrate with payment gateway
-            // For now, we'll just mark as paid
+            // TODO: SECURITY - Integrate with payment gateway before production
+            // This endpoint currently allows marking bills as paid without actual payment
+            // In production, this should:
+            // 1. Initiate payment via PaymentGatewayService
+            // 2. Only mark as paid after receiving verified gateway response
+            // 3. Or restrict this endpoint to admin/internal use only
+            
+            // For now, mark as paid (THIS IS NOT PRODUCTION-READY)
+            Log::warning('Subscription bill marked as paid without gateway verification', [
+                'bill_id' => $bill->id,
+                'tenant_id' => $user->tenant_id,
+                'amount' => $bill->amount,
+                'environment' => app()->environment(),
+            ]);
+
             $bill->update([
                 'status' => 'paid',
                 'paid_at' => now(),

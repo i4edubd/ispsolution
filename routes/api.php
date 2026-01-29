@@ -287,13 +287,13 @@ Route::prefix('auto-debit')
         Route::put('/settings', [\App\Http\Controllers\Panel\AutoDebitController::class, 'update'])->name('update');
         Route::get('/history', [\App\Http\Controllers\Panel\AutoDebitController::class, 'history'])->name('history');
         Route::get('/failed-report', [\App\Http\Controllers\Panel\AutoDebitController::class, 'failedReport'])
-            ->middleware('role:admin,operator,superadmin')
+            ->middleware('role:admin,operator,super-admin')
             ->name('failed-report');
         Route::post('/trigger/{customer}', [\App\Http\Controllers\Panel\AutoDebitController::class, 'trigger'])
-            ->middleware('role:superadmin')
+            ->middleware('role:super-admin')
             ->name('trigger');
         Route::post('/reset-retry/{customer}', [\App\Http\Controllers\Panel\AutoDebitController::class, 'resetRetryCount'])
-            ->middleware('role:superadmin')
+            ->middleware('role:super-admin')
             ->name('reset-retry');
     });
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Jobs\ProcessAutoDebitJob;
+use App\Models\SubscriptionBill;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -45,7 +46,7 @@ class ProcessAutoDebitPayments extends Command
 
         // Build query for eligible customers
         $query = User::where('auto_debit_enabled', true)
-            ->where('auto_debit_retry_count', '<', User::raw('auto_debit_max_retries'));
+            ->whereColumn('auto_debit_retry_count', '<', 'auto_debit_max_retries');
 
         // Filter by specific customer if provided
         if ($customerId) {
@@ -113,13 +114,20 @@ class ProcessAutoDebitPayments extends Command
      */
     protected function shouldProcessCustomer(User $customer): bool
     {
-        // TODO: Implement logic to check if customer has pending bills
-        // For now, we'll return true for all enabled customers
-        // In production, this should check:
-        // 1. If customer has unpaid bills
-        // 2. If bill is due today or overdue
-        // 3. If customer hasn't been charged today already
-        
-        return true;
+        // Check if customer has unpaid bills that are due
+        $hasDueBills = SubscriptionBill::where('customer_id', $customer->id)
+            ->whereIn('status', ['unpaid', 'overdue'])
+            ->where('due_date', '<=', now())
+            ->exists();
+
+        if (! $hasDueBills) {
+            return false;
+        }
+
+        // Check if customer hasn't been charged today already
+        $lastAttemptToday = $customer->auto_debit_last_attempt 
+            && $customer->auto_debit_last_attempt->isToday();
+
+        return ! $lastAttemptToday;
     }
 }

@@ -191,7 +191,7 @@ class AutoDebitTest extends TestCase
         Queue::fake();
 
         $admin = User::factory()->create();
-        $admin->assignRole('superadmin');
+        $admin->assignRole('super-admin');
 
         $response = $this->actingAs($admin)
             ->postJson("/api/auto-debit/trigger/{$this->customer->id}");
@@ -208,7 +208,7 @@ class AutoDebitTest extends TestCase
     public function test_admin_can_reset_retry_count(): void
     {
         $admin = User::factory()->create();
-        $admin->assignRole('superadmin');
+        $admin->assignRole('super-admin');
 
         $this->customer->update(['auto_debit_retry_count' => 3]);
 

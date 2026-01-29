@@ -243,6 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json'
                 },
+                credentials: 'same-origin',
                 body: JSON.stringify(data)
             });
 

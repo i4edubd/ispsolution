@@ -54,11 +54,11 @@ class AutoDebitFailedNotification extends Notification implements ShouldQueue
         if ($this->history->retry_count >= $notifiable->auto_debit_max_retries) {
             $message->line('⚠️ Auto-payment has been disabled after maximum retry attempts.')
                 ->line('Please update your payment method or make a manual payment to continue your service.')
-                ->action('Make Payment', url('/panel/payments'));
+                ->action('Make Payment', route('panel.customer.payments.create'));
         } else {
             $message->line('We will automatically retry the payment.')
                 ->line('To avoid service interruption, please ensure your payment method is valid.')
-                ->action('Update Payment Method', url('/panel/settings'));
+                ->action('Update Payment Method', route('panel.customer.profile.edit'));
         }
 
         return $message;
