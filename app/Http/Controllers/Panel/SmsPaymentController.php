@@ -14,7 +14,7 @@ use Illuminate\View\View;
 
 /**
  * SMS Payment Controller
- * 
+ *
  * Handles SMS credit purchases and payment processing
  * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Phase 2: SMS Payment Integration
  * Reference: REFERENCE_SYSTEM_IMPLEMENTATION_TODO.md - Section 1.1
@@ -30,22 +30,19 @@ class SmsPaymentController extends Controller
 
     /**
      * Display a listing of SMS payments for the authenticated operator
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Only allow operators, sub-operators, and admins
-        if (!$user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
+        if (! $user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized. Only operators, sub-operators, and admins can access SMS payments.',
             ], 403);
         }
-        
+
         $payments = SmsPayment::where('operator_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->paginate($request->input('per_page', 15));
@@ -58,14 +55,11 @@ class SmsPaymentController extends Controller
 
     /**
      * Store a newly created SMS payment in storage
-     *
-     * @param StoreSmsPaymentRequest $request
-     * @return JsonResponse
      */
     public function store(StoreSmsPaymentRequest $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Create SMS payment record
         $payment = SmsPayment::create([
             'operator_id' => $user->id,
@@ -88,25 +82,22 @@ class SmsPaymentController extends Controller
 
     /**
      * Display the specified SMS payment
-     *
-     * @param SmsPayment $smsPayment
-     * @return JsonResponse
      */
     public function show(SmsPayment $smsPayment): JsonResponse
     {
         $user = auth()->user();
-        
+
         // Only allow operators, sub-operators, and admins
-        if (!$user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
+        if (! $user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
             ], 403);
         }
-        
+
         // Admins and superadmins can view all payments, others can only view their own
         $isAdmin = $user->hasAnyRole(['admin', 'superadmin']);
-        if (!$isAdmin && $smsPayment->operator_id !== $user->id) {
+        if (! $isAdmin && $smsPayment->operator_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -121,22 +112,19 @@ class SmsPaymentController extends Controller
 
     /**
      * Get SMS balance and history for the authenticated operator
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function balance(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Only allow operators, sub-operators, and admins
-        if (!$user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
+        if (! $user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized. Only operators, sub-operators, and admins can access SMS balance.',
             ], 403);
         }
-        
+
         $history = $this->smsBalanceService->getHistory($user, 20);
         $stats = $this->smsBalanceService->getUsageStats($user, 'month');
 
@@ -154,12 +142,9 @@ class SmsPaymentController extends Controller
 
     /**
      * Handle payment gateway webhook/callback
-     * 
+     *
      * This method will be called by payment gateways to update payment status
      * NOTE: This endpoint requires webhook signature verification before processing
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function webhook(Request $request): JsonResponse
     {
@@ -170,13 +155,13 @@ class SmsPaymentController extends Controller
         // 1. Verify signature using gateway's public key
         // 2. Validate request IP against gateway's whitelist
         // 3. Check request timestamp to prevent replay attacks
-        
+
         // Reject all requests until proper verification is implemented
         return response()->json([
             'success' => false,
             'message' => 'Webhook processing not yet implemented. Signature verification required.',
         ], 501);
-        
+
         // TODO: After verification is implemented:
         // 1. Extract payment details from webhook payload
         // 2. Find the corresponding SmsPayment record
@@ -187,16 +172,13 @@ class SmsPaymentController extends Controller
 
     /**
      * Complete an SMS payment (admin/test use)
-     * 
-     * This endpoint allows manual completion of payments for testing
      *
-     * @param SmsPayment $smsPayment
-     * @return JsonResponse
+     * This endpoint allows manual completion of payments for testing
      */
     public function complete(SmsPayment $smsPayment): JsonResponse
     {
         // Only allow if payment is pending
-        if (!$smsPayment->isPending()) {
+        if (! $smsPayment->isPending()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Payment is not pending',
@@ -229,14 +211,11 @@ class SmsPaymentController extends Controller
 
     /**
      * Display SMS payment history page (Web UI)
-     *
-     * @param Request $request
-     * @return View
      */
     public function webIndex(Request $request): View
     {
         $user = $request->user();
-        
+
         // Get paginated payments
         $payments = SmsPayment::where('operator_id', $user->id)
             ->orderBy('created_at', 'desc')
@@ -256,8 +235,6 @@ class SmsPaymentController extends Controller
 
     /**
      * Display SMS payment purchase page (Web UI)
-     *
-     * @return View
      */
     public function webCreate(): View
     {
