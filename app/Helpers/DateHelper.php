@@ -120,7 +120,7 @@ class DateHelper
      * @param bool $short Whether to use short format
      * @return string The expiry status text
      */
-    public static function expiryText(?Carbon $expiryDate, bool $short = false): string
+    public static function expiryText(Carbon|string|null $expiryDate, bool $short = false): string
     {
         if (!$expiryDate) {
             return 'No expiry';

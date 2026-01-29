@@ -183,8 +183,10 @@ if (! function_exists('relativeTime')) {
 if (! function_exists('expiryText')) {
     /**
      * Get expiry status text with relative time ("Expires in 5 days")
+     * 
+     * @param \Carbon\Carbon|string|null $expiryDate
      */
-    function expiryText(?\Carbon\Carbon $expiryDate, bool $short = false): string
+    function expiryText(\Carbon\Carbon|string|null $expiryDate, bool $short = false): string
     {
         return \App\Helpers\DateHelper::expiryText($expiryDate, $short);
     }

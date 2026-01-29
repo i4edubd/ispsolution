@@ -119,16 +119,6 @@ class BillingProfile extends Model
     }
 
     /**
-     * Get ordinal suffix for a number
-     * 
-     * @deprecated Use DateHelper::getOrdinalSuffix() instead
-     */
-    private function getOrdinalSuffix(int $number): string
-    {
-        return DateHelper::getOrdinalSuffix($number);
-    }
-
-    /**
      * Get due date figure attribute
      * Task 2.2: Add due_date_figure computed attribute
      */
