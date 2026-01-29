@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Features
 
+- Add SMS Payment Integration UI components (purchase page, history, balance widget) ([5dc6ed1](../../commit/5dc6ed13bd3bc0a4c2b2e1bb57e8849e83efd7c8))
 - Add SMS payment controller, form requests, and comprehensive tests ([d84087f](../../commit/d84087ff888be09d2a5befcf0d2a927d2fcc925b))
 - Add SMS payment integration foundation (migrations, models, services) ([06d67be](../../commit/06d67beb192158c1a3e649390d35fa705b1c4169))
 - implement customer actions enhancements phases 1-3 ([7184094](../../commit/7184094a001beafcf94b41d97140cbeea7c239e5))
@@ -22,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- Address PR review feedback - route names, API auth, widget integration, type safety ([00caa5a](../../commit/00caa5a4ad418f933bc4df9ff0fbe2071d879f12))
+- Address critical security issues in SMS Payment Integration ([f9c7dd5](../../commit/f9c7dd5fbcdedc666d1c38c0cad23df6e6a949a1))
+- Code style and PHPStan compliance for SMS Payment features ([2090340](../../commit/2090340e3d969a0a969322d1a5f4cb62e8ad0e6c))
 - Improve webhook route and admin access to all payments ([c4cf7f6](../../commit/c4cf7f667896826709040ee5b74a5d6f28548bcb))
 - Address PR review comments - add routes, fix role slugs, add authorization ([dc13c84](../../commit/dc13c84184614f6b42e47ebb70c8425ee79ee6c7))
 - Address code review feedback - race conditions, table names, and authorization ([3f52b66](../../commit/3f52b66c9c384030450d06aa822c0984fcccc99b))
