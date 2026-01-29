@@ -837,7 +837,7 @@ Route::prefix('panel/operator')->name('panel.operator.')->middleware(['auth', 't
     Route::get('/packages', [\App\Http\Controllers\Panel\OperatorController::class, 'packages'])->name('packages');
     Route::get('/commission', [\App\Http\Controllers\Panel\OperatorController::class, 'commission'])->name('commission');
     
-    // SMS Payments - Web UI routes
+    // SMS Payments - Web UI routes (authorization enforced at controller level)
     Route::get('/sms-payments', [\App\Http\Controllers\Panel\SmsPaymentController::class, 'webIndex'])->name('sms-payments.index');
     Route::get('/sms-payments/create', [\App\Http\Controllers\Panel\SmsPaymentController::class, 'webCreate'])->name('sms-payments.create');
 });

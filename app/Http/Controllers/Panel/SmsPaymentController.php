@@ -60,11 +60,15 @@ class SmsPaymentController extends Controller
     {
         $user = $request->user();
 
+        // Calculate amount server-side based on quantity and pricing tiers
+        $quantity = $request->input('sms_quantity');
+        $amount = $this->calculateSmsPrice($quantity);
+
         // Create SMS payment record
         $payment = SmsPayment::create([
             'operator_id' => $user->id,
-            'amount' => $request->input('amount'),
-            'sms_quantity' => $request->input('sms_quantity'),
+            'amount' => $amount, // Server-calculated, not from user input
+            'sms_quantity' => $quantity,
             'payment_method' => $request->input('payment_method'),
             'status' => 'pending',
         ]);
@@ -148,19 +152,17 @@ class SmsPaymentController extends Controller
      */
     public function webhook(Request $request): JsonResponse
     {
-        // TODO: CRITICAL - Implement webhook signature verification
+        // SECURITY: Reject all requests until proper verification is implemented
+        // This prevents unauthorized balance credits and payment manipulation
+        abort(403, 'Webhook endpoint disabled. Contact administrator for setup.');
+
+        // TODO: CRITICAL - Implement webhook signature verification before enabling
         // Payment gateway webhooks MUST verify the request authenticity
         // This prevents unauthorized balance credits
         // Example for Bkash:
         // 1. Verify signature using gateway's public key
         // 2. Validate request IP against gateway's whitelist
         // 3. Check request timestamp to prevent replay attacks
-
-        // Reject all requests until proper verification is implemented
-        return response()->json([
-            'success' => false,
-            'message' => 'Webhook processing not yet implemented. Signature verification required.',
-        ], 501);
 
         // TODO: After verification is implemented:
         // 1. Extract payment details from webhook payload
@@ -171,12 +173,22 @@ class SmsPaymentController extends Controller
     }
 
     /**
-     * Complete an SMS payment (admin/test use)
+     * Complete an SMS payment (admin/test use only)
      *
      * This endpoint allows manual completion of payments for testing
      */
     public function complete(SmsPayment $smsPayment): JsonResponse
     {
+        $user = auth()->user();
+
+        // Only superadmins can manually complete payments
+        if (! $user->hasRole('superadmin')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized. Only superadmins can manually complete payments.',
+            ], 403);
+        }
+
         // Only allow if payment is pending
         if (! $smsPayment->isPending()) {
             return response()->json([
@@ -196,7 +208,7 @@ class SmsPaymentController extends Controller
             'purchase',
             'sms_payment',
             $smsPayment->id,
-            'SMS payment completed: ' . $smsPayment->transaction_id
+            'SMS payment completed: '.$smsPayment->transaction_id
         );
 
         return response()->json([
@@ -238,6 +250,32 @@ class SmsPaymentController extends Controller
      */
     public function webCreate(): View
     {
+        $user = auth()->user();
+
+        // Only operators, sub-operators, and admins can purchase SMS credits
+        if (! $user->hasAnyRole(['admin', 'operator', 'sub-operator', 'superadmin'])) {
+            abort(403, 'Unauthorized. Only operators can purchase SMS credits.');
+        }
+
         return view('panels.operator.sms-payments.create');
+    }
+
+    /**
+     * Calculate SMS price based on quantity and pricing tiers
+     *
+     * @param  int  $quantity  Number of SMS credits
+     * @return float Calculated price in local currency
+     */
+    private function calculateSmsPrice(int $quantity): float
+    {
+        // Pricing tiers (per SMS in BDT)
+        // TODO: Move these to config file or database for easier management
+        if ($quantity >= 10000) {
+            return $quantity * 0.40; // 20% discount
+        } elseif ($quantity >= 5000) {
+            return $quantity * 0.45; // 10% discount
+        } else {
+            return $quantity * 0.50; // Base rate
+        }
     }
 }
