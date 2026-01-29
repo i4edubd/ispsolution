@@ -12,6 +12,7 @@ All caching features are already implemented and working. The system uses multip
 2. **OperatorStatsCacheService** - Caches dashboard statistics
 3. **CustomerCacheService** - Caches customer-specific data
 4. **WidgetCacheService** - Caches widget data
+5. **Package Model Cache** - Automatic caching of customer counts per package
 
 ### Usage Example
 
@@ -21,14 +22,15 @@ use App\Services\OperatorStatsCacheService;
 
 // Get cached billing profiles (5-minute TTL)
 $billingProfileCache = app(BillingProfileCacheService::class);
-$profiles = $billingProfileCache->getBillingProfiles($operatorId);
+$profiles = $billingProfileCache->getBillingProfiles($tenantId);
 
 // Get cached operator stats (5-minute TTL)
 $statsCache = app(OperatorStatsCacheService::class);
 $stats = $statsCache->getDashboardStats($operatorId);
 
 // Invalidate cache when data changes
-$billingProfileCache->invalidateOperatorCache($operatorId);
+$billingProfileCache->invalidateTenantCache($tenantId);
+$billingProfileCache->invalidateCache($profileId);
 ```
 
 ### Package Model Cache
@@ -334,7 +336,7 @@ To modify TTL, update the respective service class constants.
 
 ✅ **All 4 Quick Wins from REFERENCE_SYSTEM_QUICK_GUIDE.md are fully implemented and tested!**
 
-- Advanced Caching: 5 specialized cache services with proper TTL
+- Advanced Caching: 4 specialized cache services + Package model caching
 - Date Formatting: 15+ helper functions with global access
 - Customer Overall Status: 8-state enum with UI badges
 - Package Price Validation: Model and request-level validation
