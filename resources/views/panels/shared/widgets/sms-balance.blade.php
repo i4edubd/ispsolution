@@ -1,7 +1,7 @@
 {{-- SMS Balance Widget - Displays SMS credits and purchase options --}}
 {{-- Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Phase 2: SMS Payment Integration --}}
 
-<div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+<div id="sms-balance-widget" class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
     <div class="p-6">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -41,7 +41,7 @@
                             <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Low SMS Balance</h3>
                             <p class="mt-1 text-sm text-red-700 dark:text-red-400">
                                 Your balance is below {{ number_format($sms_balance['low_balance_threshold']) }} credits. 
-                                <a href="{{ route('panel.sms-payments.create') }}" class="font-semibold underline hover:text-red-600">
+                                <a href="{{ route('panel.operator.sms-payments.create') }}" class="font-semibold underline hover:text-red-600">
                                     Purchase more credits
                                 </a>
                             </p>
@@ -126,20 +126,19 @@
  * Refresh SMS balance widget data via AJAX
  */
 function refreshSmsBalance() {
-    // Show loading state
-    const widget = document.querySelector('.bg-white.dark\\:bg-gray-800');
+    // Show loading state - use specific widget ID
+    const widget = document.getElementById('sms-balance-widget');
     if (widget) {
         widget.style.opacity = '0.6';
     }
 
-    // Fetch updated balance from API
+    // Fetch updated balance from API (uses session authentication)
     fetch('/api/sms-payments/balance', {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'Authorization': 'Bearer ' + (document.querySelector('meta[name="api-token"]')?.content || '')
+            'X-Requested-With': 'XMLHttpRequest'
         },
         credentials: 'same-origin'
     })

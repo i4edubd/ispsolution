@@ -61,7 +61,7 @@ class SmsPaymentController extends Controller
         $user = $request->user();
 
         // Calculate amount server-side based on quantity and pricing tiers
-        $quantity = $request->input('sms_quantity');
+        $quantity = $request->integer('sms_quantity');
         $amount = $this->calculateSmsPrice($quantity);
 
         // Create SMS payment record
@@ -208,7 +208,7 @@ class SmsPaymentController extends Controller
             'purchase',
             'sms_payment',
             $smsPayment->id,
-            'SMS payment completed: '.$smsPayment->transaction_id
+            'SMS payment completed: ' . $smsPayment->transaction_id
         );
 
         return response()->json([
@@ -263,7 +263,8 @@ class SmsPaymentController extends Controller
     /**
      * Calculate SMS price based on quantity and pricing tiers
      *
-     * @param  int  $quantity  Number of SMS credits
+     * @param int $quantity Number of SMS credits
+     *
      * @return float Calculated price in local currency
      */
     private function calculateSmsPrice(int $quantity): float
