@@ -37,6 +37,9 @@ class SmsBalanceService
         ?string $notes = null
     ): SmsBalanceHistory {
         return DB::transaction(function () use ($operator, $amount, $transactionType, $referenceType, $referenceId, $notes) {
+            // Lock the user row to prevent race conditions
+            $operator = User::where('id', $operator->id)->lockForUpdate()->first();
+            
             $balanceBefore = $operator->sms_balance ?? 0;
             $balanceAfter = $balanceBefore + $amount;
 
@@ -75,12 +78,17 @@ class SmsBalanceService
         ?int $referenceId = null,
         ?string $notes = null
     ): SmsBalanceHistory {
-        if (!$operator->hasSufficientSmsBalance($amount)) {
-            throw new \Exception("Insufficient SMS balance. Required: {$amount}, Available: {$operator->sms_balance}");
-        }
-
         return DB::transaction(function () use ($operator, $amount, $referenceType, $referenceId, $notes) {
+            // Lock the user row to prevent race conditions
+            $operator = User::where('id', $operator->id)->lockForUpdate()->first();
+            
             $balanceBefore = $operator->sms_balance ?? 0;
+            
+            // Check if sufficient balance within transaction
+            if ($balanceBefore < $amount) {
+                throw new \Exception("Insufficient SMS balance. Required: {$amount}, Available: {$balanceBefore}");
+            }
+            
             $balanceAfter = $balanceBefore - $amount;
 
             // Update operator balance
@@ -114,6 +122,9 @@ class SmsBalanceService
         ?string $notes = null
     ): SmsBalanceHistory {
         return DB::transaction(function () use ($operator, $amount, $notes) {
+            // Lock the user row to prevent race conditions
+            $operator = User::where('id', $operator->id)->lockForUpdate()->first();
+            
             $balanceBefore = $operator->sms_balance ?? 0;
             $balanceAfter = $balanceBefore + $amount;
 

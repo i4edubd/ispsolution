@@ -141,7 +141,7 @@ class SmsBalanceServiceTest extends TestCase
         ]);
 
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('negative balance');
+        $this->expectExceptionMessage('Adjustment would result in negative balance');
 
         $this->service->adjustBalance($operator, -100);
     }

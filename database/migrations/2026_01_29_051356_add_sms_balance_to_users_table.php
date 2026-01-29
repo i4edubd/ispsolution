@@ -21,9 +21,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('sms_balance')->default(0)->after('email')->comment('Available SMS credits for operator');
-            $table->integer('sms_low_balance_threshold')->default(100)->after('sms_balance')->comment('Alert threshold for low SMS balance');
-            $table->timestamp('sms_low_balance_notified_at')->nullable()->after('sms_low_balance_threshold')->comment('Last low balance notification timestamp');
+            $table->integer('sms_balance')->default(0)->comment('Available SMS credits for operator');
+            $table->integer('sms_low_balance_threshold')->default(100)->comment('Alert threshold for low SMS balance');
+            $table->timestamp('sms_low_balance_notified_at')->nullable()->comment('Last low balance notification timestamp');
         });
     }
 

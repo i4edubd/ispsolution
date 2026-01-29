@@ -31,9 +31,9 @@ class SmsPaymentFactory extends Factory
             'sms_quantity' => $smsQuantity,
             'payment_method' => $this->faker->randomElement(['bkash', 'nagad', 'rocket', 'sslcommerz']),
             'transaction_id' => 'TXN' . $this->faker->unique()->numerify('##########'),
-            'status' => $this->faker->randomElement(['pending', 'completed', 'failed']),
-            'notes' => $this->faker->optional()->sentence(),
-            'completed_at' => $this->faker->optional()->dateTimeBetween('-30 days', 'now'),
+            'status' => 'pending',
+            'notes' => null,
+            'completed_at' => null,
         ];
     }
 
