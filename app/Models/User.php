@@ -861,6 +861,47 @@ class User extends Authenticatable
     }
 
     /**
+     * Get SMS payments made by this operator
+     * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Phase 2: SMS Payment Integration
+     */
+    public function smsPayments(): HasMany
+    {
+        return $this->hasMany(SmsPayment::class, 'operator_id');
+    }
+
+    /**
+     * Get SMS balance history for this operator
+     * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Phase 2: SMS Payment Integration
+     */
+    public function smsBalanceHistory(): HasMany
+    {
+        return $this->hasMany(SmsBalanceHistory::class, 'operator_id');
+    }
+
+    /**
+     * Check if operator has sufficient SMS balance
+     * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Phase 2: SMS Payment Integration
+     *
+     * @param int $required Required SMS credits
+     * @return bool
+     */
+    public function hasSufficientSmsBalance(int $required): bool
+    {
+        return ($this->sms_balance ?? 0) >= $required;
+    }
+
+    /**
+     * Check if operator's SMS balance is low
+     * Reference: REFERENCE_SYSTEM_QUICK_GUIDE.md - Phase 2: SMS Payment Integration
+     *
+     * @return bool
+     */
+    public function hasLowSmsBalance(): bool
+    {
+        return ($this->sms_balance ?? 0) < ($this->sms_low_balance_threshold ?? 100);
+    }
+
+    /**
      * Get username from network user (for backward compatibility)
      * Note: Users table doesn't have a username column, this accessor
      * provides it from the networkUser relationship or falls back to email.
