@@ -1,0 +1,99 @@
+name: Auto Release and Changelog
+
+on:
+  push:
+    branches:
+      - main
+      - full-version-*
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, json
+          coverage: none
+
+      # 👇 THIS IS THE MISSING STEP 👇
+      - name: Install dependencies (no scripts)
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+      # 👆 YOU MUST HAVE THIS BEFORE ARTISAN COMMANDS 👆
+
+      - name: Prepare Laravel app
+        run: |
+          cp .env.example .env || true
+          php artisan key:generate --force
+
+      # Safe version check (doesn't require custom artisan command)
+      - name: Get Version from TODO.md
+        id: version
+        run: |
+          # Grabs the first version number found in TODO.md (e.g. 1.0.0)
+          VERSION=$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' TODO.md | head -n 1)
+
+          if [ -z "$VERSION" ]; then
+            echo "Error: Failed to extract version from TODO.md"
+            exit 1
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate changelog
+        run: |
+          npx --yes conventional-changelog-cli -p angular -i CHANGELOG.md -s || echo "# Changelog" > CHANGELOG.md
+          npx --yes conventional-changelog-cli -p angular -r 1 > RELEASE_NOTES.md || echo "# Release Notes" > RELEASE_NOTES.md
+
+          if [ ! -s RELEASE_NOTES.md ]; then
+            echo "# Release ${{ steps.version.outputs.version }}" > RELEASE_NOTES.md
+          fi
+
+      - name: Commit changelog
+        run: |
+          git config user.name "copilot-bot"
+          git config user.email "copilot-bot@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "chore: update changelog [skip ci]" || echo "No changes to commit"
+          git push
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          tag="${{ steps.version.outputs.version }}"
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: "Release ${{ steps.version.outputs.version }}"
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
