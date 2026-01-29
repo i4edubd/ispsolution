@@ -272,10 +272,11 @@ Route::prefix('sms-payments')
         Route::post('/{smsPayment}/complete', [\App\Http\Controllers\Panel\SmsPaymentController::class, 'complete'])
             ->middleware('role:admin,superadmin')
             ->name('complete');
-        Route::post('/webhook', [\App\Http\Controllers\Panel\SmsPaymentController::class, 'webhook'])
-            ->withoutMiddleware(['auth:sanctum'])
-            ->name('webhook');
     });
+
+// SMS Payment Webhook (no auth, no rate limit for payment gateway callbacks)
+Route::post('/sms-payments/webhook', [\App\Http\Controllers\Panel\SmsPaymentController::class, 'webhook'])
+    ->name('api.sms-payments.webhook');
 
 // Router Management API Routes
 Route::prefix('routers')->middleware(['web', 'auth'])->group(function () {

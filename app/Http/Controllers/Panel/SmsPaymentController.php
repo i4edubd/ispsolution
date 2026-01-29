@@ -103,8 +103,9 @@ class SmsPaymentController extends Controller
             ], 403);
         }
         
-        // Ensure user can only view their own payments
-        if ($smsPayment->operator_id !== $user->id) {
+        // Admins and superadmins can view all payments, others can only view their own
+        $isAdmin = $user->hasAnyRole(['admin', 'superadmin']);
+        if (!$isAdmin && $smsPayment->operator_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized',
