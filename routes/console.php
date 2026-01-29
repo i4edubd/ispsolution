@@ -50,3 +50,6 @@ Schedule::job(new \App\Jobs\CleanupExpiredTempCustomersJob)->daily()->at('02:30'
 
 // Schedule auto-debit processing
 Schedule::command('auto-debit:process')->daily()->at('05:00');
+
+// Schedule subscription billing
+Schedule::command('subscription:generate-bills')->monthlyOn(1, '00:30');
